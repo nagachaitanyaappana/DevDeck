@@ -252,10 +252,11 @@ QPushButton#BrowserBtn:disabled {
 QPushButton#IconBtn {
     background-color: #FFFFFF;
     border: 1.5px solid #111111;
-    border-radius: 10px;
-    padding: 5px 8px;
+    border-radius: 12px;
+    padding: 7px 12px;
+    font-size: 13px;
     color: #111111;
-    font-weight: 700;
+    font-weight: 800;
 }
 QPushButton#IconBtn:hover {
     background-color: #FFF9C4;
@@ -721,9 +722,11 @@ QPushButton#BrowserBtn:disabled {
 QPushButton#IconBtn {
     background-color: #182030;
     border: 1px solid #283449;
-    border-radius: 6px;
-    padding: 5px 8px;
+    border-radius: 12px;
+    padding: 7px 12px;
+    font-size: 13px;
     color: #94a3b8;
+    font-weight: 800;
 }
 QPushButton#FilterPill {
     background-color: transparent;

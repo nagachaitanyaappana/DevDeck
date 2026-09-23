@@ -194,20 +194,20 @@ class LogViewer(QFrame):
         # Clear Logs Button
         self.clear_btn = QPushButton("Clear")
         self.clear_btn.setObjectName("LogBtn")
-        self.clear_btn.setStyleSheet("background-color: #1A1A1A; color: #E5E7EB; border: 1px solid #333333; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700;")
+        self.clear_btn.setStyleSheet("background-color: #1A1A1A; color: #E5E7EB; border: 1px solid #333333; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 800;")
         self.clear_btn.clicked.connect(self.clear_logs)
         toolbar.addWidget(self.clear_btn)
 
         # Copy Logs Button
         self.copy_btn = QPushButton("Copy All")
         self.copy_btn.setObjectName("LogBtn")
-        self.copy_btn.setStyleSheet("background-color: #1A1A1A; color: #E5E7EB; border: 1px solid #333333; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700;")
+        self.copy_btn.setStyleSheet("background-color: #1A1A1A; color: #E5E7EB; border: 1px solid #333333; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 800;")
         self.copy_btn.clicked.connect(self._copy_all)
         toolbar.addWidget(self.copy_btn)
 
         # Fullscreen / Maximize Button
         self.fullscreen_btn = QPushButton("⛶")
-        self.fullscreen_btn.setFixedSize(32, 32)
+        self.fullscreen_btn.setFixedSize(34, 34)
         self.fullscreen_btn.setStyleSheet("""
             QPushButton {
                 background-color: #1A1A1A;
@@ -215,7 +215,7 @@ class LogViewer(QFrame):
                 border: 1px solid #333333;
                 border-radius: 8px;
                 padding: 0px;
-                font-size: 15px;
+                font-size: 16px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -230,7 +230,7 @@ class LogViewer(QFrame):
 
         # Close / Minimize Button
         self.close_btn = QPushButton("✕")
-        self.close_btn.setFixedSize(32, 32)
+        self.close_btn.setFixedSize(34, 34)
         self.close_btn.setStyleSheet("""
             QPushButton {
                 background-color: #1A1A1A;
@@ -238,7 +238,7 @@ class LogViewer(QFrame):
                 border: 1px solid #333333;
                 border-radius: 8px;
                 padding: 0px;
-                font-size: 15px;
+                font-size: 16px;
                 font-weight: 900;
             }
             QPushButton:hover {

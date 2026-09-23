@@ -656,6 +656,9 @@ class MainWindow(QMainWindow):
             card.service_port_changed.connect(self._on_stack_service_port_changed)
             card.start_service_clicked.connect(self._start_project)
             card.stop_service_clicked.connect(self._stop_project)
+            card.open_code_clicked.connect(open_in_vscode)
+            card.open_terminal_clicked.connect(open_in_terminal)
+            card.open_folder_clicked.connect(open_in_file_manager)
 
             # Reconcile status & detected URL for each member service
             for service in stack.get("services", []):
