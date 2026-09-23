@@ -212,17 +212,15 @@ class StackCard(QFrame):
 
         # Edit button
         self.edit_btn = QPushButton("⚙")
-        self.edit_btn.setFixedSize(28, 28)
+        self.edit_btn.setFixedSize(30, 30)
         self.edit_btn.setToolTip("Edit Stack Settings")
-        self.edit_btn.setStyleSheet("background-color: #FFFFFF; border: 1.5px solid #111111; border-radius: 8px; font-weight: bold; color: #111111;")
         self.edit_btn.clicked.connect(lambda: self.edit_stack_clicked.emit(self.stack))
         top_row.addWidget(self.edit_btn)
 
         # Delete button
         self.close_btn = QPushButton("✕")
-        self.close_btn.setFixedSize(26, 26)
+        self.close_btn.setFixedSize(30, 30)
         self.close_btn.setToolTip("Remove Stack from Deck")
-        self.close_btn.setStyleSheet("background-color: #FFFFFF; border: 1.5px solid #111111; border-radius: 8px; font-weight: bold; color: #111111;")
         self.close_btn.clicked.connect(lambda: self.remove_stack_clicked.emit(self.stack["id"]))
         top_row.addWidget(self.close_btn)
 
@@ -275,6 +273,35 @@ class StackCard(QFrame):
                     border-radius: 18px;
                 }}
             """)
+            self.edit_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #FFFFFF;
+                    border: 1.5px solid #111111;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #111111;
+                    padding: 0px;
+                }
+                QPushButton:hover {
+                    background-color: #FFF9C4;
+                }
+            """)
+            self.close_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #FFFFFF;
+                    border: 1.5px solid #111111;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 900;
+                    color: #111111;
+                    padding: 0px;
+                }
+                QPushButton:hover {
+                    background-color: #FEE2E2;
+                    color: #DC2626;
+                }
+            """)
         else:
             border = "2px solid #10b981" if any_running else "1.5px solid #283449"
             self.setStyleSheet(f"""
@@ -283,6 +310,35 @@ class StackCard(QFrame):
                     border: {border};
                     border-radius: 14px;
                 }}
+            """)
+            self.edit_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e2638;
+                    border: 1px solid #2e3c54;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #f1f5f9;
+                    padding: 0px;
+                }
+                QPushButton:hover {
+                    background-color: #2e3c54;
+                }
+            """)
+            self.close_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e2638;
+                    border: 1px solid #2e3c54;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 900;
+                    color: #f1f5f9;
+                    padding: 0px;
+                }
+                QPushButton:hover {
+                    background-color: #4c0519;
+                    color: #f87171;
+                }
             """)
 
     def set_service_status(self, service_id: str, status: str):

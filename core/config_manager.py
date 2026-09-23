@@ -104,7 +104,19 @@ class ConfigManager:
         self.save()
 
     def get_stacks(self) -> Dict[str, Dict[str, Any]]:
-        return self.data.get("stacks", {})
+        stacks = self.data.get("stacks", {})
+        changed = False
+        for stack_id, stack in stacks.items():
+            seen_ids = set()
+            for idx, s in enumerate(stack.get("services", [])):
+                sid = s.get("id")
+                if not sid or sid in seen_ids:
+                    s["id"] = hashlib.sha256(f"{stack_id}::{idx}::{s.get('path')}::{s.get('name')}".encode()).hexdigest()[:12]
+                    changed = True
+                seen_ids.add(s["id"])
+        if changed:
+            self.save()
+        return stacks
 
     def get_stack(self, stack_id: str) -> Optional[Dict[str, Any]]:
         return self.data.get("stacks", {}).get(stack_id)
@@ -115,6 +127,14 @@ class ConfigManager:
         if not s_id:
             s_id = hashlib.sha256(f"stack::{stack.get('name', 'stack')}::{len(stack.get('services', []))}".encode()).hexdigest()[:12]
             stack["id"] = s_id
+
+        # Ensure service IDs are strictly unique within the stack
+        seen_ids = set()
+        for idx, s in enumerate(stack.get("services", [])):
+            sid = s.get("id")
+            if not sid or sid in seen_ids:
+                s["id"] = hashlib.sha256(f"{s_id}::{idx}::{s.get('path')}::{s.get('name')}::{s.get('port')}".encode()).hexdigest()[:12]
+            seen_ids.add(s["id"])
 
         if "stacks" not in self.data:
             self.data["stacks"] = {}

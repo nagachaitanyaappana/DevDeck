@@ -58,6 +58,7 @@ class LogViewer(QFrame):
     """Integrated Console Log Viewer with live streaming and ANSI support."""
     close_requested = pyqtSignal()
     open_url_requested = pyqtSignal(str)
+    fullscreen_toggled = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -65,6 +66,7 @@ class LogViewer(QFrame):
         self.current_project_name = ""
         self.current_url = ""
         self.auto_scroll = True
+        self._is_fullscreen = False
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
         self._init_ui()
@@ -192,9 +194,49 @@ class LogViewer(QFrame):
         self.copy_btn.clicked.connect(self._copy_all)
         toolbar.addWidget(self.copy_btn)
 
+        # Fullscreen / Maximize Button
+        self.fullscreen_btn = QPushButton("⛶")
+        self.fullscreen_btn.setFixedSize(28, 28)
+        self.fullscreen_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1A1A1A;
+                color: #A3A3A3;
+                border: 1px solid #333333;
+                border-radius: 8px;
+                padding: 0px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2A2A2A;
+                color: #FFFFFF;
+                border-color: #555555;
+            }
+        """)
+        self.fullscreen_btn.setToolTip("Toggle Fullscreen Console (Ctrl+Shift+L)")
+        self.fullscreen_btn.clicked.connect(self._toggle_fullscreen)
+        toolbar.addWidget(self.fullscreen_btn)
+
         # Close / Minimize Button
         self.close_btn = QPushButton("✕")
-        self.close_btn.setStyleSheet("padding: 4px 8px; font-size: 13px; font-weight: bold; background: transparent; border: none; color: #888888;")
+        self.close_btn.setFixedSize(28, 28)
+        self.close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1A1A1A;
+                color: #888888;
+                border: 1px solid #333333;
+                border-radius: 8px;
+                padding: 0px;
+                font-size: 13px;
+                font-weight: 900;
+            }
+            QPushButton:hover {
+                background-color: #7F1D1D;
+                color: #F87171;
+                border-color: #DC2626;
+            }
+        """)
+        self.close_btn.setToolTip("Close Console Drawer (Ctrl+L)")
         self.close_btn.clicked.connect(self.close_requested.emit)
         toolbar.addWidget(self.close_btn)
 
@@ -207,6 +249,20 @@ class LogViewer(QFrame):
         self.text_edit.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
         self.text_edit.setStyleSheet("background-color: #000000; color: #E5E7EB; border: 1px solid #222222; border-radius: 10px; font-family: monospace; font-size: 12px; padding: 10px;")
         layout.addWidget(self.text_edit)
+
+    def _toggle_fullscreen(self):
+        self._is_fullscreen = not getattr(self, "_is_fullscreen", False)
+        self.set_fullscreen_state(self._is_fullscreen)
+        self.fullscreen_toggled.emit(self._is_fullscreen)
+
+    def set_fullscreen_state(self, is_fs: bool):
+        self._is_fullscreen = is_fs
+        if is_fs:
+            self.fullscreen_btn.setText("🗗")
+            self.fullscreen_btn.setToolTip("Restore Console Size (Ctrl+Shift+L)")
+        else:
+            self.fullscreen_btn.setText("⛶")
+            self.fullscreen_btn.setToolTip("Maximize Console Fullscreen (Ctrl+Shift+L)")
 
     def set_active_project(self, project_id: str, project_name: str, url: str = ""):
         self.current_project_id = project_id

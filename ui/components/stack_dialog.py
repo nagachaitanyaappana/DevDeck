@@ -234,7 +234,7 @@ class ServiceRow(QFrame):
             return None
 
         port = int(port_txt) if port_txt.isdigit() else None
-        s_id = self.service_id or hashlib.sha256(f"{path}::{name}".encode()).hexdigest()[:12]
+        s_id = self.service_id or hashlib.sha256(f"{path}::{name}::{port}".encode()).hexdigest()[:12]
 
         return {
             "id": s_id,
@@ -424,7 +424,8 @@ class StackDialog(QDialog):
             return
 
         services = []
-        for row in self.service_rows:
+        seen_ids = set()
+        for idx, row in enumerate(self.service_rows):
             data = row.get_data()
             if not data:
                 QMessageBox.warning(
@@ -432,6 +433,11 @@ class StackDialog(QDialog):
                     "Please fill in the Name, Path, and Launch Command for all services in the stack."
                 )
                 return
+            s_id = data.get("id")
+            if not s_id or s_id in seen_ids:
+                s_id = hashlib.sha256(f"{name}::{idx}::{data['path']}::{data['name']}::{data.get('port')}".encode()).hexdigest()[:12]
+                data["id"] = s_id
+            seen_ids.add(s_id)
             services.append(data)
 
         if not services:

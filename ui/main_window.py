@@ -261,11 +261,13 @@ class MainWindow(QMainWindow):
 
         # Log Viewer Drawer
         self.log_viewer = LogViewer()
-        self.log_viewer.close_requested.connect(lambda: self.splitter.setSizes([750, 0]))
+        self.log_viewer.close_requested.connect(self._on_console_closed)
+        self.log_viewer.fullscreen_toggled.connect(self._on_console_fullscreen_toggled)
         self.log_viewer.open_url_requested.connect(open_url)
         self.splitter.addWidget(self.log_viewer)
 
         # Start with logs drawer visible but compact
+        self._prev_splitter_sizes = [550, 180]
         self.splitter.setSizes([550, 180])
 
         right_layout.addWidget(self.splitter)
@@ -307,6 +309,7 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+F"), self, activated=self.search_input.setFocus)
         QShortcut(QKeySequence("Ctrl+R"), self, activated=lambda: self._scan_projects(silent=False))
         QShortcut(QKeySequence("Ctrl+L"), self, activated=self._toggle_logs)
+        QShortcut(QKeySequence("Ctrl+Shift+L"), self, activated=self.log_viewer._toggle_fullscreen)
 
     def _init_tray(self):
         if not QSystemTrayIcon.isSystemTrayAvailable():
@@ -344,12 +347,43 @@ class MainWindow(QMainWindow):
         self.raise_()
         self.activateWindow()
 
+    def _on_console_fullscreen_toggled(self, is_fullscreen: bool):
+        sizes = self.splitter.sizes()
+        total = sum(sizes) if sum(sizes) > 0 else 800
+        if is_fullscreen:
+            if sizes[0] > 30 and sizes[1] > 30:
+                self._prev_splitter_sizes = list(sizes)
+            else:
+                self._prev_splitter_sizes = [int(total * 0.65), int(total * 0.35)]
+            self.splitter.setSizes([0, total])
+        else:
+            prev = getattr(self, "_prev_splitter_sizes", [int(total * 0.65), int(total * 0.35)])
+            if prev[0] == 0:
+                prev = [int(total * 0.65), int(total * 0.35)]
+            self.splitter.setSizes(prev)
+
+    def _on_console_closed(self):
+        sizes = self.splitter.sizes()
+        total = sum(sizes) if sum(sizes) > 0 else 800
+        if sizes[0] > 30 and sizes[1] > 30:
+            self._prev_splitter_sizes = list(sizes)
+        self.splitter.setSizes([total, 0])
+        self.log_viewer.set_fullscreen_state(False)
+
     def _toggle_logs(self):
         sizes = self.splitter.sizes()
-        if sizes[1] > 20:
-            self.splitter.setSizes([sum(sizes), 0])
+        total = sum(sizes) if sum(sizes) > 0 else 800
+        if sizes[1] > 30:
+            if sizes[0] > 30:
+                self._prev_splitter_sizes = list(sizes)
+            self.splitter.setSizes([total, 0])
+            self.log_viewer.set_fullscreen_state(False)
         else:
-            self.splitter.setSizes([int(sum(sizes) * 0.65), int(sum(sizes) * 0.35)])
+            prev = getattr(self, "_prev_splitter_sizes", [int(total * 0.65), int(total * 0.35)])
+            if prev[0] == 0 or prev[1] == 0:
+                prev = [int(total * 0.65), int(total * 0.35)]
+            self.splitter.setSizes(prev)
+            self.log_viewer.set_fullscreen_state(False)
 
     def _toggle_theme(self):
         current = self.config.data.get("theme", "figma")
@@ -469,7 +503,12 @@ class MainWindow(QMainWindow):
         # Ensure log viewer is visible
         sizes = self.splitter.sizes()
         if sizes[1] < 50:
-            self.splitter.setSizes([int(sum(sizes) * 0.65), int(sum(sizes) * 0.35)])
+            total = sum(sizes) if sum(sizes) > 0 else 800
+            prev = getattr(self, "_prev_splitter_sizes", [int(total * 0.65), int(total * 0.35)])
+            if prev[0] == 0 or prev[1] == 0:
+                prev = [int(total * 0.65), int(total * 0.35)]
+            self.splitter.setSizes(prev)
+            self.log_viewer.set_fullscreen_state(False)
 
         url = self.process_manager.get_detected_url(p_id) or project.get("url", "")
         self.log_viewer.set_active_project(p_id, project.get("name", "Unnamed"), url)
