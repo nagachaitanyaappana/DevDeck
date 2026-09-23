@@ -93,6 +93,8 @@ QFrame#HeaderBar {
     background-color: #FFFFFF;
     border: none;
     border-bottom: 1px solid #E8E8E8;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
     padding: 14px 24px;
 }
 
@@ -351,6 +353,8 @@ QLabel#MetricsLabel {
 QFrame#LogDrawer {
     background-color: #1A1A1A;
     border-top: 3px solid #FFC107;
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
 }
 QTextEdit#LogViewer {
     background-color: #111111;
@@ -482,6 +486,8 @@ QScrollBar::handle:horizontal {
 QFrame#HeaderBar {
     background-color: #151b27;
     border-bottom: 1px solid #222c3e;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
     padding: 12px 20px;
 }
 QLabel#AppTitle {
@@ -663,6 +669,8 @@ QLabel#MetricsLabel {
 QFrame#LogDrawer {
     background-color: #0c0f16;
     border-top: 1px solid #222d40;
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
 }
 QTextEdit#LogViewer {
     background-color: #080a0f;

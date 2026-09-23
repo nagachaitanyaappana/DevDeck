@@ -8,10 +8,11 @@ from typing import Dict, List, Optional
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QLineEdit, QPushButton, QScrollArea, QSplitter, QFrame,
-    QSystemTrayIcon, QMenu, QMessageBox, QApplication
+    QSystemTrayIcon, QMenu, QMessageBox, QApplication,
+    QGraphicsDropShadowEffect, QSizeGrip
 )
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon, QAction, QKeySequence, QShortcut
+from PyQt6.QtGui import QIcon, QAction, QKeySequence, QShortcut, QColor
 
 from core.config_manager import ConfigManager
 from core.scanner import ProjectScanner
@@ -98,6 +99,15 @@ class MainWindow(QMainWindow):
         # Inner rounded container — this is the visible app shell
         self.shell = QFrame()
         self.shell.setObjectName("AppShell")
+
+        # Soft floating drop shadow
+        shadow = QGraphicsDropShadowEffect(self.shell)
+        shadow.setBlurRadius(28)
+        shadow.setXOffset(0)
+        shadow.setYOffset(6)
+        shadow.setColor(QColor(0, 0, 0, 70))
+        self.shell.setGraphicsEffect(shadow)
+
         shell_layout = QVBoxLayout(self.shell)
         shell_layout.setContentsMargins(0, 0, 0, 0)
         shell_layout.setSpacing(0)
