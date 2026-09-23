@@ -17,6 +17,7 @@ from core.config_manager import ConfigManager
 from core.scanner import ProjectScanner
 from core.process_manager import ProcessManager
 from core.actions import open_url, open_in_vscode, open_in_terminal, open_in_file_manager, kill_process_on_port
+from ui.theme import FIGMA_THEME_QSS, DARK_THEME_QSS
 from .components.project_card import ProjectCard
 from .components.log_viewer import LogViewer
 from .components.project_dialog import ProjectDialog
@@ -110,11 +111,19 @@ class MainWindow(QMainWindow):
         add_btn.clicked.connect(self._open_add_dialog)
         header_layout.addWidget(add_btn)
 
+        # Theme Toggle (Figma Neo-Clean / Dark Mode)
+        self.theme_btn = QPushButton("🌓")
+        self.theme_btn.setObjectName("IconBtn")
+        self.theme_btn.setToolTip("Toggle Theme (Figma Neo-Clean / Dark)")
+        self.theme_btn.setFixedSize(36, 32)
+        self.theme_btn.clicked.connect(self._toggle_theme)
+        header_layout.addWidget(self.theme_btn)
+
         main_layout.addWidget(header)
 
         # ─── 2. Search & Filter Bar ───
         filter_bar = QFrame()
-        filter_bar.setStyleSheet("background-color: #121824; border-bottom: 1px solid #1e2638; padding: 10px 20px;")
+        filter_bar.setObjectName("FilterBar")
         filter_layout = QHBoxLayout(filter_bar)
         filter_layout.setContentsMargins(16, 8, 16, 8)
         filter_layout.setSpacing(12)
@@ -244,6 +253,15 @@ class MainWindow(QMainWindow):
             self.splitter.setSizes([sum(sizes), 0])
         else:
             self.splitter.setSizes([int(sum(sizes) * 0.65), int(sum(sizes) * 0.35)])
+
+    def _toggle_theme(self):
+        current = self.config.data.get("theme", "figma")
+        new_theme = "dark" if current == "figma" else "figma"
+        self.config.data["theme"] = new_theme
+        self.config.save()
+        app = QApplication.instance()
+        if app:
+            app.setStyleSheet(DARK_THEME_QSS if new_theme == "dark" else FIGMA_THEME_QSS)
 
     def _scan_projects(self, silent: bool = False):
         scanner = ProjectScanner(self.config.get_scan_dirs(), max_depth=5)

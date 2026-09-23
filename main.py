@@ -17,7 +17,7 @@ from PyQt6.QtCore import Qt
 
 from core.config_manager import ConfigManager
 from core.process_manager import ProcessManager
-from ui.theme import DARK_THEME_QSS
+from ui.theme import FIGMA_THEME_QSS, DARK_THEME_QSS
 from ui.main_window import MainWindow
 
 def main():
@@ -40,12 +40,13 @@ def main():
     if not app_icon.isNull():
         app.setWindowIcon(app_icon)
 
-    # Apply Dark Theme Stylesheet
-    app.setStyleSheet(DARK_THEME_QSS)
-
     # Initialize Core Subsystems
     config_mgr = ConfigManager()
     process_mgr = ProcessManager()
+
+    # Apply Neo-Clean Figma UI Theme Stylesheet (or configured theme)
+    theme_choice = config_mgr.data.get("theme", "figma")
+    app.setStyleSheet(DARK_THEME_QSS if theme_choice == "dark" else FIGMA_THEME_QSS)
 
     # Clean shutdown of all running child servers on app exit
     app.aboutToQuit.connect(process_mgr.stop_all)

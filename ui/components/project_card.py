@@ -55,16 +55,24 @@ class ProjectCard(QFrame):
         layout.setContentsMargins(14, 12, 14, 12)
         layout.setSpacing(10)
 
-        # ─── Top Row: Icon, Title, Stack Badge, Port Badge, Favorite, More ───
+        # ─── Top Row: Icon Squircle, Title, Stack Badge, Port Badge, Favorite, More, Close ───
         top_row = QHBoxLayout()
-        top_row.setSpacing(8)
+        top_row.setSpacing(12)
 
-        # Stack Icon
+        # Stack Icon Squircle (Soft pastel circle like in Figma design)
+        icon_squircle = QFrame()
+        icon_squircle.setObjectName("IconSquircle")
+        sq_layout = QHBoxLayout(icon_squircle)
+        sq_layout.setContentsMargins(0, 0, 0, 0)
+        sq_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         stack = self.project.get("stack", "Custom")
         icon = STACK_ICONS.get(stack, "💻")
         self.icon_label = QLabel(icon)
-        self.icon_label.setStyleSheet("font-size: 18px;")
-        top_row.addWidget(self.icon_label)
+        self.icon_label.setObjectName("SquircleIcon")
+        self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sq_layout.addWidget(self.icon_label)
+        top_row.addWidget(icon_squircle)
 
         # Title & Path container
         title_box = QVBoxLayout()
@@ -106,7 +114,7 @@ class ProjectCard(QFrame):
         self.fav_btn.setToolTip("Pin to Favorites")
         self.fav_btn.setFixedSize(30, 28)
         if is_fav:
-            self.fav_btn.setStyleSheet("color: #f59e0b;")
+            self.fav_btn.setStyleSheet("color: #F59E0B; font-weight: bold;")
         self.fav_btn.clicked.connect(self._toggle_favorite)
         top_row.addWidget(self.fav_btn)
 
@@ -116,6 +124,14 @@ class ProjectCard(QFrame):
         self.more_btn.setFixedSize(28, 28)
         self.more_btn.clicked.connect(self._show_context_menu)
         top_row.addWidget(self.more_btn)
+
+        # Close button (like top-right in Figma modal)
+        self.close_btn = QPushButton("✕")
+        self.close_btn.setObjectName("IconBtn")
+        self.close_btn.setFixedSize(26, 26)
+        self.close_btn.setToolTip("Remove from Deck")
+        self.close_btn.clicked.connect(lambda: self.remove_clicked.emit(self.project["id"]))
+        top_row.addWidget(self.close_btn)
 
         layout.addLayout(top_row)
 
@@ -267,10 +283,10 @@ class ProjectCard(QFrame):
         port = self.project.get("port")
         if port:
             self.port_btn.setText(f"🔌 :{port}")
-            self.port_btn.setStyleSheet("color: #38bdf8; font-family: monospace; font-weight: 600; padding: 3px 8px;")
+            self.port_btn.setStyleSheet("color: #0369A1; background-color: #E0F2FE; border: 1.5px solid #BAE6FD; border-radius: 8px; font-family: monospace; font-weight: 700; padding: 3px 8px;")
         else:
             self.port_btn.setText("🔌 Port")
-            self.port_btn.setStyleSheet("color: #64748b; font-size: 11px; padding: 3px 6px;")
+            self.port_btn.setStyleSheet("color: #6B7280; background-color: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 11px; padding: 3px 8px;")
 
     def _quick_edit_port(self):
         from PyQt6.QtWidgets import QInputDialog
