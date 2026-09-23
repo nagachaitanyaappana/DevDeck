@@ -88,6 +88,25 @@ QScrollBar::handle:horizontal {
     border-radius: 4px;
 }
 
+/* ─── Hero Left Sidebar (Figma Reference Style) ─── */
+QFrame#HeroPanel {
+    background: transparent;
+    border: none;
+}
+
+QLabel#HeroTitle {
+    font-size: 32px;
+    font-weight: 900;
+    color: #111111;
+    letter-spacing: -1.2px;
+}
+
+QLabel#HeroSubtitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: #444444;
+}
+
 /* ─── Header Bar: Floating white card on yellow canvas ─── */
 QFrame#HeaderBar {
     background-color: #FFFFFF;
@@ -480,11 +499,29 @@ QScrollBar::handle:horizontal {
     border-radius: 4px;
 }
 
+/* ─── Hero Left Sidebar (Figma Reference Style) ─── */
+QFrame#HeroPanel {
+    background: transparent;
+    border: none;
+}
+
+QLabel#HeroTitle {
+    font-size: 32px;
+    font-weight: 900;
+    color: #f8fafc;
+    letter-spacing: -1.2px;
+}
+
+QLabel#HeroSubtitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+}
+
 QFrame#HeaderBar {
     background-color: #151b27;
     border-bottom: 1px solid #222c3e;
-    border-top-left-radius: 22px;
-    border-top-right-radius: 22px;
+    border-radius: 16px;
     padding: 12px 20px;
 }
 QLabel#AppTitle {

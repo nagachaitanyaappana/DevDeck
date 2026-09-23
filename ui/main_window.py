@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QLineEdit, QPushButton, QScrollArea, QSplitter, QFrame,
     QSystemTrayIcon, QMenu, QMessageBox, QApplication,
-    QGraphicsDropShadowEffect, QSizeGrip
+    QGraphicsDropShadowEffect, QSizeGrip, QGridLayout
 )
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QAction, QKeySequence, QShortcut, QColor
@@ -42,8 +42,8 @@ class MainWindow(QMainWindow):
         self.search_query = ""
 
         self.setWindowTitle("DevDeck — Project Control Center")
-        self.resize(1100, 750)
-        self.setMinimumSize(850, 550)
+        self.resize(1200, 780)
+        self.setMinimumSize(940, 580)
         if not self.app_icon.isNull():
             self.setWindowIcon(self.app_icon)
 
@@ -62,83 +62,61 @@ class MainWindow(QMainWindow):
     def _init_ui(self):
         central = QWidget()
         self.setCentralWidget(central)
-        main_layout = QVBoxLayout(central)
-        main_layout.setContentsMargins(18, 14, 18, 14)  # Gaps between screen edge and UI
-        main_layout.setSpacing(10)
+        
+        # Horizontal Split: Left Hero Panel + Right Cards & Logs
+        root_layout = QHBoxLayout(central)
+        root_layout.setContentsMargins(24, 20, 24, 20)
+        root_layout.setSpacing(24)
 
-        # ─── 1. Header Bar (Floating white card with rounded corners) ───
-        header = QFrame()
-        header.setObjectName("HeaderBar")
-        header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(20, 12, 20, 12)
-        header_layout.setSpacing(14)
+        # ─── LEFT: Hero Control Panel (Figma Reference Style) ───
+        left_panel = QFrame()
+        left_panel.setObjectName("HeroPanel")
+        left_panel.setFixedWidth(290)
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(14)
 
-        # Title & Subtitle
-        title_box = QVBoxLayout()
-        title_box.setSpacing(2)
-        title = QLabel("⚡ DevDeck")
-        title.setObjectName("AppTitle")
-        subtitle = QLabel("Project Control Center")
-        subtitle.setObjectName("AppSubtitle")
-        title_box.addWidget(title)
-        title_box.addWidget(subtitle)
-        header_layout.addLayout(title_box)
+        # 1. Bold Title (like "20+ Modals Popups Alerts")
+        hero_title = QLabel("DevDeck\nProjects\nLauncher")
+        hero_title.setObjectName("HeroTitle")
+        left_layout.addWidget(hero_title)
 
-        # Stats Badges
+        # 2. Hero Pill Badge (like "30K+ downloads")
+        self.hero_tag = QLabel("⚡ ONE-CLICK RUNNER")
+        self.hero_tag.setStyleSheet(
+            "background-color: #111111; color: #FFFFFF; font-weight: 800; "
+            "font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;"
+        )
+        left_layout.addWidget(self.hero_tag)
+
+        # 3. Stats Badges (Stacked vertically as clean pills)
+        stats_box = QVBoxLayout()
+        stats_box.setSpacing(8)
         self.total_badge = self._create_stat_badge("0", "PROJECTS")
         self.running_badge = self._create_stat_badge("0", "RUNNING")
         self.ports_badge = self._create_stat_badge("0", "ACTIVE PORTS")
-        header_layout.addWidget(self.total_badge)
-        header_layout.addWidget(self.running_badge)
-        header_layout.addWidget(self.ports_badge)
+        stats_box.addWidget(self.total_badge)
+        stats_box.addWidget(self.running_badge)
+        stats_box.addWidget(self.ports_badge)
+        left_layout.addLayout(stats_box)
 
-        header_layout.addStretch()
-
-        # Global Actions
-        scan_btn = QPushButton("🔄 Rescan ~/Projects")
-        scan_btn.setToolTip("Scan ~/Projects for new codebases (Ctrl+R)")
-        scan_btn.clicked.connect(lambda: self._scan_projects(silent=False))
-        header_layout.addWidget(scan_btn)
-
-        self.stop_all_btn = QPushButton("⏹ Stop All")
-        self.stop_all_btn.setObjectName("StopBtn")
-        self.stop_all_btn.setToolTip("Stop all active servers safely")
-        self.stop_all_btn.clicked.connect(self._stop_all)
-        header_layout.addWidget(self.stop_all_btn)
-
-        add_btn = QPushButton("➕ Add Project")
-        add_btn.setObjectName("PrimaryBtn")
-        add_btn.setToolTip("Add a custom project manually")
-        add_btn.clicked.connect(self._open_add_dialog)
-        header_layout.addWidget(add_btn)
-
-        # Theme Toggle (Figma Neo-Clean / Dark Mode)
-        self.theme_btn = QPushButton("🌓")
-        self.theme_btn.setObjectName("IconBtn")
-        self.theme_btn.setToolTip("Toggle Theme (Figma Neo-Clean / Dark)")
-        self.theme_btn.setFixedSize(36, 32)
-        self.theme_btn.clicked.connect(self._toggle_theme)
-        header_layout.addWidget(self.theme_btn)
-
-        main_layout.addWidget(header)
-
-        # ─── 2. Search & Filter Bar ───
-        filter_bar = QFrame()
-        filter_bar.setObjectName("FilterBar")
-        filter_layout = QHBoxLayout(filter_bar)
-        filter_layout.setContentsMargins(16, 8, 16, 8)
-        filter_layout.setSpacing(12)
-
-        # Search Bar
+        # 4. Search Bar
         self.search_input = QLineEdit()
         self.search_input.setObjectName("SearchBar")
-        self.search_input.setPlaceholderText("🔍  Search projects by name, path, or command... (Ctrl+F)")
+        self.search_input.setPlaceholderText("🔍  Search projects... (Ctrl+F)")
         self.search_input.textChanged.connect(self._on_search_changed)
-        filter_layout.addWidget(self.search_input)
+        left_layout.addWidget(self.search_input)
 
-        # Filter Pills
+        # 5. Category Filter Pills
+        filter_label = QLabel("CATEGORIES")
+        filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #555555; letter-spacing: 0.5px; margin-top: 4px;")
+        left_layout.addWidget(filter_label)
+
+        filter_grid = QGridLayout()
+        filter_grid.setSpacing(6)
         self.filter_buttons = {}
-        for f in ["All", "Running", "Favorites", "Node / Web", "Java / Spring", "Python"]:
+        filters = ["All", "Running", "Favorites", "Node / Web", "Java / Spring", "Python"]
+        for idx, f in enumerate(filters):
             btn = QPushButton(f)
             btn.setObjectName("FilterPill")
             btn.setCheckable(True)
@@ -146,33 +124,78 @@ class MainWindow(QMainWindow):
                 btn.setChecked(True)
                 btn.setProperty("checked", "true")
             btn.clicked.connect(lambda checked, name=f: self._set_filter(name))
-            filter_layout.addWidget(btn)
+            filter_grid.addWidget(btn, idx // 2, idx % 2)
             self.filter_buttons[f] = btn
+        left_layout.addLayout(filter_grid)
 
-        filter_layout.addStretch()
+        left_layout.addStretch()
 
-        # Toggle Logs Drawer Button
-        self.toggle_logs_btn = QPushButton("📋 Console Logs")
+        # 6. Global Action Buttons
+        actions_box = QVBoxLayout()
+        actions_box.setSpacing(8)
+
+        add_btn = QPushButton("➕ Add Project")
+        add_btn.setObjectName("PrimaryBtn")
+        add_btn.setToolTip("Add a custom project manually")
+        add_btn.clicked.connect(self._open_add_dialog)
+        actions_box.addWidget(add_btn)
+
+        row_acts = QHBoxLayout()
+        row_acts.setSpacing(8)
+        scan_btn = QPushButton("🔄 Rescan")
+        scan_btn.setToolTip("Scan ~/Projects for new projects (Ctrl+R)")
+        scan_btn.clicked.connect(lambda: self._scan_projects(silent=False))
+        row_acts.addWidget(scan_btn)
+
+        self.stop_all_btn = QPushButton("⏹ Stop All")
+        self.stop_all_btn.setObjectName("StopBtn")
+        self.stop_all_btn.setToolTip("Stop all active servers safely")
+        self.stop_all_btn.clicked.connect(self._stop_all)
+        row_acts.addWidget(self.stop_all_btn)
+        actions_box.addLayout(row_acts)
+
+        bottom_utils = QHBoxLayout()
+        bottom_utils.setSpacing(8)
+        self.toggle_logs_btn = QPushButton("📋 Logs")
         self.toggle_logs_btn.setObjectName("IconBtn")
         self.toggle_logs_btn.clicked.connect(self._toggle_logs)
-        filter_layout.addWidget(self.toggle_logs_btn)
+        bottom_utils.addWidget(self.toggle_logs_btn)
 
-        main_layout.addWidget(filter_bar)
+        self.theme_btn = QPushButton("🌓 Theme")
+        self.theme_btn.setObjectName("IconBtn")
+        self.theme_btn.setToolTip("Toggle Theme (Figma Yellow / Dark)")
+        self.theme_btn.clicked.connect(self._toggle_theme)
+        bottom_utils.addWidget(self.theme_btn)
+        actions_box.addLayout(bottom_utils)
 
-        # ─── 3. Main Splitter: Cards Grid + Collapsible Log Drawer ───
+        left_layout.addLayout(actions_box)
+        root_layout.addWidget(left_panel)
+
+        # ─── RIGHT: Content Splitter (Cards Grid + Collapsible Log Drawer) ───
+        right_container = QWidget()
+        right_container.setStyleSheet("background: transparent;")
+        right_layout = QVBoxLayout(right_container)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(10)
+
         self.splitter = QSplitter(Qt.Orientation.Vertical)
         self.splitter.setHandleWidth(4)
 
-        # Scrollable Cards Container
+        # Scrollable Cards Container (2-Column Grid of floating cards)
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        self.scroll_area.setStyleSheet("background: transparent; border: none;")
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.cards_container = QWidget()
-        self.cards_layout = QVBoxLayout(self.cards_container)
-        self.cards_layout.setContentsMargins(20, 16, 20, 20)
-        self.cards_layout.setSpacing(12)
-        self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.cards_container.setStyleSheet("background: transparent;")
+        self.cards_layout = QGridLayout(self.cards_container)
+        self.cards_layout.setContentsMargins(4, 4, 4, 4)
+        self.cards_layout.setSpacing(14)
+        self.cards_layout.setColumnStretch(0, 1)
+        self.cards_layout.setColumnStretch(1, 1)
+        self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         self.scroll_area.setWidget(self.cards_container)
         self.splitter.addWidget(self.scroll_area)
@@ -184,9 +207,10 @@ class MainWindow(QMainWindow):
         self.splitter.addWidget(self.log_viewer)
 
         # Start with logs drawer visible but compact
-        self.splitter.setSizes([550, 200])
+        self.splitter.setSizes([550, 180])
 
-        main_layout.addWidget(self.splitter)
+        right_layout.addWidget(self.splitter)
+        root_layout.addWidget(right_container, 1)
 
     def _create_stat_badge(self, initial_val: str, label_text: str) -> QFrame:
         badge = QFrame()
@@ -346,7 +370,6 @@ class MainWindow(QMainWindow):
                 card.set_detected_url(url)
 
             self.cards[p_id] = card
-            self.cards_layout.addWidget(card)
 
         self._apply_filters()
         self._update_stats()
@@ -475,6 +498,11 @@ class MainWindow(QMainWindow):
         self._apply_filters()
 
     def _apply_filters(self):
+        # Remove cards from grid positions without destroying them
+        while self.cards_layout.count():
+            self.cards_layout.takeAt(0)
+
+        visible_count = 0
         for p_id, card in self.cards.items():
             proj = card.project
             name = proj.get("name", "").lower()
@@ -503,7 +531,13 @@ class MainWindow(QMainWindow):
             elif self.active_filter == "Python":
                 matches_filter = "python" in stack or "django" in stack or "fastapi" in stack
 
-            card.setVisible(matches_search and matches_filter)
+            is_visible = matches_search and matches_filter
+            card.setVisible(is_visible)
+            if is_visible:
+                row = visible_count // 2
+                col = visible_count % 2
+                self.cards_layout.addWidget(card, row, col)
+                visible_count += 1
 
     def _update_stats(self):
         total = len(self.cards)

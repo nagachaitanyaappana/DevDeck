@@ -8,8 +8,8 @@ from PyQt6.QtWidgets import (
     QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
     QMenu, QMessageBox, QWidget
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QAction, QCursor
+from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PyQt6.QtGui import QAction, QCursor, QPainter
 
 STACK_ICONS = {
     "Vite / React": "⚛️",
@@ -26,6 +26,30 @@ STACK_ICONS = {
     "Flask / FastAPI": "🌶️",
     "Docker Compose": "🐳",
 }
+
+class ElidedLabel(QLabel):
+    def __init__(self, text="", parent=None):
+        super().__init__(text, parent)
+        self._full_text = text
+        if text:
+            self.setToolTip(text)
+
+    def setText(self, text):
+        self._full_text = text
+        if text:
+            self.setToolTip(text)
+        super().setText(text)
+        self.update()
+
+    def minimumSizeHint(self):
+        h = super().minimumSizeHint().height()
+        return QSize(40, max(h, 16))
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        fm = self.fontMetrics()
+        elided = fm.elidedText(self._full_text, Qt.TextElideMode.ElideRight, self.width())
+        painter.drawText(self.rect(), self.alignment(), elided)
 
 class ProjectCard(QFrame):
     start_clicked = pyqtSignal(dict)
@@ -78,7 +102,7 @@ class ProjectCard(QFrame):
         title_box = QVBoxLayout()
         title_box.setSpacing(2)
 
-        self.title_label = QLabel(self.project.get("name", "Unnamed"))
+        self.title_label = ElidedLabel(self.project.get("name", "Unnamed"))
         self.title_label.setObjectName("CardTitle")
         title_box.addWidget(self.title_label)
 
@@ -86,7 +110,7 @@ class ProjectCard(QFrame):
         path_str = self.project.get("path", "")
         home = os.path.expanduser("~")
         display_path = path_str.replace(home, "~")
-        self.path_label = QLabel(display_path)
+        self.path_label = ElidedLabel(display_path)
         self.path_label.setObjectName("CardPath")
         self.path_label.setToolTip(path_str)
         title_box.addWidget(self.path_label)
@@ -98,14 +122,6 @@ class ProjectCard(QFrame):
         self.stack_badge = QLabel(stack)
         self.stack_badge.setObjectName("StackBadge")
         top_row.addWidget(self.stack_badge)
-
-        # Port Badge (Clickable to quick-edit port!)
-        self.port_btn = QPushButton()
-        self.port_btn.setObjectName("IconBtn")
-        self._update_port_btn_label()
-        self.port_btn.setToolTip("Click to change assigned port")
-        self.port_btn.clicked.connect(self._quick_edit_port)
-        top_row.addWidget(self.port_btn)
 
         # Favorite Star Button
         is_fav = self.project.get("favorite", False)
@@ -135,20 +151,27 @@ class ProjectCard(QFrame):
 
         layout.addLayout(top_row)
 
-        # ─── Middle Row: Command line display & live metrics ───
+        # ─── Middle Row: Command line display, Port badge & live metrics ───
         mid_row = QHBoxLayout()
         mid_row.setSpacing(8)
 
         cmd_text = self.project.get("command", "")
-        # Truncate cmd if too long
-        if len(cmd_text) > 45:
-            display_cmd = cmd_text[:42] + "..."
+        if len(cmd_text) > 30:
+            display_cmd = cmd_text[:27] + "..."
         else:
             display_cmd = cmd_text
         self.cmd_label = QLabel(f"$ {display_cmd}")
         self.cmd_label.setObjectName("CardCmd")
         self.cmd_label.setToolTip(f"Full command: {cmd_text}")
         mid_row.addWidget(self.cmd_label)
+
+        # Port Badge (Clickable to quick-edit port!)
+        self.port_btn = QPushButton()
+        self.port_btn.setObjectName("IconBtn")
+        self._update_port_btn_label()
+        self.port_btn.setToolTip("Click to change assigned port")
+        self.port_btn.clicked.connect(self._quick_edit_port)
+        mid_row.addWidget(self.port_btn)
 
         mid_row.addStretch()
 
@@ -195,14 +218,16 @@ class ProjectCard(QFrame):
         bot_row.addStretch()
 
         # 4. Quick IDE / Terminal / Folder Shortcuts
-        self.code_btn = QPushButton("💻 Code")
+        self.code_btn = QPushButton("💻")
         self.code_btn.setObjectName("IconBtn")
+        self.code_btn.setFixedSize(30, 28)
         self.code_btn.setToolTip("Open in VS Code")
         self.code_btn.clicked.connect(lambda: self.open_code_clicked.emit(self.project["path"]))
         bot_row.addWidget(self.code_btn)
 
-        self.term_btn = QPushButton("📟 Term")
+        self.term_btn = QPushButton("📟")
         self.term_btn.setObjectName("IconBtn")
+        self.term_btn.setFixedSize(30, 28)
         self.term_btn.setToolTip("Open in Terminal")
         self.term_btn.clicked.connect(lambda: self.open_terminal_clicked.emit(self.project["path"]))
         bot_row.addWidget(self.term_btn)
