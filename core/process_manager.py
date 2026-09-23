@@ -219,6 +219,22 @@ class ProcessManager(QObject):
             env["PORT"] = str(port)
             env["SERVER_PORT"] = str(port)
             env["VITE_PORT"] = str(port)
+            env["FLASK_RUN_PORT"] = str(port)
+
+            stack_name = str(project.get("stack", "")).lower()
+
+            # Java / Spring Boot JVM override via JAVA_TOOL_OPTIONS
+            if "spring" in stack_name or "mvn" in cmd or "gradle" in cmd:
+                j_opts = env.get("JAVA_TOOL_OPTIONS", "")
+                if "-Dserver.port=" not in j_opts:
+                    env["JAVA_TOOL_OPTIONS"] = f"{j_opts} -Dserver.port={port}".strip()
+
+            # Vite CLI port injection if not already explicitly in command
+            if ("vite" in cmd.lower() or "vite" in stack_name) and "--port" not in cmd:
+                if cmd.strip().startswith("npm "):
+                    cmd = f"{cmd} -- --port {port}"
+                elif "vite" in cmd:
+                    cmd = f"{cmd} --port {port}"
 
         proc = ProjectProcess(p_id, cmd, cwd, env)
         proc.log_appended.connect(self.log_appended)
