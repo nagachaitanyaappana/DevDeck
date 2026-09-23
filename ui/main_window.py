@@ -190,8 +190,9 @@ class MainWindow(QMainWindow):
     def _create_stat_badge(self, initial_val: str, label_text: str) -> QFrame:
         badge = QFrame()
         badge.setObjectName("StatBadge")
+        badge.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         ly = QHBoxLayout(badge)
-        ly.setContentsMargins(8, 4, 8, 4)
+        ly.setContentsMargins(12, 4, 12, 4)
         ly.setSpacing(6)
 
         val_label = QLabel(initial_val)
@@ -203,7 +204,20 @@ class MainWindow(QMainWindow):
         ly.addWidget(sub_label)
 
         badge.val_label = val_label
+        badge.sub_label = sub_label
+        self._apply_badge_style(badge)
         return badge
+
+    def _apply_badge_style(self, badge: QFrame):
+        theme = self.config.data.get("theme", "figma")
+        if theme == "figma":
+            badge.setStyleSheet("QFrame#StatBadge { background-color: #111827; border: 1.5px solid #111827; border-radius: 14px; padding: 3px 10px; }")
+            badge.val_label.setStyleSheet("color: #FCD34D; font-weight: 900; font-size: 13px; background: transparent;")
+            badge.sub_label.setStyleSheet("color: #FFFFFF; font-weight: 800; font-size: 10px; letter-spacing: 0.5px; background: transparent;")
+        else:
+            badge.setStyleSheet("QFrame#StatBadge { background-color: #1e2638; border: 1px solid #2d3952; border-radius: 14px; padding: 3px 10px; }")
+            badge.val_label.setStyleSheet("color: #60a5fa; font-weight: 900; font-size: 13px; background: transparent;")
+            badge.sub_label.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 10px; background: transparent;")
 
     def _init_shortcuts(self):
         QShortcut(QKeySequence("Ctrl+F"), self, activated=self.search_input.setFocus)
@@ -262,6 +276,8 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if app:
             app.setStyleSheet(DARK_THEME_QSS if new_theme == "dark" else FIGMA_THEME_QSS)
+        for b in [self.total_badge, self.running_badge, self.ports_badge]:
+            self._apply_badge_style(b)
 
     def _scan_projects(self, silent: bool = False):
         scanner = ProjectScanner(self.config.get_scan_dirs(), max_depth=5)

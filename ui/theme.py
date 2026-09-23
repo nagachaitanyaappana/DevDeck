@@ -17,6 +17,10 @@ QWidget {
     outline: none;
 }
 
+QLabel {
+    background-color: transparent;
+}
+
 /* Scrollbars */
 QScrollBar:vertical {
     border: none;
@@ -74,20 +78,25 @@ QLabel#AppSubtitle {
 /* Stats Badges: Inspired by the "30K+ downloads" black pill badge */
 QFrame#StatBadge {
     background-color: #111827;
-    border: none;
-    border-radius: 16px;
-    padding: 4px 14px;
+    border: 1.5px solid #111827;
+    border-radius: 14px;
+    padding: 3px 12px;
 }
-QLabel#StatValue {
+QFrame#StatBadge QLabel {
+    background-color: transparent;
+}
+QFrame#StatBadge QLabel#StatValue {
     font-weight: 800;
     font-size: 13px;
     color: #FCD34D;  /* Punchy Figma Yellow */
+    background-color: transparent;
 }
-QLabel#StatLabel {
+QFrame#StatBadge QLabel#StatLabel {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 800;
     color: #FFFFFF;
     letter-spacing: 0.5px;
+    background-color: transparent;
 }
 
 QFrame#FilterBar {
