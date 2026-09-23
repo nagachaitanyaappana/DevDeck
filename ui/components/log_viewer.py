@@ -80,7 +80,7 @@ class LogViewer(QWidget):
 
         # Project Info Header
         self.title_label = QLabel("📋 Console Logs: No project selected")
-        self.title_label.setStyleSheet("font-weight: 700; font-size: 13px; color: #f1f5f9;")
+        self.title_label.setStyleSheet("font-weight: 700; font-size: 13px; color: #E0E0E0;")
         toolbar.addWidget(self.title_label)
 
         # URL button if detected
@@ -102,7 +102,7 @@ class LogViewer(QWidget):
         # Auto-scroll checkbox
         self.scroll_cb = QCheckBox("Autoscroll")
         self.scroll_cb.setChecked(True)
-        self.scroll_cb.setStyleSheet("color: #94a3b8; font-size: 12px;")
+        self.scroll_cb.setStyleSheet("color: #BBBBBB; font-size: 12px;")
         self.scroll_cb.toggled.connect(self._on_scroll_toggled)
         toolbar.addWidget(self.scroll_cb)
 
@@ -120,7 +120,7 @@ class LogViewer(QWidget):
 
         # Close / Minimize Button
         self.close_btn = QPushButton("✕")
-        self.close_btn.setStyleSheet("padding: 4px 8px; font-size: 12px; background: transparent; border: none; color: #94a3b8;")
+        self.close_btn.setStyleSheet("padding: 4px 8px; font-size: 12px; background: transparent; border: none; color: #BBBBBB;")
         self.close_btn.clicked.connect(self.close_requested.emit)
         toolbar.addWidget(self.close_btn)
 

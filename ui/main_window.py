@@ -211,11 +211,11 @@ class MainWindow(QMainWindow):
     def _apply_badge_style(self, badge: QFrame):
         theme = self.config.data.get("theme", "figma")
         if theme == "figma":
-            badge.setStyleSheet("QFrame#StatBadge { background-color: #111827; border: 1.5px solid #111827; border-radius: 14px; padding: 3px 10px; }")
-            badge.val_label.setStyleSheet("color: #FCD34D; font-weight: 900; font-size: 13px; background: transparent;")
+            badge.setStyleSheet("background-color: #111111; border: none; border-radius: 16px; padding: 4px 14px;")
+            badge.val_label.setStyleSheet("color: #FFC107; font-weight: 900; font-size: 14px; background: transparent;")
             badge.sub_label.setStyleSheet("color: #FFFFFF; font-weight: 800; font-size: 10px; letter-spacing: 0.5px; background: transparent;")
         else:
-            badge.setStyleSheet("QFrame#StatBadge { background-color: #1e2638; border: 1px solid #2d3952; border-radius: 14px; padding: 3px 10px; }")
+            badge.setStyleSheet("background-color: #1e2638; border: 1px solid #2d3952; border-radius: 14px; padding: 3px 10px;")
             badge.val_label.setStyleSheet("color: #60a5fa; font-weight: 900; font-size: 13px; background: transparent;")
             badge.sub_label.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 10px; background: transparent;")
 
@@ -232,7 +232,6 @@ class MainWindow(QMainWindow):
             self.tray.setIcon(self.app_icon)
         
         tray_menu = QMenu()
-        tray_menu.setStyleSheet("background-color: #1a2232; color: #f1f5f9;")
         
         show_act = QAction("Open DevDeck", self)
         show_act.triggered.connect(self._show_window)

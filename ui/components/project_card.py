@@ -322,7 +322,6 @@ class ProjectCard(QFrame):
         from core.actions import get_process_on_port
 
         menu = QMenu(self)
-        menu.setStyleSheet("background-color: #1e2638; color: #f1f5f9; border: 1px solid #2e3c54;")
 
         restart_act = QAction("🔄 Restart Process", self)
         restart_act.triggered.connect(lambda: self.restart_clicked.emit(self.project))

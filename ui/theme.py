@@ -1,17 +1,21 @@
 """
-Neo-Clean Figma UI Theme for DevDeck.
-Inspired by modern card, modal, and alert design systems:
-- Pure white floating cards with 18px rounded corners
-- Bold typography and high contrast black action buttons
-- Punchy amber/yellow accents
-- Soft pill tags and pastel icon squircle containers
+Figma-Inspired Theme for DevDeck.
+
+Design language from reference:
+- Bright warm yellow/amber background (#FFC107 / #FFCC00)
+- Pure white floating cards with generous border-radius (16-20px) and soft box shadows
+- Very bold black typography (900 weight)
+- Soft pastel yellow circular icon containers behind emoji
+- Solid black pill buttons, grey outline buttons
+- Grey ✕ close icons top-right on cards
+- Toast-style notification bars
 """
 
 FIGMA_THEME_QSS = """
-/* Global Window & Fonts */
+/* ─── Global ─── */
 QWidget {
-    background-color: #F8F9FB;
-    color: #111827;
+    background-color: #FFC107;
+    color: #111111;
     font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif;
     font-size: 13px;
     outline: none;
@@ -21,369 +25,353 @@ QLabel {
     background-color: transparent;
 }
 
-/* Scrollbars */
+/* ─── Scrollbars ─── */
 QScrollBar:vertical {
     border: none;
-    background: #F8F9FB;
+    background: transparent;
     width: 8px;
-    margin: 0px;
 }
 QScrollBar::handle:vertical {
-    background: #D1D5DB;
-    min-height: 25px;
+    background: rgba(0, 0, 0, 0.15);
+    min-height: 30px;
     border-radius: 4px;
 }
 QScrollBar::handle:vertical:hover {
-    background: #9CA3AF;
+    background: rgba(0, 0, 0, 0.3);
 }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0px;
 }
 QScrollBar:horizontal {
     border: none;
-    background: #F8F9FB;
+    background: transparent;
     height: 8px;
-    margin: 0px;
 }
 QScrollBar::handle:horizontal {
-    background: #D1D5DB;
-    min-width: 25px;
+    background: rgba(0, 0, 0, 0.15);
+    min-width: 30px;
     border-radius: 4px;
-}
-QScrollBar::handle:horizontal:hover {
-    background: #9CA3AF;
 }
 
 /* ─── Header Bar ─── */
 QFrame#HeaderBar {
     background-color: #FFFFFF;
-    border-bottom: 2px solid #E5E7EB;
+    border: none;
+    border-bottom: 1px solid #E8E8E8;
     padding: 14px 24px;
 }
 
 QLabel#AppTitle {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 900;
-    color: #111827;
+    color: #111111;
     letter-spacing: -0.5px;
 }
 
 QLabel#AppSubtitle {
     font-size: 11px;
-    color: #6B7280;
+    color: #888888;
     font-weight: 600;
-    letter-spacing: 0.2px;
 }
 
-/* Stats Badges: Inspired by the "30K+ downloads" black pill badge */
-QFrame#StatBadge {
-    background-color: #111827;
-    border: 1.5px solid #111827;
-    border-radius: 14px;
-    padding: 3px 12px;
-}
-QFrame#StatBadge QLabel {
-    background-color: transparent;
-}
-QFrame#StatBadge QLabel#StatValue {
-    font-weight: 800;
-    font-size: 13px;
-    color: #FCD34D;  /* Punchy Figma Yellow */
-    background-color: transparent;
-}
-QFrame#StatBadge QLabel#StatLabel {
-    font-size: 10px;
-    font-weight: 800;
-    color: #FFFFFF;
-    letter-spacing: 0.5px;
-    background-color: transparent;
-}
-
+/* ─── Filter Bar ─── */
 QFrame#FilterBar {
-    background-color: #FFFFFF;
-    border-bottom: 1.5px solid #E5E7EB;
-    padding: 10px 20px;
+    background-color: #FFC107;
+    border: none;
+    padding: 8px 20px;
 }
 
-/* ─── Search & Inputs ─── */
+/* ─── Search ─── */
 QLineEdit#SearchBar {
     background-color: #FFFFFF;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 12px;
-    padding: 8px 16px;
-    color: #111827;
+    border: 2px solid #E0E0E0;
+    border-radius: 14px;
+    padding: 9px 18px;
+    color: #111111;
     font-size: 13px;
     font-weight: 500;
-    min-width: 250px;
+    min-width: 260px;
 }
 QLineEdit#SearchBar:focus {
-    border: 2px solid #111827;
-    background-color: #FFFFFF;
+    border: 2px solid #111111;
 }
 
 /* ─── Filter Pills ─── */
 QPushButton#FilterPill {
-    background-color: #F3F4F6;
-    border: 1.5px solid transparent;
-    border-radius: 20px;
-    padding: 6px 14px;
-    color: #4B5563;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: none;
+    border-radius: 18px;
+    padding: 7px 16px;
+    color: #333333;
     font-weight: 700;
     font-size: 12px;
 }
 QPushButton#FilterPill:hover {
-    background-color: #E5E7EB;
-    color: #111827;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #111111;
 }
 QPushButton#FilterPill[checked="true"] {
-    background-color: #111827;
-    border: 1.5px solid #111827;
+    background-color: #111111;
     color: #FFFFFF;
 }
 
-/* ─── Buttons: Based on the Figma Modal Button Styles ─── */
+/* ─── Buttons (default) ─── */
 QPushButton {
-    background-color: #F3F4F6;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 10px;
-    padding: 7px 16px;
-    color: #111827;
+    background-color: #FFFFFF;
+    border: 2px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 8px 18px;
+    color: #111111;
     font-weight: 700;
     font-size: 12px;
 }
 QPushButton:hover {
-    background-color: #E5E7EB;
-    border-color: #D1D5DB;
+    background-color: #F5F5F5;
+    border-color: #CCCCCC;
 }
 QPushButton:pressed {
-    background-color: #D1D5DB;
+    background-color: #EEEEEE;
 }
 
-/* Solid Black Primary Action (like "Thanks!" button in Figma) */
+/* Solid Black Primary ("Thanks!" style) */
 QPushButton#PrimaryBtn {
-    background-color: #111827;
-    border: 1.5px solid #111827;
+    background-color: #111111;
+    border: 2px solid #111111;
     color: #FFFFFF;
-    border-radius: 10px;
-    padding: 7px 18px;
-    font-weight: 800;
+    border-radius: 14px;
+    padding: 8px 22px;
+    font-weight: 900;
+    font-size: 13px;
 }
 QPushButton#PrimaryBtn:hover {
-    background-color: #000000;
-    border-color: #000000;
-}
-QPushButton#PrimaryBtn:pressed {
-    background-color: #374151;
+    background-color: #333333;
+    border-color: #333333;
 }
 
-/* Solid Black Start Button */
+/* Start = Solid Black */
 QPushButton#StartBtn {
-    background-color: #111827;
-    border: 1.5px solid #111827;
+    background-color: #111111;
+    border: 2px solid #111111;
     color: #FFFFFF;
-    font-weight: 800;
-    border-radius: 10px;
-    padding: 7px 18px;
+    font-weight: 900;
+    border-radius: 14px;
+    padding: 8px 22px;
+    font-size: 13px;
 }
 QPushButton#StartBtn:hover {
-    background-color: #059669;
-    border-color: #059669;
+    background-color: #2E7D32;
+    border-color: #2E7D32;
 }
 
-/* Red Stop Button */
+/* Stop = Red */
 QPushButton#StopBtn {
-    background-color: #DC2626;
-    border: 1.5px solid #DC2626;
+    background-color: #D32F2F;
+    border: 2px solid #D32F2F;
     color: #FFFFFF;
-    font-weight: 800;
-    border-radius: 10px;
-    padding: 7px 18px;
+    font-weight: 900;
+    border-radius: 14px;
+    padding: 8px 22px;
+    font-size: 13px;
 }
 QPushButton#StopBtn:hover {
-    background-color: #B91C1C;
-    border-color: #B91C1C;
+    background-color: #B71C1C;
+    border-color: #B71C1C;
 }
 
-/* Outline Browser Button (like "Undo" outline button in Figma) */
+/* Browser = Outline ("Undo" style) */
 QPushButton#BrowserBtn {
     background-color: #FFFFFF;
-    border: 1.5px solid #111827;
-    color: #111827;
+    border: 2px solid #CCCCCC;
+    color: #111111;
     font-weight: 700;
-    border-radius: 10px;
-    padding: 7px 14px;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-size: 12px;
 }
 QPushButton#BrowserBtn:hover {
-    background-color: #FEF3C7;
-    border-color: #F59E0B;
-    color: #92400E;
+    background-color: #FFF8E1;
+    border-color: #FFC107;
+    color: #111111;
 }
 QPushButton#BrowserBtn:disabled {
-    background-color: #F9FAFB;
-    border-color: #E5E7EB;
-    color: #9CA3AF;
+    background-color: #F5F5F5;
+    border-color: #E0E0E0;
+    color: #AAAAAA;
 }
 
-/* Soft Icon Buttons (like "Undo" soft grey button in Figma) */
+/* Soft grey icon buttons */
 QPushButton#IconBtn {
-    background-color: #F3F4F6;
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
+    background-color: #F5F5F5;
+    border: 1px solid #E0E0E0;
+    border-radius: 10px;
     padding: 5px 10px;
-    color: #374151;
+    color: #555555;
     font-weight: 600;
 }
 QPushButton#IconBtn:hover {
-    background-color: #E5E7EB;
-    color: #111827;
+    background-color: #EEEEEE;
+    color: #111111;
 }
 
-/* ─── Project Card (Figma Modal / Card Aesthetic) ─── */
+/* ─── Project Card (White floating modal) ─── */
 QFrame#ProjectCard {
     background-color: #FFFFFF;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 18px;
-    padding: 16px;
+    border: none;
+    border-radius: 20px;
+    padding: 18px;
 }
 QFrame#ProjectCard:hover {
-    border: 1.5px solid #111827;
     background-color: #FFFFFF;
 }
 QFrame#ProjectCard[running="true"] {
-    border: 2px solid #10B981;
-    background-color: #F0FDF4;
+    border: 3px solid #4CAF50;
+    background-color: #FFFFFF;
 }
 
 QLabel#CardTitle {
-    font-size: 15px;
-    font-weight: 800;
-    color: #111827;
+    font-size: 16px;
+    font-weight: 900;
+    color: #111111;
     letter-spacing: -0.3px;
 }
 
 QLabel#CardPath {
     font-size: 11px;
-    color: #6B7280;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #999999;
     font-weight: 500;
 }
 
 QLabel#CardCmd {
     font-size: 11px;
-    color: #374151;
-    background-color: #F3F4F6;
-    border: 1px solid #E5E7EB;
-    border-radius: 6px;
-    padding: 4px 8px;
+    color: #555555;
+    background-color: #F5F5F5;
+    border: 1px solid #EEEEEE;
+    border-radius: 8px;
+    padding: 5px 10px;
     font-family: monospace;
     font-weight: 600;
 }
 
-/* Icon Squircle (Soft Yellow / Pastel Circle like in Figma design) */
+/* Icon Squircle (soft pastel yellow circle like in reference) */
 QFrame#IconSquircle {
-    background-color: #FEF3C7;
-    border: 1px solid #FDE68A;
-    border-radius: 20px;
-    min-width: 40px;
-    max-width: 40px;
-    min-height: 40px;
-    max-height: 40px;
+    background-color: #FFF3CD;
+    border: none;
+    border-radius: 22px;
+    min-width: 44px;
+    max-width: 44px;
+    min-height: 44px;
+    max-height: 44px;
 }
 QLabel#SquircleIcon {
-    font-size: 20px;
+    font-size: 22px;
     background: transparent;
 }
 
 /* Badges */
 QLabel#StackBadge {
-    background-color: #F3F4F6;
-    border: 1px solid #E5E7EB;
-    border-radius: 6px;
-    padding: 3px 8px;
+    background-color: #F5F5F5;
+    border: 1px solid #E8E8E8;
+    border-radius: 8px;
+    padding: 3px 10px;
     font-size: 11px;
     font-weight: 700;
-    color: #4B5563;
+    color: #555555;
 }
 
 QLabel#StatusBadge {
-    border-radius: 8px;
-    padding: 3px 10px;
+    border-radius: 10px;
+    padding: 4px 12px;
     font-size: 11px;
     font-weight: 800;
 }
 QLabel#StatusBadge[status="running"] {
-    background-color: #D1FAE5;
-    color: #065F46;
-    border: 1px solid #A7F3D0;
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #C8E6C9;
 }
 QLabel#StatusBadge[status="starting"] {
-    background-color: #FEF3C7;
-    color: #92400E;
-    border: 1px solid #FDE68A;
+    background-color: #FFF8E1;
+    color: #F57F17;
+    border: 1px solid #FFECB3;
 }
 QLabel#StatusBadge[status="stopped"] {
-    background-color: #F3F4F6;
-    color: #6B7280;
-    border: 1px solid #E5E7EB;
+    background-color: #F5F5F5;
+    color: #999999;
+    border: 1px solid #EEEEEE;
 }
 QLabel#StatusBadge[status="error"] {
-    background-color: #FEE2E2;
-    color: #991B1B;
-    border: 1px solid #FECACA;
+    background-color: #FFEBEE;
+    color: #C62828;
+    border: 1px solid #FFCDD2;
 }
 
 QLabel#MetricsLabel {
     font-size: 11px;
-    color: #0284C7;
+    color: #1976D2;
     font-family: monospace;
     font-weight: 700;
 }
 
-/* ─── Log Console Drawer (Sleek Dark Terminal) ─── */
+/* ─── Log Console (Dark terminal feel) ─── */
 QFrame#LogDrawer {
-    background-color: #111827;
-    border-top: 2px solid #1F2937;
+    background-color: #1A1A1A;
+    border-top: 3px solid #FFC107;
 }
 QTextEdit#LogViewer {
-    background-color: #0B0F19;
-    border: 1px solid #1F2937;
-    border-radius: 10px;
-    color: #F3F4F6;
+    background-color: #111111;
+    border: none;
+    border-radius: 12px;
+    color: #E0E0E0;
     font-family: "JetBrains Mono", "Fira Code", "DejaVu Sans Mono", monospace;
     font-size: 12px;
-    padding: 10px;
-    line-height: 1.5;
+    padding: 12px;
 }
 
-/* ─── Dialogs & Modals (Matching Figma Popups) ─── */
+/* ─── Dialogs ─── */
 QDialog {
     background-color: #FFFFFF;
-    border: 2px solid #111827;
+    border: none;
     border-radius: 20px;
 }
 QLabel#DialogHeader {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 900;
-    color: #111827;
-    letter-spacing: -0.4px;
+    color: #111111;
 }
 QLineEdit, QComboBox {
-    background-color: #F9FAFB;
-    border: 1.5px solid #E5E7EB;
-    border-radius: 10px;
-    padding: 8px 12px;
-    color: #111827;
+    background-color: #F5F5F5;
+    border: 2px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 9px 14px;
+    color: #111111;
     font-size: 13px;
     font-weight: 500;
 }
 QLineEdit:focus, QComboBox:focus {
-    border: 2px solid #111827;
+    border: 2px solid #111111;
     background-color: #FFFFFF;
+}
+
+/* Context menus */
+QMenu {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 6px;
+    color: #111111;
+}
+QMenu::item {
+    padding: 8px 20px;
+    border-radius: 8px;
+}
+QMenu::item:selected {
+    background-color: #FFF8E1;
+    color: #111111;
 }
 """
 
 DARK_THEME_QSS = """
-/* Global Window & Fonts */
+/* ─── Global ─── */
 QWidget {
     background-color: #0f141c;
     color: #e2e8f0;
@@ -391,11 +379,15 @@ QWidget {
     font-size: 13px;
     outline: none;
 }
+
+QLabel {
+    background-color: transparent;
+}
+
 QScrollBar:vertical {
     border: none;
     background: #0f141c;
     width: 8px;
-    margin: 0px;
 }
 QScrollBar::handle:vertical {
     background: #273349;
@@ -412,16 +404,13 @@ QScrollBar:horizontal {
     border: none;
     background: #0f141c;
     height: 8px;
-    margin: 0px;
 }
 QScrollBar::handle:horizontal {
     background: #273349;
     min-width: 25px;
     border-radius: 4px;
 }
-QScrollBar::handle:horizontal:hover {
-    background: #3b4d6e;
-}
+
 QFrame#HeaderBar {
     background-color: #151b27;
     border-bottom: 1px solid #222c3e;
@@ -431,28 +420,19 @@ QLabel#AppTitle {
     font-size: 19px;
     font-weight: 800;
     color: #f8fafc;
-    letter-spacing: 0.5px;
 }
 QLabel#AppSubtitle {
     font-size: 11px;
     color: #64748b;
     font-weight: 500;
 }
-QFrame#StatBadge {
-    background-color: #1e2638;
-    border: 1px solid #2d3952;
-    border-radius: 6px;
-    padding: 4px 10px;
+
+QFrame#FilterBar {
+    background-color: #121824;
+    border-bottom: 1px solid #1e2638;
+    padding: 8px 20px;
 }
-QLabel#StatValue {
-    font-weight: 700;
-    font-size: 13px;
-    color: #60a5fa;
-}
-QLabel#StatLabel {
-    font-size: 11px;
-    color: #94a3b8;
-}
+
 QLineEdit#SearchBar {
     background-color: #182030;
     border: 1px solid #2a374e;
@@ -464,8 +444,8 @@ QLineEdit#SearchBar {
 }
 QLineEdit#SearchBar:focus {
     border: 1px solid #6366f1;
-    background-color: #1d273a;
 }
+
 QPushButton {
     background-color: #1e2638;
     border: 1px solid #2e3a50;
@@ -503,6 +483,11 @@ QPushButton#BrowserBtn {
     color: #a5b4fc;
     font-weight: 600;
 }
+QPushButton#BrowserBtn:disabled {
+    background-color: #161b24;
+    border-color: #232b38;
+    color: #475569;
+}
 QPushButton#IconBtn {
     background-color: #182030;
     border: 1px solid #283449;
@@ -524,6 +509,7 @@ QPushButton#FilterPill[checked="true"] {
     border: 1px solid #4f46e5;
     color: #c7d2fe;
 }
+
 QFrame#ProjectCard {
     background-color: #151b27;
     border: 1px solid #222d40;
@@ -599,6 +585,13 @@ QLabel#StatusBadge[status="error"] {
     background-color: #4c0519;
     color: #f87171;
 }
+QLabel#MetricsLabel {
+    font-size: 11px;
+    color: #38bdf8;
+    font-family: monospace;
+    font-weight: 600;
+}
+
 QFrame#LogDrawer {
     background-color: #0c0f16;
     border-top: 1px solid #222d40;
@@ -624,5 +617,12 @@ QLineEdit, QComboBox {
     padding: 7px 10px;
     color: #f1f5f9;
 }
+QMenu {
+    background-color: #1e2638;
+    border: 1px solid #2e3c54;
+    color: #f1f5f9;
+}
+QMenu::item:selected {
+    background-color: #273349;
+}
 """
-
