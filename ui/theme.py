@@ -25,6 +25,41 @@ QLabel {
     background-color: transparent;
 }
 
+/* ─── App Shell (Rounded floating container) ─── */
+QFrame#AppShell {
+    background-color: #FFC107;
+    border-radius: 22px;
+    border: none;
+}
+
+/* ─── Window Control Buttons ─── */
+QPushButton#WinCtrlBtn {
+    background-color: rgba(0, 0, 0, 0.08);
+    border: none;
+    border-radius: 8px;
+    color: #555555;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 2px;
+}
+QPushButton#WinCtrlBtn:hover {
+    background-color: rgba(0, 0, 0, 0.15);
+    color: #111111;
+}
+QPushButton#WinCloseBtn {
+    background-color: rgba(0, 0, 0, 0.08);
+    border: none;
+    border-radius: 8px;
+    color: #555555;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 2px;
+}
+QPushButton#WinCloseBtn:hover {
+    background-color: #D32F2F;
+    color: #FFFFFF;
+}
+
 /* ─── Scrollbars ─── */
 QScrollBar:vertical {
     border: none;
@@ -382,6 +417,39 @@ QWidget {
 
 QLabel {
     background-color: transparent;
+}
+
+QFrame#AppShell {
+    background-color: #0f141c;
+    border-radius: 22px;
+    border: 1px solid #1e2638;
+}
+
+QPushButton#WinCtrlBtn {
+    background-color: #1e2638;
+    border: none;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 2px;
+}
+QPushButton#WinCtrlBtn:hover {
+    background-color: #273349;
+    color: #ffffff;
+}
+QPushButton#WinCloseBtn {
+    background-color: #1e2638;
+    border: none;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 2px;
+}
+QPushButton#WinCloseBtn:hover {
+    background-color: #e11d48;
+    color: #ffffff;
 }
 
 QScrollBar:vertical {
