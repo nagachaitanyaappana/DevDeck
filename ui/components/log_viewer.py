@@ -207,7 +207,7 @@ class LogViewer(QFrame):
 
         # Fullscreen / Maximize Button
         self.fullscreen_btn = QPushButton("⛶")
-        self.fullscreen_btn.setFixedSize(28, 28)
+        self.fullscreen_btn.setFixedSize(32, 32)
         self.fullscreen_btn.setStyleSheet("""
             QPushButton {
                 background-color: #1A1A1A;
@@ -215,7 +215,7 @@ class LogViewer(QFrame):
                 border: 1px solid #333333;
                 border-radius: 8px;
                 padding: 0px;
-                font-size: 14px;
+                font-size: 15px;
                 font-weight: bold;
             }
             QPushButton:hover {
@@ -230,7 +230,7 @@ class LogViewer(QFrame):
 
         # Close / Minimize Button
         self.close_btn = QPushButton("✕")
-        self.close_btn.setFixedSize(28, 28)
+        self.close_btn.setFixedSize(32, 32)
         self.close_btn.setStyleSheet("""
             QPushButton {
                 background-color: #1A1A1A;
@@ -238,7 +238,7 @@ class LogViewer(QFrame):
                 border: 1px solid #333333;
                 border-radius: 8px;
                 padding: 0px;
-                font-size: 13px;
+                font-size: 15px;
                 font-weight: 900;
             }
             QPushButton:hover {

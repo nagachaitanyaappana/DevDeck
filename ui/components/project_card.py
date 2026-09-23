@@ -138,21 +138,21 @@ class ProjectCard(QFrame):
         is_fav = self.project.get("favorite", False)
         self.fav_btn = QPushButton("★" if is_fav else "☆")
         self.fav_btn.setToolTip("Pin to Favorites")
-        self.fav_btn.setFixedSize(30, 30)
+        self.fav_btn.setFixedSize(34, 34)
         self.fav_btn.clicked.connect(self._toggle_favorite)
         top_row.addWidget(self.fav_btn)
 
         # More Options Menu Button
         self.more_btn = QPushButton("⋮")
         self.more_btn.setToolTip("More Options")
-        self.more_btn.setFixedSize(30, 30)
+        self.more_btn.setFixedSize(34, 34)
         self.more_btn.clicked.connect(self._show_context_menu)
         top_row.addWidget(self.more_btn)
 
         # Close button (like top-right in Figma modal)
         self.close_btn = QPushButton("✕")
         self.close_btn.setToolTip("Remove from Deck")
-        self.close_btn.setFixedSize(30, 30)
+        self.close_btn.setFixedSize(34, 34)
         self.close_btn.clicked.connect(lambda: self.remove_clicked.emit(self.project["id"]))
         top_row.addWidget(self.close_btn)
 
@@ -226,19 +226,19 @@ class ProjectCard(QFrame):
 
         # 4. Quick IDE / Terminal / Folder Shortcuts
         self.code_btn = QPushButton("💻")
-        self.code_btn.setFixedSize(30, 30)
+        self.code_btn.setFixedSize(34, 34)
         self.code_btn.setToolTip("Open in VS Code")
         self.code_btn.clicked.connect(lambda: self.open_code_clicked.emit(self.project["path"]))
         bot_row.addWidget(self.code_btn)
 
         self.term_btn = QPushButton("📟")
-        self.term_btn.setFixedSize(30, 30)
+        self.term_btn.setFixedSize(34, 34)
         self.term_btn.setToolTip("Open in Terminal")
         self.term_btn.clicked.connect(lambda: self.open_terminal_clicked.emit(self.project["path"]))
         bot_row.addWidget(self.term_btn)
 
         self.folder_btn = QPushButton("📁")
-        self.folder_btn.setFixedSize(30, 30)
+        self.folder_btn.setFixedSize(34, 34)
         self.folder_btn.setToolTip("Open in File Manager")
         self.folder_btn.clicked.connect(lambda: self.open_folder_clicked.emit(self.project["path"]))
         bot_row.addWidget(self.folder_btn)
@@ -265,7 +265,7 @@ class ProjectCard(QFrame):
                     background-color: #FFFFFF;
                     border: 1.5px solid #111111;
                     border-radius: 8px;
-                    font-size: 13px;
+                    font-size: 15px;
                     font-weight: 900;
                     color: #111111;
                     padding: 0px;
@@ -281,7 +281,7 @@ class ProjectCard(QFrame):
                         background-color: #FFFFFF;
                         border: 1.5px solid #111111;
                         border-radius: 8px;
-                        font-size: 13px;
+                        font-size: 16px;
                         font-weight: bold;
                         color: #111111;
                         padding: 0px;
@@ -297,7 +297,7 @@ class ProjectCard(QFrame):
                     background-color: #FFFFFF;
                     border: 1.5px solid #111111;
                     border-radius: 8px;
-                    font-size: 14px;
+                    font-size: 17px;
                     font-weight: bold;
                     color: {fav_col};
                     padding: 0px;
@@ -322,7 +322,7 @@ class ProjectCard(QFrame):
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
                     border-radius: 8px;
-                    font-size: 13px;
+                    font-size: 15px;
                     font-weight: 900;
                     color: #f1f5f9;
                     padding: 0px;
@@ -338,7 +338,7 @@ class ProjectCard(QFrame):
                         background-color: #1e2638;
                         border: 1px solid #2e3c54;
                         border-radius: 8px;
-                        font-size: 13px;
+                        font-size: 16px;
                         font-weight: bold;
                         color: #f1f5f9;
                         padding: 0px;
@@ -354,7 +354,7 @@ class ProjectCard(QFrame):
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
                     border-radius: 8px;
-                    font-size: 14px;
+                    font-size: 17px;
                     font-weight: bold;
                     color: {fav_col};
                     padding: 0px;

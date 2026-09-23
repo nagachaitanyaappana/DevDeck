@@ -86,21 +86,21 @@ class ServiceMiniRow(QFrame):
 
         # Service Open URL button
         self.url_btn = QPushButton("🌐")
-        self.url_btn.setFixedSize(24, 24)
+        self.url_btn.setFixedSize(30, 30)
         self.url_btn.setToolTip(f"Open {name} in Browser")
         self.url_btn.clicked.connect(self._on_open_single_url)
         layout.addWidget(self.url_btn)
 
         # Service Logs button
         self.logs_btn = QPushButton("📋")
-        self.logs_btn.setFixedSize(24, 24)
+        self.logs_btn.setFixedSize(30, 30)
         self.logs_btn.setToolTip(f"View logs for {name}")
         self.logs_btn.clicked.connect(lambda: self.logs_clicked.emit(self.service))
         layout.addWidget(self.logs_btn)
 
         # Service Restart button
         self.restart_btn = QPushButton("🔄")
-        self.restart_btn.setFixedSize(24, 24)
+        self.restart_btn.setFixedSize(30, 30)
         self.restart_btn.setToolTip(f"Restart {name}")
         self.restart_btn.clicked.connect(lambda: self.restart_clicked.emit(self.service))
         layout.addWidget(self.restart_btn)
@@ -219,7 +219,7 @@ class ServiceMiniRow(QFrame):
                     background-color: #FFFFFF;
                     border: 1px solid #111111;
                     border-radius: 6px;
-                    font-size: 11px;
+                    font-size: 15px;
                     color: #111111;
                     padding: 0;
                 }
@@ -232,7 +232,7 @@ class ServiceMiniRow(QFrame):
                     background-color: #FFFFFF;
                     border: 1px solid #111111;
                     border-radius: 6px;
-                    font-size: 11px;
+                    font-size: 15px;
                     color: #111111;
                     padding: 0;
                 }
@@ -245,7 +245,7 @@ class ServiceMiniRow(QFrame):
                     background-color: #FFFFFF;
                     border: 1px solid #111111;
                     border-radius: 6px;
-                    font-size: 11px;
+                    font-size: 15px;
                     color: #111111;
                     padding: 0;
                 }
@@ -261,7 +261,7 @@ class ServiceMiniRow(QFrame):
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
                     border-radius: 6px;
-                    font-size: 11px;
+                    font-size: 15px;
                     color: #f1f5f9;
                     padding: 0;
                 }
@@ -274,7 +274,7 @@ class ServiceMiniRow(QFrame):
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
                     border-radius: 6px;
-                    font-size: 11px;
+                    font-size: 15px;
                     color: #f1f5f9;
                     padding: 0;
                 }
@@ -287,7 +287,7 @@ class ServiceMiniRow(QFrame):
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
                     border-radius: 6px;
-                    font-size: 11px;
+                    font-size: 15px;
                     color: #f1f5f9;
                     padding: 0;
                 }
@@ -465,14 +465,14 @@ class StackCard(QFrame):
 
         # Edit button
         self.edit_btn = QPushButton("⚙")
-        self.edit_btn.setFixedSize(30, 30)
+        self.edit_btn.setFixedSize(34, 34)
         self.edit_btn.setToolTip("Edit Stack Settings")
         self.edit_btn.clicked.connect(lambda: self.edit_stack_clicked.emit(self.stack))
         top_row.addWidget(self.edit_btn)
 
         # Delete button
         self.close_btn = QPushButton("✕")
-        self.close_btn.setFixedSize(30, 30)
+        self.close_btn.setFixedSize(34, 34)
         self.close_btn.setToolTip("Remove Stack from Deck")
         self.close_btn.clicked.connect(lambda: self.remove_stack_clicked.emit(self.stack["id"]))
         top_row.addWidget(self.close_btn)
@@ -553,7 +553,7 @@ class StackCard(QFrame):
                     background-color: #FFFFFF;
                     border: 1.5px solid #111111;
                     border-radius: 8px;
-                    font-size: 14px;
+                    font-size: 16px;
                     font-weight: bold;
                     color: #111111;
                     padding: 0px;
@@ -567,7 +567,7 @@ class StackCard(QFrame):
                     background-color: #FFFFFF;
                     border: 1.5px solid #111111;
                     border-radius: 8px;
-                    font-size: 13px;
+                    font-size: 15px;
                     font-weight: 900;
                     color: #111111;
                     padding: 0px;
@@ -609,7 +609,7 @@ class StackCard(QFrame):
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
                     border-radius: 8px;
-                    font-size: 14px;
+                    font-size: 16px;
                     font-weight: bold;
                     color: #f1f5f9;
                     padding: 0px;
@@ -623,7 +623,7 @@ class StackCard(QFrame):
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
                     border-radius: 8px;
-                    font-size: 13px;
+                    font-size: 15px;
                     font-weight: 900;
                     color: #f1f5f9;
                     padding: 0px;
