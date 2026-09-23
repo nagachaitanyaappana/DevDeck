@@ -499,6 +499,15 @@ class ProjectCard(QFrame):
 
         menu = QMenu(self)
 
+        # Start / Stop Action
+        if self.status in ["running", "starting"]:
+            start_stop_act = QAction("⏹ Stop Process", self)
+            start_stop_act.triggered.connect(lambda: self.stop_clicked.emit(self.project["id"]))
+        else:
+            start_stop_act = QAction("▶ Start Process", self)
+            start_stop_act.triggered.connect(lambda: self.start_clicked.emit(self.project))
+        menu.addAction(start_stop_act)
+
         restart_act = QAction("🔄 Restart Process", self)
         restart_act.triggered.connect(lambda: self.restart_clicked.emit(self.project))
         menu.addAction(restart_act)

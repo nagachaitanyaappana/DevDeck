@@ -7,10 +7,10 @@ floating card with 1-click simultaneous launching, stopping, and port routing.
 from typing import Dict, List, Optional
 from PyQt6.QtWidgets import (
     QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
-    QMessageBox, QWidget, QStyleOption, QStyle
+    QMessageBox, QWidget, QStyleOption, QStyle, QInputDialog, QMenu
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
-from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QPainter, QAction, QCursor
 
 STACK_ICONS = {
     "Vite / React": "⚛️",
@@ -30,6 +30,12 @@ STACK_ICONS = {
 
 class ServiceMiniRow(QFrame):
     """Sub-row representing one service inside the stack card."""
+    logs_clicked = pyqtSignal(dict)
+    restart_clicked = pyqtSignal(dict)
+    port_changed = pyqtSignal(dict, int)
+    start_clicked = pyqtSignal(dict)
+    stop_clicked = pyqtSignal(str)
+
     def __init__(self, service: Dict, parent=None):
         super().__init__(parent)
         self.service = service
@@ -57,13 +63,12 @@ class ServiceMiniRow(QFrame):
         self.name_label.setStyleSheet("font-weight: 800; font-size: 12px; color: #111111; background: transparent;")
         layout.addWidget(self.name_label)
 
-        # Port badge if configured
+        # Port Button (Clickable to change port!)
         port = service.get("port")
-        self.port_lbl = None
-        if port:
-            self.port_lbl = QLabel(f":{port}")
-            self.port_lbl.setStyleSheet("font-family: monospace; font-size: 11px; font-weight: 700; color: #2563EB; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 6px; padding: 2px 6px;")
-            layout.addWidget(self.port_lbl)
+        self.port_btn = QPushButton(f"🔌 :{port}" if port else "🔌 Port")
+        self.port_btn.setToolTip(f"Click to change port for {name} (currently :{port or 'None'})")
+        self.port_btn.clicked.connect(self._quick_edit_port)
+        layout.addWidget(self.port_btn)
 
         # Command snippet
         cmd = service.get("command", "")
@@ -82,33 +87,86 @@ class ServiceMiniRow(QFrame):
         self.logs_btn = QPushButton("📋")
         self.logs_btn.setFixedSize(24, 24)
         self.logs_btn.setToolTip(f"View logs for {name}")
-        self.logs_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #FFFFFF;
-                border: 1px solid #111111;
-                border-radius: 6px;
-                font-size: 11px;
-                color: #111111;
-                padding: 0;
-            }
-            QPushButton:hover {
-                background-color: #F3F4F6;
-            }
-        """)
+        self.logs_btn.clicked.connect(lambda: self.logs_clicked.emit(self.service))
         layout.addWidget(self.logs_btn)
+
+        # Service Restart button
+        self.restart_btn = QPushButton("🔄")
+        self.restart_btn.setFixedSize(24, 24)
+        self.restart_btn.setToolTip(f"Restart {name}")
+        self.restart_btn.clicked.connect(lambda: self.restart_clicked.emit(self.service))
+        layout.addWidget(self.restart_btn)
 
         # Status indicator
         self.status_lbl = QLabel("● Stopped")
         self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 700; color: #6B7280; background: transparent;")
         layout.addWidget(self.status_lbl)
 
+        self._update_port_btn_style()
+
+    def _quick_edit_port(self):
+        curr_port = self.service.get("port") or 8080
+        name = self.service.get("name", "Service")
+        port, ok = QInputDialog.getInt(
+            self, f"Change Port - {name}",
+            f"Set assigned port for '{name}':\n(DevDeck will export PORT={curr_port} and update routing)",
+            value=int(curr_port), min=1000, max=65535, step=1
+        )
+        if ok:
+            self.service["port"] = port
+            self._update_port_btn_style()
+            self.port_changed.emit(self.service, port)
+
+    def _update_port_btn_style(self):
+        port = self.service.get("port")
+        name = self.service.get("name", "Service")
+        self.port_btn.setText(f"🔌 :{port}" if port else "🔌 Port")
+        self.port_btn.setToolTip(f"Click to change port for {name} (currently :{port or 'None'})")
+        th = getattr(self, "theme", "figma")
+        if th == "figma":
+            if port:
+                self.port_btn.setStyleSheet("color: #0369A1; background-color: #E0F2FE; border: 1px solid #BAE6FD; border-radius: 6px; font-family: monospace; font-size: 11px; font-weight: 700; padding: 2px 6px;")
+            else:
+                self.port_btn.setStyleSheet("color: #4B5563; background-color: #F3F4F6; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 11px; font-weight: 600; padding: 2px 6px;")
+        else:
+            if port:
+                self.port_btn.setStyleSheet("color: #60a5fa; background-color: #1e3a5f; border: 1px solid #2563eb; border-radius: 6px; font-family: monospace; font-size: 11px; font-weight: 700; padding: 2px 6px;")
+            else:
+                self.port_btn.setStyleSheet("color: #94a3b8; background-color: #1e2638; border: 1px solid #2e3c54; border-radius: 6px; font-size: 11px; font-weight: 600; padding: 2px 6px;")
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        name = self.service.get("name", "Service")
+        
+        if self.status in ["running", "starting"]:
+            act_start_stop = QAction(f"⏹ Stop {name}", self)
+            act_start_stop.triggered.connect(lambda: self.stop_clicked.emit(self.service["id"]))
+        else:
+            act_start_stop = QAction(f"▶ Start {name}", self)
+            act_start_stop.triggered.connect(lambda: self.start_clicked.emit(self.service))
+        menu.addAction(act_start_stop)
+
+        act_restart = QAction(f"🔄 Restart {name}", self)
+        act_restart.triggered.connect(lambda: self.restart_clicked.emit(self.service))
+        menu.addAction(act_restart)
+
+        act_port = QAction(f"🔌 Change Port (currently :{self.service.get('port') or 'None'})", self)
+        act_port.triggered.connect(self._quick_edit_port)
+        menu.addAction(act_port)
+
+        menu.addSeparator()
+
+        act_logs = QAction(f"📋 View Logs for {name}", self)
+        act_logs.triggered.connect(lambda: self.logs_clicked.emit(self.service))
+        menu.addAction(act_logs)
+
+        menu.exec(event.globalPos())
+
     def update_row_style(self, theme: str):
         self.theme = theme
         if theme == "figma":
             self.name_label.setStyleSheet("font-weight: 800; font-size: 12px; color: #111111; background: transparent;")
             self.cmd_lbl.setStyleSheet("font-family: monospace; font-size: 10px; color: #4B5563; background: transparent;")
-            if self.port_lbl:
-                self.port_lbl.setStyleSheet("font-family: monospace; font-size: 11px; font-weight: 700; color: #2563EB; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 6px; padding: 2px 6px;")
             self.logs_btn.setStyleSheet("""
                 QPushButton {
                     background-color: #FFFFFF;
@@ -122,11 +180,22 @@ class ServiceMiniRow(QFrame):
                     background-color: #F3F4F6;
                 }
             """)
+            self.restart_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #FFFFFF;
+                    border: 1px solid #111111;
+                    border-radius: 6px;
+                    font-size: 11px;
+                    color: #111111;
+                    padding: 0;
+                }
+                QPushButton:hover {
+                    background-color: #FFF9C4;
+                }
+            """)
         else:
             self.name_label.setStyleSheet("font-weight: 800; font-size: 12px; color: #f1f5f9; background: transparent;")
             self.cmd_lbl.setStyleSheet("font-family: monospace; font-size: 10px; color: #94a3b8; background: transparent;")
-            if self.port_lbl:
-                self.port_lbl.setStyleSheet("font-family: monospace; font-size: 11px; font-weight: 700; color: #60a5fa; background: #1e3a5f; border: 1px solid #2563eb; border-radius: 6px; padding: 2px 6px;")
             self.logs_btn.setStyleSheet("""
                 QPushButton {
                     background-color: #1e2638;
@@ -140,6 +209,20 @@ class ServiceMiniRow(QFrame):
                     background-color: #2e3c54;
                 }
             """)
+            self.restart_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e2638;
+                    border: 1px solid #2e3c54;
+                    border-radius: 6px;
+                    font-size: 11px;
+                    color: #f1f5f9;
+                    padding: 0;
+                }
+                QPushButton:hover {
+                    background-color: #2e3c54;
+                }
+            """)
+        self._update_port_btn_style()
         self.set_status(self.status, theme)
 
     def set_status(self, status: str, theme: Optional[str] = None):
@@ -243,10 +326,15 @@ class StackCard(QFrame):
     """Card representing an entire grouped stack of projects."""
     start_stack_clicked = pyqtSignal(dict)
     stop_stack_clicked = pyqtSignal(dict)
+    restart_stack_clicked = pyqtSignal(dict)
     edit_stack_clicked = pyqtSignal(dict)
     remove_stack_clicked = pyqtSignal(str)
     open_urls_clicked = pyqtSignal(list)
     view_service_logs_clicked = pyqtSignal(dict)
+    restart_service_clicked = pyqtSignal(dict)
+    service_port_changed = pyqtSignal(dict, dict, int)
+    start_service_clicked = pyqtSignal(dict)
+    stop_service_clicked = pyqtSignal(str)
 
     def __init__(self, stack: Dict, parent=None):
         super().__init__(parent)
@@ -325,7 +413,11 @@ class StackCard(QFrame):
         for s in self.stack.get("services", []):
             s_id = s["id"]
             row = ServiceMiniRow(s, self)
-            row.logs_btn.clicked.connect(lambda checked, s_item=s: self.view_service_logs_clicked.emit(s_item))
+            row.logs_clicked.connect(self.view_service_logs_clicked.emit)
+            row.restart_clicked.connect(self.restart_service_clicked.emit)
+            row.port_changed.connect(lambda srv, p: self._on_row_port_changed(srv, p))
+            row.start_clicked.connect(self.start_service_clicked.emit)
+            row.stop_clicked.connect(self.stop_service_clicked.emit)
             self.service_rows[s_id] = row
             self.services_box.addWidget(row)
 
@@ -341,6 +433,12 @@ class StackCard(QFrame):
         self.main_btn.clicked.connect(self._on_toggle_stack)
         bot_row.addWidget(self.main_btn)
 
+        # Restart Stack Button
+        self.restart_stack_btn = QPushButton("🔄 Restart Stack")
+        self.restart_stack_btn.setToolTip("Restart all services in this stack")
+        self.restart_stack_btn.clicked.connect(lambda: self.restart_stack_clicked.emit(self.stack))
+        bot_row.addWidget(self.restart_stack_btn)
+
         # Open URLs Button
         self.open_urls_btn = QPushButton("🌐 Open All URLs")
         self.open_urls_btn.setEnabled(False)
@@ -352,6 +450,14 @@ class StackCard(QFrame):
         layout.addLayout(bot_row)
 
         self.update_card_style("figma")
+
+    def _on_row_port_changed(self, srv: dict, new_port: int):
+        for s in self.stack.get("services", []):
+            if s.get("id") == srv.get("id"):
+                s["port"] = new_port
+                s["url"] = f"http://localhost:{new_port}"
+                break
+        self.service_port_changed.emit(self.stack, srv, new_port)
 
     def update_card_style(self, theme: str = "figma"):
         self.theme = theme
@@ -397,6 +503,20 @@ class StackCard(QFrame):
                     color: #DC2626;
                 }
             """)
+            self.restart_stack_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #FFFFFF;
+                    color: #111111;
+                    font-weight: 800;
+                    font-size: 12px;
+                    border: 2px solid #111111;
+                    border-radius: 12px;
+                    padding: 7px 14px;
+                }
+                QPushButton:hover {
+                    background-color: #FFF9C4;
+                }
+            """)
             self.open_urls_btn.setStyleSheet("background-color: #FFFFFF; color: #111111; font-weight: 800; font-size: 12px; border: 2px solid #111111; border-radius: 12px; padding: 7px 14px;")
         else:
             border = "2px solid #10b981" if any_running else "1.5px solid #283449"
@@ -437,6 +557,20 @@ class StackCard(QFrame):
                 QPushButton:hover {
                     background-color: #4c0519;
                     color: #f87171;
+                }
+            """)
+            self.restart_stack_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e2638;
+                    color: #f1f5f9;
+                    font-weight: 800;
+                    font-size: 12px;
+                    border: 1px solid #2e3c54;
+                    border-radius: 12px;
+                    padding: 7px 14px;
+                }
+                QPushButton:hover {
+                    background-color: #2e3c54;
                 }
             """)
             self.open_urls_btn.setStyleSheet("background-color: #1e2638; color: #f1f5f9; font-weight: 800; font-size: 12px; border: 1px solid #2e3c54; border-radius: 12px; padding: 7px 14px;")

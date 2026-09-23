@@ -636,10 +636,15 @@ class MainWindow(QMainWindow):
             card = StackCard(stack, self.cards_container)
             card.start_stack_clicked.connect(self._start_stack)
             card.stop_stack_clicked.connect(self._stop_stack)
+            card.restart_stack_clicked.connect(self._restart_stack)
             card.edit_stack_clicked.connect(self._edit_stack)
             card.remove_stack_clicked.connect(self._remove_stack)
             card.open_urls_clicked.connect(self._open_multiple_urls)
             card.view_service_logs_clicked.connect(self._view_logs)
+            card.restart_service_clicked.connect(self._restart_service)
+            card.service_port_changed.connect(self._on_stack_service_port_changed)
+            card.start_service_clicked.connect(self._start_project)
+            card.stop_service_clicked.connect(self._stop_project)
 
             # Reconcile status & detected URL for each member service
             for service in stack.get("services", []):
@@ -714,6 +719,32 @@ class MainWindow(QMainWindow):
         """Stops all services in a stack."""
         for s in stack.get("services", []):
             self.process_manager.stop_project(s["id"])
+        self._update_stats()
+
+    def _restart_stack(self, stack: dict):
+        """Restarts all services in a stack simultaneously."""
+        services = stack.get("services", [])
+        if not services:
+            return
+        self._view_logs(services[0])
+        for s in services:
+            self.process_manager.restart_project(s)
+        self._update_stats()
+
+    def _restart_service(self, service: dict):
+        """Restarts a single service in a stack."""
+        self._view_logs(service)
+        self.process_manager.restart_project(service)
+        self._update_stats()
+
+    def _on_stack_service_port_changed(self, stack: dict, service: dict, new_port: int):
+        """Updates and persists the port configuration for a service inside a stack."""
+        for s in stack.get("services", []):
+            if s.get("id") == service.get("id"):
+                s["port"] = new_port
+                s["url"] = f"http://localhost:{new_port}"
+                break
+        self.config.save_stack(stack)
         self._update_stats()
 
     def _open_multiple_urls(self, urls: List[str]):
