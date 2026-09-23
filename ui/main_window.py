@@ -15,7 +15,6 @@ from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QAction, QKeySequence, QShortcut, QColor
 
 from core.config_manager import ConfigManager
-from core.scanner import ProjectScanner
 from core.process_manager import ProcessManager
 from core.actions import open_url, open_in_vscode, open_in_terminal, open_in_file_manager, kill_process_on_port
 from ui.theme import FIGMA_THEME_QSS, DARK_THEME_QSS
@@ -153,19 +152,11 @@ class MainWindow(QMainWindow):
         add_row.addWidget(stack_btn)
         actions_box.addLayout(add_row)
 
-        row_acts = QHBoxLayout()
-        row_acts.setSpacing(8)
-        scan_btn = QPushButton("🔄 Rescan")
-        scan_btn.setToolTip("Scan ~/Projects for new projects (Ctrl+R)")
-        scan_btn.clicked.connect(lambda: self._scan_projects(silent=False))
-        row_acts.addWidget(scan_btn)
-
-        self.stop_all_btn = QPushButton("⏹ Stop All")
+        self.stop_all_btn = QPushButton("⏹ Stop All Running")
         self.stop_all_btn.setObjectName("StopBtn")
         self.stop_all_btn.setToolTip("Stop all active servers safely")
         self.stop_all_btn.clicked.connect(self._stop_all)
-        row_acts.addWidget(self.stop_all_btn)
-        actions_box.addLayout(row_acts)
+        actions_box.addWidget(self.stop_all_btn)
 
         bottom_utils = QHBoxLayout()
         bottom_utils.setSpacing(8)
@@ -324,7 +315,6 @@ class MainWindow(QMainWindow):
 
     def _init_shortcuts(self):
         QShortcut(QKeySequence("Ctrl+F"), self, activated=self.search_input.setFocus)
-        QShortcut(QKeySequence("Ctrl+R"), self, activated=lambda: self._scan_projects(silent=False))
         QShortcut(QKeySequence("Ctrl+L"), self, activated=self._toggle_logs)
         QShortcut(QKeySequence("Ctrl+Shift+L"), self, activated=self.log_viewer._toggle_fullscreen)
 
@@ -482,34 +472,6 @@ class MainWindow(QMainWindow):
             card.update_card_style(new_theme)
         for scard in self.stack_cards.values():
             scard.update_card_style(new_theme)
-
-    def _scan_projects(self, silent: bool = False):
-        scanner = ProjectScanner(self.config.get_scan_dirs(), max_depth=5)
-        found = scanner.scan_all()
-        
-        # Merge with existing
-        existing = self.config.get_projects()
-        merged_count = 0
-        for p in found:
-            pid = p["id"]
-            if pid not in existing:
-                self.config.save_project(p)
-                merged_count += 1
-            else:
-                # Update detected command/port if unset
-                curr = existing[pid]
-                if not curr.get("command") and p.get("command"):
-                    curr["command"] = p["command"]
-                if not curr.get("port") and p.get("port"):
-                    curr["port"] = p["port"]
-                self.config.save_project(curr)
-
-        self._render_projects(self.config.get_projects().values())
-        if not silent:
-            QMessageBox.information(
-                self, "Scan Complete", 
-                f"Scan complete!\nFound {len(found)} total projects ({merged_count} new)."
-            )
 
     def _render_projects(self, projects: List[dict]):
         # Clear existing cards

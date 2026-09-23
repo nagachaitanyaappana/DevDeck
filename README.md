@@ -46,8 +46,8 @@ python3 ~/Projects/DevDeck/main.py
 
 ### Hotkeys:
 - `Ctrl + F`: Jump to Search
-- `Ctrl + R`: Rescan `~/Projects`
 - `Ctrl + L`: Toggle Live Console Drawer
+- `Ctrl + Shift + L`: Fullscreen Console Toggle
 
 ---
 
