@@ -35,6 +35,7 @@ class ServiceMiniRow(QFrame):
     port_changed = pyqtSignal(dict, int)
     start_clicked = pyqtSignal(dict)
     stop_clicked = pyqtSignal(str)
+    open_url_clicked = pyqtSignal(str)
 
     def __init__(self, service: Dict, parent=None):
         super().__init__(parent)
@@ -83,6 +84,13 @@ class ServiceMiniRow(QFrame):
 
         layout.addStretch()
 
+        # Service Open URL button
+        self.url_btn = QPushButton("🌐")
+        self.url_btn.setFixedSize(24, 24)
+        self.url_btn.setToolTip(f"Open {name} in Browser")
+        self.url_btn.clicked.connect(self._on_open_single_url)
+        layout.addWidget(self.url_btn)
+
         # Service Logs button
         self.logs_btn = QPushButton("📋")
         self.logs_btn.setFixedSize(24, 24)
@@ -103,6 +111,14 @@ class ServiceMiniRow(QFrame):
         layout.addWidget(self.status_lbl)
 
         self._update_port_btn_style()
+
+    def _on_open_single_url(self):
+        u = self.detected_url
+        if not u or u in ["http://localhost", "http://localhost/", "https://localhost", "https://localhost/"]:
+            if self.service.get("port"):
+                u = f"http://localhost:{self.service['port']}"
+        if u:
+            self.open_url_clicked.emit(u)
 
     def _quick_edit_port(self):
         curr_port = self.service.get("port") or 8080
@@ -211,6 +227,19 @@ class ServiceMiniRow(QFrame):
                     background-color: #F3F4F6;
                 }
             """)
+            self.url_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #FFFFFF;
+                    border: 1px solid #111111;
+                    border-radius: 6px;
+                    font-size: 11px;
+                    color: #111111;
+                    padding: 0;
+                }
+                QPushButton:hover {
+                    background-color: #E0F2FE;
+                }
+            """)
             self.restart_btn.setStyleSheet("""
                 QPushButton {
                     background-color: #FFFFFF;
@@ -238,6 +267,19 @@ class ServiceMiniRow(QFrame):
                 }
                 QPushButton:hover {
                     background-color: #2e3c54;
+                }
+            """)
+            self.url_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e2638;
+                    border: 1px solid #2e3c54;
+                    border-radius: 6px;
+                    font-size: 11px;
+                    color: #f1f5f9;
+                    padding: 0;
+                }
+                QPushButton:hover {
+                    background-color: #1e3a5f;
                 }
             """)
             self.restart_btn.setStyleSheet("""
@@ -449,6 +491,7 @@ class StackCard(QFrame):
             row.port_changed.connect(lambda srv, p: self._on_row_port_changed(srv, p))
             row.start_clicked.connect(self.start_service_clicked.emit)
             row.stop_clicked.connect(self.stop_service_clicked.emit)
+            row.open_url_clicked.connect(lambda u: self.open_urls_clicked.emit([u]))
             self.service_rows[s_id] = row
             self.services_box.addWidget(row)
 
@@ -673,8 +716,9 @@ class StackCard(QFrame):
         urls = []
         for r in self.service_rows.values():
             u = r.detected_url
-            if not u and r.service.get("port"):
-                u = f"http://localhost:{r.service['port']}"
+            if not u or u in ["http://localhost", "http://localhost/", "https://localhost", "https://localhost/"]:
+                if r.service.get("port"):
+                    u = f"http://localhost:{r.service['port']}"
             if u:
                 urls.append(u)
         if urls:

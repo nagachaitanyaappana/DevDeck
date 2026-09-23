@@ -414,6 +414,9 @@ class ProjectCard(QFrame):
 
     def _update_browser_button(self):
         url = self.detected_url or self.project.get("url")
+        if not url or url in ["http://localhost", "http://localhost/", "https://localhost", "https://localhost/"]:
+            if self.project.get("port"):
+                url = f"http://localhost:{self.project['port']}"
         if url:
             # Shorten display for button (e.g. :5173 or localhost:5173)
             display = url.replace("http://", "").replace("https://", "").rstrip("/")

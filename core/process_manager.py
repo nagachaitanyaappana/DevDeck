@@ -146,13 +146,25 @@ class ProjectProcess(QObject):
         self._inspect_for_urls(data)
 
     def _inspect_for_urls(self, text: str):
+        # Strip ANSI escape codes (e.g. from Vite, Next.js terminal colors)
+        clean_text = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', text)
+
         # Look for explicit URL
-        matches = URL_REGEX.findall(text)
+        matches = URL_REGEX.findall(clean_text)
         if matches:
             url = matches[0].strip()
             # Clean up trailing punctuation
             url = url.rstrip(",.;)>]")
             url = url.replace("0.0.0.0", "localhost").replace("127.0.0.1", "localhost")
+
+            # Guard against bare 'http://localhost' without port when a port follows
+            if url in ["http://localhost", "http://localhost/", "https://localhost", "https://localhost/"]:
+                port_match = re.search(r'localhost:(\d{2,5})', clean_text, re.IGNORECASE)
+                if port_match:
+                    url = f"http://localhost:{port_match.group(1)}"
+                else:
+                    return
+
             if not self.detected_url or self.detected_url != url:
                 self.detected_url = url
                 self.url_detected.emit(self.project_id, url)
@@ -160,7 +172,7 @@ class ProjectProcess(QObject):
 
         # Look for port mention if no URL yet
         if not self.detected_url:
-            port_matches = PORT_REGEX.findall(text)
+            port_matches = PORT_REGEX.findall(clean_text)
             if port_matches:
                 port = port_matches[0].strip()
                 if port.isdigit() and 1000 <= int(port) <= 65535:

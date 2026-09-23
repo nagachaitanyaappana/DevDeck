@@ -108,10 +108,21 @@ class LogViewer(QFrame):
                 border: 1px solid #FFC107;
             }
             QCheckBox#LogAutoScroll {
-                color: #A3A3A3;
+                color: #FFFFFF;
                 font-size: 11px;
-                font-weight: 600;
+                font-weight: 700;
                 background: transparent;
+            }
+            QCheckBox#LogAutoScroll::indicator {
+                width: 14px;
+                height: 14px;
+                border: 1.5px solid #666666;
+                border-radius: 4px;
+                background-color: #1A1A1A;
+            }
+            QCheckBox#LogAutoScroll::indicator:checked {
+                background-color: #FFC107;
+                border: 1.5px solid #FFC107;
             }
             QPushButton#LogBtn {
                 background-color: #1A1A1A;
@@ -302,6 +313,8 @@ class LogViewer(QFrame):
 
     def _on_scroll_toggled(self, checked: bool):
         self.auto_scroll = checked
+        if checked:
+            self.text_edit.moveCursor(QTextCursor.MoveOperation.End)
 
     def _on_filter_changed(self, text: str):
         # Basic find in text edit

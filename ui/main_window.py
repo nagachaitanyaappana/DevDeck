@@ -60,6 +60,7 @@ class MainWindow(QMainWindow):
         self._render_projects(saved_projects.values())
         self._render_stacks()
         self._apply_filters()
+        self._update_stats()
 
     def _init_ui(self):
         central = QWidget()
@@ -209,6 +210,13 @@ class MainWindow(QMainWindow):
         self.cards_layout.setColumnStretch(1, 1)
         self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
+        # Section Headers for Stacks and Projects
+        self.traces_header = QLabel("⚡ MULTI-PROJECT TRACES")
+        self.traces_header.setObjectName("SectionHeader")
+        self.projects_header = QLabel("📦 INDIVIDUAL PROJECTS")
+        self.projects_header.setObjectName("SectionHeader")
+        self._apply_section_headers_style()
+
         # Empty State Display when 0 cards match or exist
         self.empty_state_frame = QFrame(self.cards_container)
         self.empty_state_frame.setObjectName("EmptyStateFrame")
@@ -304,6 +312,15 @@ class MainWindow(QMainWindow):
             badge.setStyleSheet("background-color: #1e2638; border: 1px solid #2d3952; border-radius: 14px; padding: 3px 10px;")
             badge.val_label.setStyleSheet("color: #60a5fa; font-weight: 900; font-size: 13px; background: transparent;")
             badge.sub_label.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 10px; background: transparent;")
+
+    def _apply_section_headers_style(self):
+        theme = self.config.data.get("theme", "figma")
+        col = "#111111" if theme == "figma" else "#94a3b8"
+        style = f"font-size: 11px; font-weight: 900; color: {col}; letter-spacing: 0.8px; padding: 6px 2px; margin-top: 6px; background: transparent;"
+        if hasattr(self, "traces_header"):
+            self.traces_header.setStyleSheet(style)
+        if hasattr(self, "projects_header"):
+            self.projects_header.setStyleSheet(style)
 
     def _init_shortcuts(self):
         QShortcut(QKeySequence("Ctrl+F"), self, activated=self.search_input.setFocus)
@@ -460,6 +477,7 @@ class MainWindow(QMainWindow):
                     self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #666666; background: transparent;")
         for b in [self.total_badge, self.running_badge, self.ports_badge]:
             self._apply_badge_style(b)
+        self._apply_section_headers_style()
         for card in self.cards.values():
             card.update_card_style(new_theme)
         for scard in self.stack_cards.values():
@@ -798,13 +816,12 @@ class MainWindow(QMainWindow):
         self._apply_filters()
 
     def _apply_filters(self):
-        # Remove cards from grid positions without destroying them
+        # Remove cards and headers from grid positions without destroying them
         while self.cards_layout.count():
             self.cards_layout.takeAt(0)
 
-        visible_count = 0
-
-        # Filter Stack Cards
+        # 1. Filter Stack Cards
+        visible_stacks = []
         for s_id, scard in self.stack_cards.items():
             stk = scard.stack
             name = stk.get("name", "").lower()
@@ -826,6 +843,8 @@ class MainWindow(QMainWindow):
                 matches_filter = any(r.status == "running" for r in scard.service_rows.values())
             elif self.active_filter == "All":
                 matches_filter = True
+            elif self.active_filter == "Favorites":
+                matches_filter = False
             elif self.active_filter == "Node / Web":
                 matches_filter = any(any(k in s.get("stack", "").lower() for k in ["node", "vite", "react", "next", "angular", "express"]) for s in stk.get("services", []))
             elif self.active_filter == "Java / Spring":
@@ -838,60 +857,87 @@ class MainWindow(QMainWindow):
             is_visible = matches_search and matches_filter
             scard.setVisible(is_visible)
             if is_visible:
-                row = visible_count // 2
-                col = visible_count % 2
-                self.cards_layout.addWidget(scard, row, col)
-                visible_count += 1
+                visible_stacks.append(scard)
 
-        # If user specifically clicked "⚡ Stacks", hide individual project cards
-        if self.active_filter == "⚡ Stacks":
+        # 2. Filter Individual Project Cards
+        visible_projects = []
+        if self.active_filter != "⚡ Stacks":
+            for p_id, card in self.cards.items():
+                proj = card.project
+                name = proj.get("name", "").lower()
+                path = proj.get("path", "").lower()
+                cmd = proj.get("command", "").lower()
+                stack = proj.get("stack", "").lower()
+
+                # Search match
+                matches_search = not self.search_query or (
+                    self.search_query in name or 
+                    self.search_query in path or 
+                    self.search_query in cmd or 
+                    self.search_query in stack
+                )
+
+                # Category filter match
+                matches_filter = True
+                if self.active_filter == "Running":
+                    matches_filter = (card.status == "running")
+                elif self.active_filter == "Favorites":
+                    matches_filter = proj.get("favorite", False)
+                elif self.active_filter == "Node / Web":
+                    matches_filter = any(k in stack for k in ["node", "vite", "react", "next", "angular", "express"])
+                elif self.active_filter == "Java / Spring":
+                    matches_filter = any(k in stack for k in ["java", "spring", "gradle", "maven"])
+                elif self.active_filter == "Python":
+                    matches_filter = "python" in stack or "django" in stack or "fastapi" in stack
+
+                is_visible = matches_search and matches_filter
+                card.setVisible(is_visible)
+                if is_visible:
+                    visible_projects.append(card)
+        else:
             for card in self.cards.values():
                 card.setVisible(False)
-            if visible_count == 0 and hasattr(self, 'empty_state_frame'):
-                self.empty_state_frame.setVisible(True)
-                self.cards_layout.addWidget(self.empty_state_frame, 0, 0, 1, 2)
-            elif hasattr(self, 'empty_state_frame'):
-                self.empty_state_frame.setVisible(False)
-            return
 
-        # Filter Individual Project Cards
-        for p_id, card in self.cards.items():
-            proj = card.project
-            name = proj.get("name", "").lower()
-            path = proj.get("path", "").lower()
-            cmd = proj.get("command", "").lower()
-            stack = proj.get("stack", "").lower()
+        # 3. Dynamic Neo-Brutalist Layout Placement
+        current_grid_row = 0
 
-            # Search match
-            matches_search = not self.search_query or (
-                self.search_query in name or 
-                self.search_query in path or 
-                self.search_query in cmd or 
-                self.search_query in stack
-            )
+        # Full-width multi-service traces (columns 0 and 1)
+        if visible_stacks:
+            if visible_projects or self.active_filter == "All":
+                self.traces_header.setText(f"⚡ MULTI-PROJECT TRACES ({len(visible_stacks)})")
+                self.traces_header.setVisible(True)
+                self.cards_layout.addWidget(self.traces_header, current_grid_row, 0, 1, 2)
+                current_grid_row += 1
+            else:
+                self.traces_header.setVisible(False)
 
-            # Category filter match
-            matches_filter = True
-            if self.active_filter == "Running":
-                matches_filter = (card.status == "running")
-            elif self.active_filter == "Favorites":
-                matches_filter = proj.get("favorite", False)
-            elif self.active_filter == "Node / Web":
-                matches_filter = any(k in stack for k in ["node", "vite", "react", "next", "angular", "express"])
-            elif self.active_filter == "Java / Spring":
-                matches_filter = any(k in stack for k in ["java", "spring", "gradle", "maven"])
-            elif self.active_filter == "Python":
-                matches_filter = "python" in stack or "django" in stack or "fastapi" in stack
+            for scard in visible_stacks:
+                self.cards_layout.addWidget(scard, current_grid_row, 0, 1, 2)
+                current_grid_row += 1
+        else:
+            self.traces_header.setVisible(False)
 
-            is_visible = matches_search and matches_filter
-            card.setVisible(is_visible)
-            if is_visible:
-                row = visible_count // 2
-                col = visible_count % 2
-                self.cards_layout.addWidget(card, row, col)
-                visible_count += 1
+        # 2-Column Grid for Individual Projects
+        if visible_projects:
+            if visible_stacks:
+                self.projects_header.setText(f"📦 INDIVIDUAL PROJECTS ({len(visible_projects)})")
+                self.projects_header.setVisible(True)
+                self.cards_layout.addWidget(self.projects_header, current_grid_row, 0, 1, 2)
+                current_grid_row += 1
+            else:
+                self.projects_header.setVisible(False)
 
-        if visible_count == 0 and hasattr(self, 'empty_state_frame'):
+            for idx, pcard in enumerate(visible_projects):
+                r = current_grid_row + (idx // 2)
+                c = idx % 2
+                self.cards_layout.addWidget(pcard, r, c)
+            current_grid_row += (len(visible_projects) + 1) // 2
+        else:
+            self.projects_header.setVisible(False)
+
+        # Empty State
+        total_visible = len(visible_stacks) + len(visible_projects)
+        if total_visible == 0 and hasattr(self, 'empty_state_frame'):
             self.empty_state_frame.setVisible(True)
             self.cards_layout.addWidget(self.empty_state_frame, 0, 0, 1, 2)
         elif hasattr(self, 'empty_state_frame'):
@@ -914,6 +960,36 @@ class MainWindow(QMainWindow):
         self.total_badge.val_label.setText(str(total))
         self.running_badge.val_label.setText(str(running))
         self.ports_badge.val_label.setText(str(ports))
+
+        # Update category counts on filter pills
+        stacks_list = list(self.stack_cards.values())
+        cards_list = list(self.cards.values())
+
+        c_all = len(stacks_list) + len(cards_list)
+        c_stacks = len(stacks_list)
+        c_running = sum(1 for s in stacks_list if any(r.status == "running" for r in s.service_rows.values())) + \
+                    sum(1 for c in cards_list if c.status == "running")
+        c_fav = sum(1 for c in cards_list if c.project.get("favorite", False))
+        c_node = sum(1 for s in stacks_list if any(any(k in srv.get("stack", "").lower() for k in ["node", "vite", "react", "next", "angular", "express"]) for srv in s.stack.get("services", []))) + \
+                 sum(1 for c in cards_list if any(k in c.project.get("stack", "").lower() for k in ["node", "vite", "react", "next", "angular", "express"]))
+        c_java = sum(1 for s in stacks_list if any(any(k in srv.get("stack", "").lower() for k in ["java", "spring", "gradle", "maven"]) for srv in s.stack.get("services", []))) + \
+                 sum(1 for c in cards_list if any(k in c.project.get("stack", "").lower() for k in ["java", "spring", "gradle", "maven"]))
+        c_py = sum(1 for s in stacks_list if any(any(k in srv.get("stack", "").lower() for k in ["python", "django", "fastapi"]) for srv in s.stack.get("services", []))) + \
+               sum(1 for c in cards_list if any(k in c.project.get("stack", "").lower() for k in ["python", "django", "fastapi"]))
+
+        cat_counts = {
+            "All": c_all,
+            "⚡ Stacks": c_stacks,
+            "Running": c_running,
+            "Favorites": c_fav,
+            "Node / Web": c_node,
+            "Java / Spring": c_java,
+            "Python": c_py,
+        }
+
+        for cat_name, btn in self.filter_buttons.items():
+            cnt = cat_counts.get(cat_name, 0)
+            btn.setText(f"{cat_name} ({cnt})")
 
         # Update tray tooltip
         if hasattr(self, 'tray'):
