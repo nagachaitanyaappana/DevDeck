@@ -47,15 +47,6 @@ class MainWindow(QMainWindow):
         if not self.app_icon.isNull():
             self.setWindowIcon(self.app_icon)
 
-        # Frameless rounded window
-        self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window
-        )
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-
-        # For dragging the frameless window
-        self._drag_pos = None
-
         self._init_ui()
         self._init_tray()
         self._init_shortcuts()
@@ -68,60 +59,19 @@ class MainWindow(QMainWindow):
         else:
             self._render_projects(saved_projects.values())
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
-            event.accept()
-
-    def mouseMoveEvent(self, event):
-        if self._drag_pos is not None and event.buttons() & Qt.MouseButton.LeftButton:
-            self.move(event.globalPosition().toPoint() - self._drag_pos)
-            event.accept()
-
-    def mouseReleaseEvent(self, event):
-        self._drag_pos = None
-
-    def _toggle_maximize(self):
-        if self.isMaximized():
-            self.showNormal()
-        else:
-            self.showMaximized()
-
     def _init_ui(self):
-        # Outer transparent wrapper — the actual window background is transparent
-        outer = QWidget()
-        self.setCentralWidget(outer)
-        outer.setStyleSheet("background: transparent;")
-        outer_layout = QVBoxLayout(outer)
-        outer_layout.setContentsMargins(16, 16, 16, 16)  # Gap between screen edge and UI
-        outer_layout.setSpacing(0)
+        central = QWidget()
+        self.setCentralWidget(central)
+        main_layout = QVBoxLayout(central)
+        main_layout.setContentsMargins(18, 14, 18, 14)  # Gaps between screen edge and UI
+        main_layout.setSpacing(10)
 
-        # Inner rounded container — this is the visible app shell
-        self.shell = QFrame()
-        self.shell.setObjectName("AppShell")
-
-        # Soft floating drop shadow
-        shadow = QGraphicsDropShadowEffect(self.shell)
-        shadow.setBlurRadius(28)
-        shadow.setXOffset(0)
-        shadow.setYOffset(6)
-        shadow.setColor(QColor(0, 0, 0, 70))
-        self.shell.setGraphicsEffect(shadow)
-
-        shell_layout = QVBoxLayout(self.shell)
-        shell_layout.setContentsMargins(0, 0, 0, 0)
-        shell_layout.setSpacing(0)
-        outer_layout.addWidget(self.shell)
-
-        # Use shell_layout as main_layout from here on
-        main_layout = shell_layout
-
-        # ─── 1. Header Bar ───
+        # ─── 1. Header Bar (Floating white card with rounded corners) ───
         header = QFrame()
         header.setObjectName("HeaderBar")
         header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(20, 14, 20, 14)
-        header_layout.setSpacing(16)
+        header_layout.setContentsMargins(20, 12, 20, 12)
+        header_layout.setSpacing(14)
 
         # Title & Subtitle
         title_box = QVBoxLayout()
@@ -169,28 +119,6 @@ class MainWindow(QMainWindow):
         self.theme_btn.setFixedSize(36, 32)
         self.theme_btn.clicked.connect(self._toggle_theme)
         header_layout.addWidget(self.theme_btn)
-
-        # Window controls (since frameless)
-        min_btn = QPushButton("─")
-        min_btn.setObjectName("WinCtrlBtn")
-        min_btn.setFixedSize(32, 28)
-        min_btn.setToolTip("Minimize")
-        min_btn.clicked.connect(self.showMinimized)
-        header_layout.addWidget(min_btn)
-
-        max_btn = QPushButton("□")
-        max_btn.setObjectName("WinCtrlBtn")
-        max_btn.setFixedSize(32, 28)
-        max_btn.setToolTip("Maximize / Restore")
-        max_btn.clicked.connect(self._toggle_maximize)
-        header_layout.addWidget(max_btn)
-
-        close_btn = QPushButton("✕")
-        close_btn.setObjectName("WinCloseBtn")
-        close_btn.setFixedSize(32, 28)
-        close_btn.setToolTip("Close")
-        close_btn.clicked.connect(self.close)
-        header_layout.addWidget(close_btn)
 
         main_layout.addWidget(header)
 

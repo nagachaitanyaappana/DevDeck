@@ -88,13 +88,11 @@ QScrollBar::handle:horizontal {
     border-radius: 4px;
 }
 
-/* ─── Header Bar ─── */
+/* ─── Header Bar: Floating white card on yellow canvas ─── */
 QFrame#HeaderBar {
     background-color: #FFFFFF;
     border: none;
-    border-bottom: 1px solid #E8E8E8;
-    border-top-left-radius: 22px;
-    border-top-right-radius: 22px;
+    border-radius: 20px;
     padding: 14px 24px;
 }
 
@@ -113,9 +111,9 @@ QLabel#AppSubtitle {
 
 /* ─── Filter Bar ─── */
 QFrame#FilterBar {
-    background-color: #FFC107;
+    background-color: transparent;
     border: none;
-    padding: 8px 20px;
+    padding: 4px 4px;
 }
 
 /* ─── Search ─── */
@@ -353,8 +351,7 @@ QLabel#MetricsLabel {
 QFrame#LogDrawer {
     background-color: #1A1A1A;
     border-top: 3px solid #FFC107;
-    border-bottom-left-radius: 22px;
-    border-bottom-right-radius: 22px;
+    border-radius: 18px;
 }
 QTextEdit#LogViewer {
     background-color: #111111;
