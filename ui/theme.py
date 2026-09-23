@@ -382,32 +382,93 @@ QTextEdit#LogViewer {
 /* ─── Dialogs ─── */
 QDialog {
     background-color: #FFFFFF;
-    border: none;
-    border-radius: 20px;
+    border: 2px solid #111111;
+    border-radius: 18px;
 }
 QLabel#DialogHeader {
     font-size: 20px;
     font-weight: 900;
     color: #111111;
 }
-QLineEdit, QComboBox {
-    background-color: #F5F5F5;
-    border: 2px solid #E0E0E0;
-    border-radius: 12px;
-    padding: 9px 14px;
+QLineEdit {
+    background-color: #F9FAFB;
+    border: 2px solid #111111;
+    border-radius: 10px;
+    padding: 8px 12px;
     color: #111111;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
 }
-QLineEdit:focus, QComboBox:focus {
-    border: 2px solid #111111;
+QLineEdit:focus {
+    border: 2px solid #000000;
     background-color: #FFFFFF;
 }
 
-/* Context menus */
+/* ─── Combo Boxes & Dropdown Menus (High-Contrast Fix) ─── */
+QComboBox {
+    background-color: #FFFFFF;
+    border: 2px solid #111111;
+    border-radius: 10px;
+    padding: 7px 12px;
+    color: #111111;
+    font-size: 12px;
+    font-weight: 700;
+}
+QComboBox:hover {
+    background-color: #FFFDE7;
+    border-color: #000000;
+}
+QComboBox:focus {
+    border: 2px solid #111111;
+}
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 26px;
+    border-left: 1.5px solid #111111;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    background-color: #F3F4F6;
+}
+QComboBox::down-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #111111;
+    width: 0;
+    height: 0;
+}
+QComboBox QAbstractItemView {
+    background-color: #FFFFFF;
+    color: #111111;
+    border: 2px solid #111111;
+    border-radius: 10px;
+    padding: 4px;
+    outline: none;
+    selection-background-color: #FFC107;
+    selection-color: #111111;
+}
+QComboBox QAbstractItemView::item {
+    color: #111111;
+    background-color: #FFFFFF;
+    padding: 8px 12px;
+    min-height: 24px;
+    border-radius: 6px;
+}
+QComboBox QAbstractItemView::item:hover {
+    background-color: #FFF3C4;
+    color: #111111;
+}
+QComboBox QAbstractItemView::item:selected {
+    background-color: #FFC107;
+    color: #111111;
+    font-weight: 800;
+}
+
+/* ─── Context Menus (High-Contrast Fix) ─── */
 QMenu {
     background-color: #FFFFFF;
-    border: 1px solid #E0E0E0;
+    border: 2px solid #111111;
     border-radius: 12px;
     padding: 6px;
     color: #111111;
@@ -415,10 +476,46 @@ QMenu {
 QMenu::item {
     padding: 8px 20px;
     border-radius: 8px;
+    color: #111111;
+    background-color: transparent;
+    font-weight: 600;
 }
-QMenu::item:selected {
+QMenu::item:hover, QMenu::item:selected {
     background-color: #FFF8E1;
     color: #111111;
+    font-weight: 800;
+}
+QMenu::separator {
+    height: 1px;
+    background-color: #E5E7EB;
+    margin: 4px 8px;
+}
+
+/* ─── Message Boxes & Input Dialogs ─── */
+QMessageBox, QInputDialog {
+    background-color: #FFFFFF;
+    color: #111111;
+    border: 2px solid #111111;
+    border-radius: 16px;
+}
+QMessageBox QLabel, QInputDialog QLabel {
+    color: #111111;
+    font-size: 13px;
+    font-weight: 700;
+    background: transparent;
+}
+QMessageBox QPushButton, QInputDialog QPushButton {
+    background-color: #FFFFFF;
+    color: #111111;
+    border: 2px solid #111111;
+    border-radius: 10px;
+    padding: 6px 18px;
+    font-weight: 800;
+    font-size: 12px;
+    min-width: 70px;
+}
+QMessageBox QPushButton:hover, QInputDialog QPushButton:hover {
+    background-color: #FFF9C4;
 }
 """
 
@@ -715,21 +812,120 @@ QTextEdit#LogViewer {
 QDialog {
     background-color: #151b27;
     border: 1px solid #2c3850;
-    border-radius: 10px;
+    border-radius: 12px;
 }
-QLineEdit, QComboBox {
+QLineEdit {
     background-color: #1b2332;
     border: 1px solid #2e3c54;
     border-radius: 6px;
     padding: 7px 10px;
     color: #f1f5f9;
 }
+QLineEdit:focus {
+    border: 1px solid #3b82f6;
+}
+
+QComboBox {
+    background-color: #1b2332;
+    border: 1.5px solid #2e3c54;
+    border-radius: 6px;
+    padding: 7px 10px;
+    color: #f1f5f9;
+    font-weight: 600;
+}
+QComboBox:hover {
+    border-color: #3b82f6;
+}
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 24px;
+    border-left: 1px solid #2e3c54;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: #242f44;
+}
+QComboBox::down-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #94a3b8;
+    width: 0;
+    height: 0;
+}
+QComboBox QAbstractItemView {
+    background-color: #151b27;
+    color: #f1f5f9;
+    border: 1px solid #2e3c54;
+    border-radius: 6px;
+    padding: 4px;
+    outline: none;
+    selection-background-color: #2563EB;
+    selection-color: #ffffff;
+}
+QComboBox QAbstractItemView::item {
+    color: #f1f5f9;
+    background-color: #151b27;
+    padding: 6px 10px;
+    min-height: 22px;
+    border-radius: 4px;
+}
+QComboBox QAbstractItemView::item:hover {
+    background-color: #1e2638;
+    color: #ffffff;
+}
+QComboBox QAbstractItemView::item:selected {
+    background-color: #2563EB;
+    color: #ffffff;
+    font-weight: bold;
+}
+
 QMenu {
     background-color: #1e2638;
     border: 1px solid #2e3c54;
+    border-radius: 8px;
+    padding: 4px;
     color: #f1f5f9;
 }
-QMenu::item:selected {
-    background-color: #273349;
+QMenu::item {
+    padding: 6px 16px;
+    border-radius: 4px;
+    color: #f1f5f9;
+    background-color: transparent;
+}
+QMenu::item:hover, QMenu::item:selected {
+    background-color: #2563EB;
+    color: #ffffff;
+}
+QMenu::separator {
+    height: 1px;
+    background-color: #2e3c54;
+    margin: 4px 6px;
+}
+
+QMessageBox, QInputDialog {
+    background-color: #151b27;
+    color: #f1f5f9;
+    border: 1px solid #2e3c54;
+    border-radius: 12px;
+}
+QMessageBox QLabel, QInputDialog QLabel {
+    color: #f1f5f9;
+    font-size: 13px;
+    font-weight: 600;
+    background: transparent;
+}
+QMessageBox QPushButton, QInputDialog QPushButton {
+    background-color: #1e2638;
+    color: #f1f5f9;
+    border: 1px solid #2e3c54;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-weight: 600;
+    min-width: 60px;
+}
+QMessageBox QPushButton:hover, QInputDialog QPushButton:hover {
+    background-color: #2563EB;
+    color: #ffffff;
 }
 """
