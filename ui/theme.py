@@ -467,27 +467,32 @@ QComboBox QAbstractItemView::item:selected {
 
 /* ─── Context Menus (High-Contrast Fix) ─── */
 QMenu {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 12px;
+    background-color: #111111;
+    border: 2px solid #333333;
+    border-radius: 10px;
     padding: 6px;
-    color: #111111;
+    color: #FFFFFF;
 }
 QMenu::item {
     padding: 8px 20px;
-    border-radius: 8px;
-    color: #111111;
+    border-radius: 6px;
+    color: #FFFFFF;
     background-color: transparent;
     font-weight: 600;
+    font-size: 12px;
 }
 QMenu::item:hover, QMenu::item:selected {
-    background-color: #FFF8E1;
+    background-color: #FFC107;
     color: #111111;
     font-weight: 800;
 }
+QMenu::item:disabled {
+    color: #666666;
+    background-color: transparent;
+}
 QMenu::separator {
     height: 1px;
-    background-color: #E5E7EB;
+    background-color: #2E2E2E;
     margin: 4px 8px;
 }
 
@@ -904,25 +909,32 @@ QComboBox QAbstractItemView::item:selected {
 }
 
 QMenu {
-    background-color: #1e2638;
-    border: 1px solid #2e3c54;
+    background-color: #111111;
+    border: 1px solid #333333;
     border-radius: 8px;
-    padding: 4px;
-    color: #f1f5f9;
+    padding: 6px;
+    color: #FFFFFF;
 }
 QMenu::item {
-    padding: 6px 16px;
-    border-radius: 4px;
-    color: #f1f5f9;
+    padding: 8px 20px;
+    border-radius: 6px;
+    color: #FFFFFF;
     background-color: transparent;
+    font-weight: 600;
+    font-size: 12px;
 }
 QMenu::item:hover, QMenu::item:selected {
-    background-color: #2563EB;
-    color: #ffffff;
+    background-color: #FFC107;
+    color: #111111;
+    font-weight: 800;
+}
+QMenu::item:disabled {
+    color: #666666;
+    background-color: transparent;
 }
 QMenu::separator {
     height: 1px;
-    background-color: #2e3c54;
+    background-color: #2E2E2E;
     margin: 4px 6px;
 }
 

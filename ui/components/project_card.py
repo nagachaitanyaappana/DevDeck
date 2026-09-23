@@ -498,6 +498,37 @@ class ProjectCard(QFrame):
         from core.actions import get_process_on_port
 
         menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: #111111;
+                border: 2px solid #333333;
+                border-radius: 10px;
+                padding: 6px;
+                color: #FFFFFF;
+            }
+            QMenu::item {
+                padding: 8px 20px;
+                border-radius: 6px;
+                color: #FFFFFF;
+                background-color: transparent;
+                font-weight: 600;
+                font-size: 12px;
+            }
+            QMenu::item:hover, QMenu::item:selected {
+                background-color: #FFC107;
+                color: #111111;
+                font-weight: 800;
+            }
+            QMenu::item:disabled {
+                color: #666666;
+                background-color: transparent;
+            }
+            QMenu::separator {
+                height: 1px;
+                background-color: #2E2E2E;
+                margin: 4px 8px;
+            }
+        """)
 
         # Start / Stop Action
         if self.status in ["running", "starting"]:
