@@ -110,7 +110,7 @@ QLabel#HeroSubtitle {
 /* ─── Header Bar: Floating white card on yellow canvas ─── */
 QFrame#HeaderBar {
     background-color: #FFFFFF;
-    border: none;
+    border: 2px solid #111111;
     border-radius: 20px;
     padding: 14px 24px;
 }
@@ -516,6 +516,29 @@ QMessageBox QPushButton, QInputDialog QPushButton {
 }
 QMessageBox QPushButton:hover, QInputDialog QPushButton:hover {
     background-color: #FFF9C4;
+}
+
+QSpinBox {
+    background-color: #FFFFFF;
+    border: 2px solid #111111;
+    border-radius: 10px;
+    padding: 6px 10px;
+    color: #111111;
+    font-weight: 700;
+    font-size: 13px;
+}
+QSpinBox:focus {
+    border: 2px solid #000000;
+}
+
+QToolTip {
+    background-color: #111111;
+    color: #FFFFFF;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+    font-weight: 600;
 }
 """
 
@@ -927,5 +950,28 @@ QMessageBox QPushButton, QInputDialog QPushButton {
 QMessageBox QPushButton:hover, QInputDialog QPushButton:hover {
     background-color: #2563EB;
     color: #ffffff;
+}
+
+QSpinBox {
+    background-color: #1e2638;
+    border: 1px solid #2e3c54;
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #f1f5f9;
+    font-weight: 700;
+    font-size: 13px;
+}
+QSpinBox:focus {
+    border: 1px solid #3b82f6;
+}
+
+QToolTip {
+    background-color: #1e2638;
+    color: #f1f5f9;
+    border: 1px solid #2e3c54;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+    font-weight: 600;
 }
 """

@@ -134,28 +134,25 @@ class ProjectCard(QFrame):
         top_row.addWidget(self.stack_badge)
 
         # Favorite Star Button
+        # Favorite Star Button
         is_fav = self.project.get("favorite", False)
         self.fav_btn = QPushButton("★" if is_fav else "☆")
-        self.fav_btn.setObjectName("IconBtn")
         self.fav_btn.setToolTip("Pin to Favorites")
-        self.fav_btn.setFixedSize(30, 28)
-        if is_fav:
-            self.fav_btn.setStyleSheet("color: #F59E0B; font-weight: bold;")
+        self.fav_btn.setFixedSize(30, 30)
         self.fav_btn.clicked.connect(self._toggle_favorite)
         top_row.addWidget(self.fav_btn)
 
         # More Options Menu Button
         self.more_btn = QPushButton("⋮")
-        self.more_btn.setObjectName("IconBtn")
-        self.more_btn.setFixedSize(28, 28)
+        self.more_btn.setToolTip("More Options")
+        self.more_btn.setFixedSize(30, 30)
         self.more_btn.clicked.connect(self._show_context_menu)
         top_row.addWidget(self.more_btn)
 
         # Close button (like top-right in Figma modal)
         self.close_btn = QPushButton("✕")
-        self.close_btn.setObjectName("IconBtn")
-        self.close_btn.setFixedSize(26, 26)
         self.close_btn.setToolTip("Remove from Deck")
+        self.close_btn.setFixedSize(30, 30)
         self.close_btn.clicked.connect(lambda: self.remove_clicked.emit(self.project["id"]))
         top_row.addWidget(self.close_btn)
 
@@ -229,23 +226,20 @@ class ProjectCard(QFrame):
 
         # 4. Quick IDE / Terminal / Folder Shortcuts
         self.code_btn = QPushButton("💻")
-        self.code_btn.setObjectName("IconBtn")
-        self.code_btn.setFixedSize(30, 28)
+        self.code_btn.setFixedSize(30, 30)
         self.code_btn.setToolTip("Open in VS Code")
         self.code_btn.clicked.connect(lambda: self.open_code_clicked.emit(self.project["path"]))
         bot_row.addWidget(self.code_btn)
 
         self.term_btn = QPushButton("📟")
-        self.term_btn.setObjectName("IconBtn")
-        self.term_btn.setFixedSize(30, 28)
+        self.term_btn.setFixedSize(30, 30)
         self.term_btn.setToolTip("Open in Terminal")
         self.term_btn.clicked.connect(lambda: self.open_terminal_clicked.emit(self.project["path"]))
         bot_row.addWidget(self.term_btn)
 
         self.folder_btn = QPushButton("📁")
-        self.folder_btn.setObjectName("IconBtn")
+        self.folder_btn.setFixedSize(30, 30)
         self.folder_btn.setToolTip("Open in File Manager")
-        self.folder_btn.setFixedSize(30, 28)
         self.folder_btn.clicked.connect(lambda: self.open_folder_clicked.emit(self.project["path"]))
         bot_row.addWidget(self.folder_btn)
 
@@ -266,6 +260,52 @@ class ProjectCard(QFrame):
             """)
             self.title_label.setStyleSheet("background: transparent; color: #111111; font-weight: 900; font-size: 15px;")
             self.path_label.setStyleSheet("background: transparent; color: #666666; font-size: 11px;")
+            self.close_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #FFFFFF;
+                    border: 1.5px solid #111111;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 900;
+                    color: #111111;
+                    padding: 0px;
+                }
+                QPushButton:hover {
+                    background-color: #FEE2E2;
+                    color: #DC2626;
+                }
+            """)
+            for btn in [self.more_btn, self.code_btn, self.term_btn, self.folder_btn]:
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #FFFFFF;
+                        border: 1.5px solid #111111;
+                        border-radius: 8px;
+                        font-size: 13px;
+                        font-weight: bold;
+                        color: #111111;
+                        padding: 0px;
+                    }
+                    QPushButton:hover {
+                        background-color: #FFF9C4;
+                    }
+                """)
+            is_fav = self.project.get("favorite", False)
+            fav_col = "#F59E0B" if is_fav else "#111111"
+            self.fav_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: #FFFFFF;
+                    border: 1.5px solid #111111;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: {fav_col};
+                    padding: 0px;
+                }}
+                QPushButton:hover {{
+                    background-color: #FFF9C4;
+                }}
+            """)
         else:
             border = "2px solid #10b981" if is_running else "1.5px solid #283449"
             self.setStyleSheet(f"""
@@ -277,6 +317,52 @@ class ProjectCard(QFrame):
             """)
             self.title_label.setStyleSheet("background: transparent; color: #f1f5f9; font-weight: 800; font-size: 14px;")
             self.path_label.setStyleSheet("background: transparent; color: #64748b; font-size: 11px;")
+            self.close_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e2638;
+                    border: 1px solid #2e3c54;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 900;
+                    color: #f1f5f9;
+                    padding: 0px;
+                }
+                QPushButton:hover {
+                    background-color: #4c0519;
+                    color: #f87171;
+                }
+            """)
+            for btn in [self.more_btn, self.code_btn, self.term_btn, self.folder_btn]:
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #1e2638;
+                        border: 1px solid #2e3c54;
+                        border-radius: 8px;
+                        font-size: 13px;
+                        font-weight: bold;
+                        color: #f1f5f9;
+                        padding: 0px;
+                    }
+                    QPushButton:hover {
+                        background-color: #2e3c54;
+                    }
+                """)
+            is_fav = self.project.get("favorite", False)
+            fav_col = "#F59E0B" if is_fav else "#f1f5f9"
+            self.fav_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: #1e2638;
+                    border: 1px solid #2e3c54;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: {fav_col};
+                    padding: 0px;
+                }}
+                QPushButton:hover {{
+                    background-color: #2e3c54;
+                }}
+            """)
 
     def set_status(self, status: str):
         self.status = status
@@ -377,10 +463,25 @@ class ProjectCard(QFrame):
         fav = not self.project.get("favorite", False)
         self.project["favorite"] = fav
         self.fav_btn.setText("★" if fav else "☆")
-        if fav:
-            self.fav_btn.setStyleSheet("color: #f59e0b;")
-        else:
-            self.fav_btn.setStyleSheet("")
+        theme = getattr(self, "theme", "figma")
+        fav_col = "#F59E0B" if fav else ("#111111" if theme == "figma" else "#f1f5f9")
+        bg_col = "#FFFFFF" if theme == "figma" else "#1e2638"
+        border_col = "1.5px solid #111111" if theme == "figma" else "1px solid #2e3c54"
+        hover_col = "#FFF9C4" if theme == "figma" else "#2e3c54"
+        self.fav_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {bg_col};
+                border: {border_col};
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: bold;
+                color: {fav_col};
+                padding: 0px;
+            }}
+            QPushButton:hover {{
+                background-color: {hover_col};
+            }}
+        """)
         self.favorite_toggled.emit(self.project["id"])
 
     def _show_context_menu(self):
