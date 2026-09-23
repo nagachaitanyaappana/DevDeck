@@ -55,13 +55,9 @@ class MainWindow(QMainWindow):
         self._init_shortcuts()
         self._connect_process_signals()
 
-        # Initial load & scan if no projects saved yet
+        # Initial load: render saved projects and stacks (manual workflow, no auto-scan)
         saved_projects = self.config.get_projects()
-        if not saved_projects:
-            self._scan_projects(silent=True)
-        else:
-            self._render_projects(saved_projects.values())
-
+        self._render_projects(saved_projects.values())
         self._render_stacks()
         self._apply_filters()
 
@@ -212,6 +208,53 @@ class MainWindow(QMainWindow):
         self.cards_layout.setColumnStretch(0, 1)
         self.cards_layout.setColumnStretch(1, 1)
         self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+
+        # Empty State Display when 0 cards match or exist
+        self.empty_state_frame = QFrame(self.cards_container)
+        self.empty_state_frame.setObjectName("EmptyStateFrame")
+        self.empty_state_frame.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.empty_state_frame.setStyleSheet("""
+            QFrame#EmptyStateFrame {
+                background-color: #FFFFFF;
+                border: 2px solid #111111;
+                border-radius: 18px;
+                padding: 40px 24px;
+            }
+        """)
+        es_layout = QVBoxLayout(self.empty_state_frame)
+        es_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        es_layout.setSpacing(10)
+
+        es_icon = QLabel("📁✨")
+        es_icon.setStyleSheet("font-size: 38px; background: transparent;")
+        es_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        es_layout.addWidget(es_icon)
+
+        es_title = QLabel("No Projects or Stacks Yet")
+        es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #111111; background: transparent;")
+        es_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        es_layout.addWidget(es_title)
+
+        es_sub = QLabel("DevDeck is ready. Add projects manually or create multi-service stacks.")
+        es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #666666; background: transparent;")
+        es_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        es_layout.addWidget(es_sub)
+
+        es_btns = QHBoxLayout()
+        es_btns.setSpacing(10)
+        es_btns.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        es_add_p = QPushButton("➕ Add Project")
+        es_add_p.setStyleSheet("color: #FFFFFF; background-color: #111111; border: 2px solid #111111; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
+        es_add_p.clicked.connect(self._open_add_dialog)
+        es_btns.addWidget(es_add_p)
+
+        es_add_s = QPushButton("⚡ New Stack")
+        es_add_s.setStyleSheet("color: #111111; background-color: #FFF9C4; border: 2px solid #111111; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
+        es_add_s.clicked.connect(self._open_new_stack_dialog)
+        es_btns.addWidget(es_add_s)
+        es_layout.addLayout(es_btns)
+        self.empty_state_frame.setVisible(False)
 
         self.scroll_area.setWidget(self.cards_container)
         self.splitter.addWidget(self.scroll_area)
@@ -669,6 +712,11 @@ class MainWindow(QMainWindow):
         if self.active_filter == "⚡ Stacks":
             for card in self.cards.values():
                 card.setVisible(False)
+            if visible_count == 0 and hasattr(self, 'empty_state_frame'):
+                self.empty_state_frame.setVisible(True)
+                self.cards_layout.addWidget(self.empty_state_frame, 0, 0, 1, 2)
+            elif hasattr(self, 'empty_state_frame'):
+                self.empty_state_frame.setVisible(False)
             return
 
         # Filter Individual Project Cards
@@ -707,6 +755,12 @@ class MainWindow(QMainWindow):
                 col = visible_count % 2
                 self.cards_layout.addWidget(card, row, col)
                 visible_count += 1
+
+        if visible_count == 0 and hasattr(self, 'empty_state_frame'):
+            self.empty_state_frame.setVisible(True)
+            self.cards_layout.addWidget(self.empty_state_frame, 0, 0, 1, 2)
+        elif hasattr(self, 'empty_state_frame'):
+            self.empty_state_frame.setVisible(False)
 
     def _update_stats(self):
         total = len(self.cards)
