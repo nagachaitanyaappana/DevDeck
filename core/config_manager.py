@@ -14,10 +14,11 @@ CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 DEFAULT_CONFIG: Dict[str, Any] = {
     "scan_dirs": [os.path.expanduser("~/Projects")],
     "scan_depth": 3,
-    "theme": "dark",
+    "theme": "figma",
     "terminal_emulator": "xfce4-terminal",
     "editor_command": "code",
     "projects": {},
+    "stacks": {},
 }
 
 def generate_project_id(path: str, name: str) -> str:
@@ -101,3 +102,30 @@ class ConfigManager:
     def set_scan_dirs(self, dirs: List[str]) -> None:
         self.data["scan_dirs"] = dirs
         self.save()
+
+    def get_stacks(self) -> Dict[str, Dict[str, Any]]:
+        return self.data.get("stacks", {})
+
+    def get_stack(self, stack_id: str) -> Optional[Dict[str, Any]]:
+        return self.data.get("stacks", {}).get(stack_id)
+
+    def save_stack(self, stack: Dict[str, Any]) -> str:
+        """Adds or updates a multi-project stack."""
+        s_id = stack.get("id")
+        if not s_id:
+            s_id = hashlib.sha256(f"stack::{stack.get('name', 'stack')}::{len(stack.get('services', []))}".encode()).hexdigest()[:12]
+            stack["id"] = s_id
+
+        if "stacks" not in self.data:
+            self.data["stacks"] = {}
+        self.data["stacks"][s_id] = stack
+        self.save()
+        return s_id
+
+    def remove_stack(self, stack_id: str) -> bool:
+        """Removes a stack by ID."""
+        if stack_id in self.data.get("stacks", {}):
+            del self.data["stacks"][stack_id]
+            self.save()
+            return True
+        return False

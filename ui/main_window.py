@@ -22,6 +22,8 @@ from ui.theme import FIGMA_THEME_QSS, DARK_THEME_QSS
 from .components.project_card import ProjectCard
 from .components.log_viewer import LogViewer
 from .components.project_dialog import ProjectDialog
+from .components.stack_card import StackCard
+from .components.stack_dialog import StackDialog
 
 class MainWindow(QMainWindow):
     def __init__(self, config_manager: ConfigManager, process_manager: ProcessManager, app_icon: QIcon = None):
@@ -38,6 +40,7 @@ class MainWindow(QMainWindow):
             self.app_icon = QIcon()
         
         self.cards: Dict[str, ProjectCard] = {}
+        self.stack_cards: Dict[str, StackCard] = {}
         self.active_filter = "All"
         self.search_query = ""
 
@@ -58,6 +61,9 @@ class MainWindow(QMainWindow):
             self._scan_projects(silent=True)
         else:
             self._render_projects(saved_projects.values())
+
+        self._render_stacks()
+        self._apply_filters()
 
     def _init_ui(self):
         central = QWidget()
@@ -115,7 +121,7 @@ class MainWindow(QMainWindow):
         filter_grid = QGridLayout()
         filter_grid.setSpacing(6)
         self.filter_buttons = {}
-        filters = ["All", "Running", "Favorites", "Node / Web", "Java / Spring", "Python"]
+        filters = ["All", "⚡ Stacks", "Running", "Favorites", "Node / Web", "Java / Spring", "Python"]
         for idx, f in enumerate(filters):
             btn = QPushButton(f)
             btn.setObjectName("FilterPill")
@@ -134,11 +140,21 @@ class MainWindow(QMainWindow):
         actions_box = QVBoxLayout()
         actions_box.setSpacing(8)
 
-        add_btn = QPushButton("➕ Add Project")
+        add_row = QHBoxLayout()
+        add_row.setSpacing(8)
+
+        add_btn = QPushButton("➕ Project")
         add_btn.setObjectName("PrimaryBtn")
-        add_btn.setToolTip("Add a custom project manually")
+        add_btn.setToolTip("Add a single project manually")
         add_btn.clicked.connect(self._open_add_dialog)
-        actions_box.addWidget(add_btn)
+        add_row.addWidget(add_btn)
+
+        stack_btn = QPushButton("⚡ New Stack")
+        stack_btn.setObjectName("PrimaryBtn")
+        stack_btn.setToolTip("Create a multi-project stack (e.g. ITIAP Backend + Frontend)")
+        stack_btn.clicked.connect(self._open_new_stack_dialog)
+        add_row.addWidget(stack_btn)
+        actions_box.addLayout(add_row)
 
         row_acts = QHBoxLayout()
         row_acts.setSpacing(8)
@@ -304,6 +320,8 @@ class MainWindow(QMainWindow):
             self._apply_badge_style(b)
         for card in self.cards.values():
             card.update_card_style(new_theme)
+        for scard in self.stack_cards.values():
+            scard.update_card_style(new_theme)
 
     def _scan_projects(self, silent: bool = False):
         scanner = ProjectScanner(self.config.get_scan_dirs(), max_depth=5)
@@ -422,11 +440,15 @@ class MainWindow(QMainWindow):
     def _on_process_status(self, project_id: str, status: str):
         if project_id in self.cards:
             self.cards[project_id].set_status(status)
+        for s_card in self.stack_cards.values():
+            s_card.set_service_status(project_id, status)
         self._update_stats()
 
     def _on_url_detected(self, project_id: str, url: str):
         if project_id in self.cards:
             self.cards[project_id].set_detected_url(url)
+        for s_card in self.stack_cards.values():
+            s_card.set_service_url(project_id, url)
         if self.log_viewer.current_project_id == project_id:
             self.log_viewer.set_url(url)
         self._update_stats()
@@ -486,6 +508,103 @@ class MainWindow(QMainWindow):
             self.config.remove_project(project_id)
             self._render_projects(self.config.get_projects().values())
 
+    def _render_stacks(self):
+        """Render all configured multi-project stacks as StackCards."""
+        for card in self.stack_cards.values():
+            card.setParent(None)
+            card.deleteLater()
+        self.stack_cards.clear()
+
+        stacks = self.config.get_stacks()
+        for s_id, stack in stacks.items():
+            card = StackCard(stack, self.cards_container)
+            card.start_stack_clicked.connect(self._start_stack)
+            card.stop_stack_clicked.connect(self._stop_stack)
+            card.edit_stack_clicked.connect(self._edit_stack)
+            card.remove_stack_clicked.connect(self._remove_stack)
+            card.open_urls_clicked.connect(self._open_multiple_urls)
+            card.view_service_logs_clicked.connect(self._view_logs)
+
+            # Reconcile status & detected URL for each member service
+            for service in stack.get("services", []):
+                srv_id = service["id"]
+                card.set_service_status(srv_id, self.process_manager.get_status(srv_id))
+                url = self.process_manager.get_detected_url(srv_id)
+                if not url and service.get("port") and self.process_manager.is_port_listening(service["port"]):
+                    url = f"http://localhost:{service['port']}"
+                if url:
+                    card.set_service_url(srv_id, url)
+
+            card.update_card_style(self.config.data.get("theme", "figma"))
+            self.stack_cards[s_id] = card
+
+    def _open_new_stack_dialog(self):
+        """Open the multi-project stack builder dialog."""
+        existing = list(self.config.get_projects().values())
+        dialog = StackDialog(existing_projects=existing, parent=self)
+        if dialog.exec():
+            res = dialog.get_result()
+            if res:
+                self.config.save_stack(res)
+                self._render_stacks()
+                self._apply_filters()
+                self._update_stats()
+
+    def _edit_stack(self, stack: dict):
+        """Open stack builder dialog in edit mode."""
+        existing = list(self.config.get_projects().values())
+        dialog = StackDialog(stack_data=stack, existing_projects=existing, parent=self)
+        if dialog.exec():
+            res = dialog.get_result()
+            if res:
+                self.config.save_stack(res)
+                self._render_stacks()
+                self._apply_filters()
+                self._update_stats()
+
+    def _remove_stack(self, stack_id: str):
+        """Safely stops services and removes a stack."""
+        stack = self.config.get_stack(stack_id)
+        name = stack.get("name", "this stack") if stack else "this stack"
+        confirm = QMessageBox.question(
+            self, "Remove Stack",
+            f"Remove stack '{name}' from DevDeck? (No files on disk will be deleted)",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if confirm == QMessageBox.StandardButton.Yes:
+            if stack:
+                for s in stack.get("services", []):
+                    self.process_manager.stop_project(s["id"])
+            self.config.remove_stack(stack_id)
+            if stack_id in self.stack_cards:
+                c = self.stack_cards.pop(stack_id)
+                c.setParent(None)
+                c.deleteLater()
+            self._apply_filters()
+            self._update_stats()
+
+    def _start_stack(self, stack: dict):
+        """Starts all services in a stack simultaneously."""
+        services = stack.get("services", [])
+        if not services:
+            return
+        # Open log viewer on the first service for instant feedback
+        self._view_logs(services[0])
+        for s in services:
+            self.process_manager.start_project(s)
+        self._update_stats()
+
+    def _stop_stack(self, stack: dict):
+        """Stops all services in a stack."""
+        for s in stack.get("services", []):
+            self.process_manager.stop_project(s["id"])
+        self._update_stats()
+
+    def _open_multiple_urls(self, urls: List[str]):
+        """Opens multiple URLs in the default browser."""
+        for u in urls:
+            open_url(u)
+
     def _set_filter(self, filter_name: str):
         self.active_filter = filter_name
         for name, btn in self.filter_buttons.items():
@@ -506,6 +625,53 @@ class MainWindow(QMainWindow):
             self.cards_layout.takeAt(0)
 
         visible_count = 0
+
+        # Filter Stack Cards
+        for s_id, scard in self.stack_cards.items():
+            stk = scard.stack
+            name = stk.get("name", "").lower()
+            service_names = " ".join([s.get("name", "").lower() for s in stk.get("services", [])])
+            service_cmds = " ".join([s.get("command", "").lower() for s in stk.get("services", [])])
+            service_stacks = " ".join([s.get("stack", "").lower() for s in stk.get("services", [])])
+
+            matches_search = not self.search_query or (
+                self.search_query in name or
+                self.search_query in service_names or
+                self.search_query in service_cmds or
+                self.search_query in service_stacks
+            )
+
+            matches_filter = True
+            if self.active_filter == "⚡ Stacks":
+                matches_filter = True
+            elif self.active_filter == "Running":
+                matches_filter = any(r.status == "running" for r in scard.service_rows.values())
+            elif self.active_filter == "All":
+                matches_filter = True
+            elif self.active_filter == "Node / Web":
+                matches_filter = any(any(k in s.get("stack", "").lower() for k in ["node", "vite", "react", "next", "angular", "express"]) for s in stk.get("services", []))
+            elif self.active_filter == "Java / Spring":
+                matches_filter = any(any(k in s.get("stack", "").lower() for k in ["java", "spring", "gradle", "maven"]) for s in stk.get("services", []))
+            elif self.active_filter == "Python":
+                matches_filter = any(any(k in s.get("stack", "").lower() for k in ["python", "django", "fastapi"]) for s in stk.get("services", []))
+            else:
+                matches_filter = False
+
+            is_visible = matches_search and matches_filter
+            scard.setVisible(is_visible)
+            if is_visible:
+                row = visible_count // 2
+                col = visible_count % 2
+                self.cards_layout.addWidget(scard, row, col)
+                visible_count += 1
+
+        # If user specifically clicked "⚡ Stacks", hide individual project cards
+        if self.active_filter == "⚡ Stacks":
+            for card in self.cards.values():
+                card.setVisible(False)
+            return
+
+        # Filter Individual Project Cards
         for p_id, card in self.cards.items():
             proj = card.project
             name = proj.get("name", "").lower()
@@ -546,6 +712,15 @@ class MainWindow(QMainWindow):
         total = len(self.cards)
         running = sum(1 for c in self.cards.values() if c.status == "running")
         ports = sum(1 for c in self.cards.values() if c.detected_url or (c.status == "running" and c.project.get("url")))
+
+        for s_card in self.stack_cards.values():
+            for row in s_card.service_rows.values():
+                if row.service["id"] not in self.cards:
+                    total += 1
+                    if row.status == "running":
+                        running += 1
+                    if row.detected_url or (row.status == "running" and row.service.get("port")):
+                        ports += 1
 
         self.total_badge.val_label.setText(str(total))
         self.running_badge.val_label.setText(str(running))
