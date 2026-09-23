@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=DevDeck
+GenericName=Project Control Center
+Comment=One-click launcher and control deck for local development projects
+Exec=/home/naga/Projects/DevDeck/devdeck
+Icon=/home/naga/Projects/DevDeck/assets/icon.png
+Terminal=false
+Categories=Development;Utility;
+Keywords=development;server;runner;vite;gradle;python;projects;
+StartupNotify=true
+StartupWMClass=DevDeck
