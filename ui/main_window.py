@@ -110,9 +110,9 @@ class MainWindow(QMainWindow):
         left_layout.addWidget(self.search_input)
 
         # 5. Category Filter Pills
-        filter_label = QLabel("CATEGORIES")
-        filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #555555; letter-spacing: 0.5px; margin-top: 4px;")
-        left_layout.addWidget(filter_label)
+        self.filter_label = QLabel("CATEGORIES")
+        self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #555555; letter-spacing: 0.5px; margin-top: 4px;")
+        left_layout.addWidget(self.filter_label)
 
         filter_grid = QGridLayout()
         filter_grid.setSpacing(6)
@@ -230,15 +230,15 @@ class MainWindow(QMainWindow):
         es_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         es_layout.addWidget(es_icon)
 
-        es_title = QLabel("No Projects or Stacks Yet")
-        es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #111111; background: transparent;")
-        es_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        es_layout.addWidget(es_title)
+        self.es_title = QLabel("No Projects or Stacks Yet")
+        self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #111111; background: transparent;")
+        self.es_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        es_layout.addWidget(self.es_title)
 
-        es_sub = QLabel("DevDeck is ready. Add projects manually or create multi-service stacks.")
-        es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #666666; background: transparent;")
-        es_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        es_layout.addWidget(es_sub)
+        self.es_sub = QLabel("DevDeck is ready. Add projects manually or create multi-service stacks.")
+        self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #666666; background: transparent;")
+        self.es_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        es_layout.addWidget(self.es_sub)
 
         es_btns = QHBoxLayout()
         es_btns.setSpacing(10)
@@ -393,6 +393,40 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if app:
             app.setStyleSheet(DARK_THEME_QSS if new_theme == "dark" else FIGMA_THEME_QSS)
+        if new_theme == "dark":
+            self.hero_tag.setStyleSheet("background-color: #1e2638; color: #60a5fa; border: 1px solid #2d3952; font-weight: 800; font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;")
+            if hasattr(self, "filter_label"):
+                self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; margin-top: 4px;")
+            if hasattr(self, "empty_state_frame"):
+                self.empty_state_frame.setStyleSheet("""
+                    QFrame#EmptyStateFrame {
+                        background-color: #151b27;
+                        border: 1.5px solid #283449;
+                        border-radius: 18px;
+                        padding: 40px 24px;
+                    }
+                """)
+                if hasattr(self, "es_title"):
+                    self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #f1f5f9; background: transparent;")
+                if hasattr(self, "es_sub"):
+                    self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #94a3b8; background: transparent;")
+        else:
+            self.hero_tag.setStyleSheet("background-color: #111111; color: #FFFFFF; font-weight: 800; font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;")
+            if hasattr(self, "filter_label"):
+                self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #555555; letter-spacing: 0.5px; margin-top: 4px;")
+            if hasattr(self, "empty_state_frame"):
+                self.empty_state_frame.setStyleSheet("""
+                    QFrame#EmptyStateFrame {
+                        background-color: #FFFFFF;
+                        border: 2px solid #111111;
+                        border-radius: 18px;
+                        padding: 40px 24px;
+                    }
+                """)
+                if hasattr(self, "es_title"):
+                    self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #111111; background: transparent;")
+                if hasattr(self, "es_sub"):
+                    self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #666666; background: transparent;")
         for b in [self.total_badge, self.running_badge, self.ports_badge]:
             self._apply_badge_style(b)
         for card in self.cards.values():

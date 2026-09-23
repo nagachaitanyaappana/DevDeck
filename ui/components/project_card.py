@@ -363,6 +363,7 @@ class ProjectCard(QFrame):
                     background-color: #2e3c54;
                 }}
             """)
+        self._update_port_btn_label()
 
     def set_status(self, status: str):
         self.status = status
@@ -432,12 +433,21 @@ class ProjectCard(QFrame):
 
     def _update_port_btn_label(self):
         port = self.project.get("port")
-        if port:
-            self.port_btn.setText(f"🔌 :{port}")
-            self.port_btn.setStyleSheet("color: #0369A1; background-color: #E0F2FE; border: 1.5px solid #BAE6FD; border-radius: 8px; font-family: monospace; font-weight: 700; padding: 3px 8px;")
+        theme = getattr(self, "theme", "figma")
+        if theme == "figma":
+            if port:
+                self.port_btn.setText(f"🔌 :{port}")
+                self.port_btn.setStyleSheet("color: #0369A1; background-color: #E0F2FE; border: 1.5px solid #BAE6FD; border-radius: 8px; font-family: monospace; font-weight: 700; padding: 3px 8px;")
+            else:
+                self.port_btn.setText("🔌 Port")
+                self.port_btn.setStyleSheet("color: #4B5563; background-color: #F3F4F6; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 11px; font-weight: 600; padding: 3px 8px;")
         else:
-            self.port_btn.setText("🔌 Port")
-            self.port_btn.setStyleSheet("color: #6B7280; background-color: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 11px; padding: 3px 8px;")
+            if port:
+                self.port_btn.setText(f"🔌 :{port}")
+                self.port_btn.setStyleSheet("color: #60a5fa; background-color: #1e3a5f; border: 1.5px solid #2563eb; border-radius: 8px; font-family: monospace; font-weight: 700; padding: 3px 8px;")
+            else:
+                self.port_btn.setText("🔌 Port")
+                self.port_btn.setStyleSheet("color: #94a3b8; background-color: #1e2638; border: 1px solid #2e3c54; border-radius: 8px; font-size: 11px; font-weight: 600; padding: 3px 8px;")
 
     def _quick_edit_port(self):
         from PyQt6.QtWidgets import QInputDialog

@@ -14,7 +14,7 @@ from PyQt6.QtGui import QTextCursor, QPainter
 
 # ANSI Color Map to Hex
 ANSI_COLORS = {
-    30: "#1e293b", 31: "#f87171", 32: "#4ade80", 33: "#fde047",
+    30: "#94a3b8", 31: "#f87171", 32: "#4ade80", 33: "#fde047",
     34: "#60a5fa", 35: "#c084fc", 36: "#2dd4bf", 37: "#f1f5f9",
     90: "#64748b", 91: "#ef4444", 92: "#22c55e", 93: "#eab308",
     94: "#3b82f6", 95: "#a855f7", 96: "#06b6d4", 97: "#ffffff",
