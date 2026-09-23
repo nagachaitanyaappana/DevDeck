@@ -6,11 +6,11 @@ Handles streaming stdout/stderr, ANSI color parsing, auto-scroll, searching, and
 import re
 import html
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
-    QTextEdit, QLineEdit, QCheckBox, QToolButton
+    QFrame, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
+    QTextEdit, QLineEdit, QCheckBox, QToolButton, QStyleOption, QStyle
 )
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QTextCursor
+from PyQt6.QtGui import QTextCursor, QPainter
 
 # ANSI Color Map to Hex
 ANSI_COLORS = {
@@ -54,7 +54,7 @@ def ansi_to_html(text: str) -> str:
     formatted = formatted.replace('\n', '<br>')
     return formatted
 
-class LogViewer(QWidget):
+class LogViewer(QFrame):
     """Integrated Console Log Viewer with live streaming and ANSI support."""
     close_requested = pyqtSignal()
     open_url_requested = pyqtSignal(str)
@@ -65,11 +65,67 @@ class LogViewer(QWidget):
         self.current_project_name = ""
         self.current_url = ""
         self.auto_scroll = True
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
         self._init_ui()
 
+    def paintEvent(self, event):
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)
+        super().paintEvent(event)
+
     def _init_ui(self):
         self.setObjectName("LogDrawer")
+        self.setStyleSheet("""
+            QFrame#LogDrawer {
+                background-color: #0A0A0A;
+                border: 2px solid #111111;
+                border-radius: 16px;
+            }
+            QTextEdit#LogViewer {
+                background-color: #000000;
+                color: #00FF66;
+                border: 1px solid #222222;
+                border-radius: 10px;
+                font-family: 'JetBrains Mono', 'Fira Code', 'DejaVu Sans Mono', monospace;
+                font-size: 12px;
+                padding: 10px;
+                selection-background-color: #2563EB;
+            }
+            QLineEdit#LogSearch {
+                background-color: #1A1A1A;
+                color: #FFFFFF;
+                border: 1px solid #333333;
+                border-radius: 8px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            QLineEdit#LogSearch:focus {
+                border: 1px solid #FFC107;
+            }
+            QCheckBox#LogAutoScroll {
+                color: #A3A3A3;
+                font-size: 11px;
+                font-weight: 600;
+                background: transparent;
+            }
+            QPushButton#LogBtn {
+                background-color: #1A1A1A;
+                color: #E5E7EB;
+                border: 1px solid #333333;
+                border-radius: 8px;
+                padding: 4px 10px;
+                font-size: 11px;
+                font-weight: 700;
+            }
+            QPushButton#LogBtn:hover {
+                background-color: #2A2A2A;
+                color: #FFFFFF;
+            }
+        """)
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(14, 10, 14, 12)
         layout.setSpacing(8)
@@ -80,13 +136,27 @@ class LogViewer(QWidget):
 
         # Project Info Header
         self.title_label = QLabel("📋 Console Logs: No project selected")
-        self.title_label.setStyleSheet("font-weight: 700; font-size: 13px; color: #E0E0E0;")
+        self.title_label.setStyleSheet("font-weight: 800; font-size: 12px; color: #FFFFFF; background: transparent;")
         toolbar.addWidget(self.title_label)
 
         # URL button if detected
         self.url_btn = QPushButton("🌐 Open URL")
         self.url_btn.setObjectName("BrowserBtn")
         self.url_btn.setVisible(False)
+        self.url_btn.setStyleSheet("""
+            QPushButton#BrowserBtn {
+                background-color: #2563EB;
+                color: #FFFFFF;
+                border: none;
+                border-radius: 8px;
+                padding: 4px 10px;
+                font-size: 11px;
+                font-weight: 700;
+            }
+            QPushButton#BrowserBtn:hover {
+                background-color: #1D4ED8;
+            }
+        """)
         self.url_btn.clicked.connect(self._on_open_url_clicked)
         toolbar.addWidget(self.url_btn)
 
@@ -94,33 +164,37 @@ class LogViewer(QWidget):
 
         # Search / Filter
         self.search_input = QLineEdit()
+        self.search_input.setObjectName("LogSearch")
         self.search_input.setPlaceholderText("Filter logs...")
-        self.search_input.setStyleSheet("max-width: 180px; padding: 4px 8px; font-size: 12px;")
+        self.search_input.setStyleSheet("max-width: 180px; padding: 4px 8px; font-size: 11px; background-color: #1A1A1A; color: #FFFFFF; border: 1px solid #333333; border-radius: 8px;")
         self.search_input.textChanged.connect(self._on_filter_changed)
         toolbar.addWidget(self.search_input)
 
         # Auto-scroll checkbox
         self.scroll_cb = QCheckBox("Autoscroll")
+        self.scroll_cb.setObjectName("LogAutoScroll")
         self.scroll_cb.setChecked(True)
-        self.scroll_cb.setStyleSheet("color: #BBBBBB; font-size: 12px;")
+        self.scroll_cb.setStyleSheet("color: #A3A3A3; font-size: 11px; font-weight: 600; background: transparent;")
         self.scroll_cb.toggled.connect(self._on_scroll_toggled)
         toolbar.addWidget(self.scroll_cb)
 
         # Clear Logs Button
         self.clear_btn = QPushButton("Clear")
-        self.clear_btn.setStyleSheet("padding: 4px 10px; font-size: 11px;")
+        self.clear_btn.setObjectName("LogBtn")
+        self.clear_btn.setStyleSheet("background-color: #1A1A1A; color: #E5E7EB; border: 1px solid #333333; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700;")
         self.clear_btn.clicked.connect(self.clear_logs)
         toolbar.addWidget(self.clear_btn)
 
         # Copy Logs Button
         self.copy_btn = QPushButton("Copy All")
-        self.copy_btn.setStyleSheet("padding: 4px 10px; font-size: 11px;")
+        self.copy_btn.setObjectName("LogBtn")
+        self.copy_btn.setStyleSheet("background-color: #1A1A1A; color: #E5E7EB; border: 1px solid #333333; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700;")
         self.copy_btn.clicked.connect(self._copy_all)
         toolbar.addWidget(self.copy_btn)
 
         # Close / Minimize Button
         self.close_btn = QPushButton("✕")
-        self.close_btn.setStyleSheet("padding: 4px 8px; font-size: 12px; background: transparent; border: none; color: #BBBBBB;")
+        self.close_btn.setStyleSheet("padding: 4px 8px; font-size: 13px; font-weight: bold; background: transparent; border: none; color: #888888;")
         self.close_btn.clicked.connect(self.close_requested.emit)
         toolbar.addWidget(self.close_btn)
 
@@ -131,6 +205,7 @@ class LogViewer(QWidget):
         self.text_edit.setObjectName("LogViewer")
         self.text_edit.setReadOnly(True)
         self.text_edit.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+        self.text_edit.setStyleSheet("background-color: #000000; color: #E5E7EB; border: 1px solid #222222; border-radius: 10px; font-family: monospace; font-size: 12px; padding: 10px;")
         layout.addWidget(self.text_edit)
 
     def set_active_project(self, project_id: str, project_name: str, url: str = ""):

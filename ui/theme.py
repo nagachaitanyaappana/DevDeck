@@ -365,18 +365,18 @@ QLabel#MetricsLabel {
 
 /* ─── Log Console (Dark terminal feel with clean black border) ─── */
 QFrame#LogDrawer {
-    background-color: #1A1A1A;
-    border: 2.5px solid #111111;
-    border-radius: 18px;
+    background-color: #0A0A0A;
+    border: 2px solid #111111;
+    border-radius: 16px;
 }
 QTextEdit#LogViewer {
-    background-color: #111111;
-    border: none;
-    border-radius: 12px;
-    color: #E0E0E0;
+    background-color: #000000;
+    border: 1px solid #222222;
+    border-radius: 10px;
+    color: #E5E7EB;
     font-family: "JetBrains Mono", "Fira Code", "DejaVu Sans Mono", monospace;
     font-size: 12px;
-    padding: 12px;
+    padding: 10px;
 }
 
 /* ─── Dialogs ─── */
