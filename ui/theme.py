@@ -138,50 +138,49 @@ QFrame#FilterBar {
 /* ─── Search ─── */
 QLineEdit#SearchBar {
     background-color: #FFFFFF;
-    border: 2px solid #E0E0E0;
+    border: 2px solid #111111;
     border-radius: 14px;
-    padding: 9px 18px;
+    padding: 9px 16px;
     color: #111111;
     font-size: 13px;
-    font-weight: 500;
-    min-width: 260px;
+    font-weight: 600;
+    min-width: 250px;
 }
 QLineEdit#SearchBar:focus {
-    border: 2px solid #111111;
+    border: 2.5px solid #000000;
 }
 
 /* ─── Filter Pills ─── */
 QPushButton#FilterPill {
-    background-color: rgba(255, 255, 255, 0.5);
-    border: none;
-    border-radius: 18px;
-    padding: 7px 16px;
-    color: #333333;
-    font-weight: 700;
-    font-size: 12px;
+    background-color: #FFFFFF;
+    border: 2px solid #111111;
+    border-radius: 14px;
+    padding: 6px 12px;
+    color: #111111;
+    font-weight: 800;
+    font-size: 11px;
 }
 QPushButton#FilterPill:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-    color: #111111;
+    background-color: #FFF9C4;
 }
 QPushButton#FilterPill[checked="true"] {
     background-color: #111111;
     color: #FFFFFF;
+    border: 2px solid #111111;
 }
 
 /* ─── Buttons (default) ─── */
 QPushButton {
     background-color: #FFFFFF;
-    border: 2px solid #E0E0E0;
+    border: 2px solid #111111;
     border-radius: 12px;
-    padding: 8px 18px;
+    padding: 7px 16px;
     color: #111111;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 12px;
 }
 QPushButton:hover {
-    background-color: #F5F5F5;
-    border-color: #CCCCCC;
+    background-color: #FFF9C4;
 }
 QPushButton:pressed {
     background-color: #EEEEEE;
@@ -193,13 +192,12 @@ QPushButton#PrimaryBtn {
     border: 2px solid #111111;
     color: #FFFFFF;
     border-radius: 14px;
-    padding: 8px 22px;
+    padding: 8px 18px;
     font-weight: 900;
     font-size: 13px;
 }
 QPushButton#PrimaryBtn:hover {
     background-color: #333333;
-    border-color: #333333;
 }
 
 /* Start = Solid Black */
@@ -208,82 +206,80 @@ QPushButton#StartBtn {
     border: 2px solid #111111;
     color: #FFFFFF;
     font-weight: 900;
-    border-radius: 14px;
-    padding: 8px 22px;
-    font-size: 13px;
+    border-radius: 12px;
+    padding: 7px 16px;
+    font-size: 12px;
 }
 QPushButton#StartBtn:hover {
-    background-color: #2E7D32;
-    border-color: #2E7D32;
+    background-color: #16A34A;
+    border-color: #16A34A;
 }
 
 /* Stop = Red */
 QPushButton#StopBtn {
-    background-color: #D32F2F;
-    border: 2px solid #D32F2F;
+    background-color: #DC2626;
+    border: 2px solid #111111;
     color: #FFFFFF;
     font-weight: 900;
-    border-radius: 14px;
-    padding: 8px 22px;
-    font-size: 13px;
+    border-radius: 12px;
+    padding: 7px 16px;
+    font-size: 12px;
 }
 QPushButton#StopBtn:hover {
-    background-color: #B71C1C;
-    border-color: #B71C1C;
+    background-color: #B91C1C;
 }
 
 /* Browser = Outline ("Undo" style) */
 QPushButton#BrowserBtn {
     background-color: #FFFFFF;
-    border: 2px solid #CCCCCC;
+    border: 2px solid #111111;
     color: #111111;
-    font-weight: 700;
-    border-radius: 14px;
-    padding: 8px 16px;
+    font-weight: 800;
+    border-radius: 12px;
+    padding: 7px 14px;
     font-size: 12px;
 }
 QPushButton#BrowserBtn:hover {
-    background-color: #FFF8E1;
-    border-color: #FFC107;
-    color: #111111;
+    background-color: #FFF9C4;
 }
 QPushButton#BrowserBtn:disabled {
-    background-color: #F5F5F5;
-    border-color: #E0E0E0;
-    color: #AAAAAA;
+    background-color: #F3F4F6;
+    border-color: #9CA3AF;
+    color: #9CA3AF;
 }
 
 /* Soft grey icon buttons */
 QPushButton#IconBtn {
-    background-color: #F5F5F5;
-    border: 1px solid #E0E0E0;
+    background-color: #FFFFFF;
+    border: 1.5px solid #111111;
     border-radius: 10px;
-    padding: 5px 10px;
-    color: #555555;
-    font-weight: 600;
+    padding: 5px 8px;
+    color: #111111;
+    font-weight: 700;
 }
 QPushButton#IconBtn:hover {
-    background-color: #EEEEEE;
-    color: #111111;
+    background-color: #FFF9C4;
+    border-color: #000000;
 }
 
-/* ─── Project Card (White floating modal) ─── */
+/* ─── Project Card (White floating modal with crisp black border) ─── */
 QFrame#ProjectCard {
     background-color: #FFFFFF;
-    border: none;
-    border-radius: 20px;
-    padding: 18px;
+    border: 2px solid #111111;
+    border-radius: 18px;
+    padding: 14px;
 }
 QFrame#ProjectCard:hover {
     background-color: #FFFFFF;
+    border: 2.5px solid #000000;
 }
 QFrame#ProjectCard[running="true"] {
-    border: 3px solid #4CAF50;
+    border: 3px solid #16A34A;
     background-color: #FFFFFF;
 }
 
 QLabel#CardTitle {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 900;
     color: #111111;
     letter-spacing: -0.3px;
@@ -291,85 +287,86 @@ QLabel#CardTitle {
 
 QLabel#CardPath {
     font-size: 11px;
-    color: #999999;
-    font-weight: 500;
+    color: #666666;
+    font-weight: 600;
 }
 
 QLabel#CardCmd {
     font-size: 11px;
-    color: #555555;
-    background-color: #F5F5F5;
-    border: 1px solid #EEEEEE;
+    color: #111111;
+    background-color: #F9FAFB;
+    border: 1.5px solid #111111;
     border-radius: 8px;
-    padding: 5px 10px;
+    padding: 4px 8px;
     font-family: monospace;
-    font-weight: 600;
+    font-weight: 700;
 }
 
-/* Icon Squircle (soft pastel yellow circle like in reference) */
+/* Icon Squircle (soft pastel yellow circle with black border) */
 QFrame#IconSquircle {
     background-color: #FFF3CD;
-    border: none;
-    border-radius: 22px;
-    min-width: 44px;
-    max-width: 44px;
-    min-height: 44px;
-    max-height: 44px;
+    border: 2px solid #111111;
+    border-radius: 20px;
+    min-width: 40px;
+    max-width: 40px;
+    min-height: 40px;
+    max-height: 40px;
 }
 QLabel#SquircleIcon {
-    font-size: 22px;
+    font-size: 20px;
     background: transparent;
 }
 
 /* Badges */
 QLabel#StackBadge {
-    background-color: #F5F5F5;
-    border: 1px solid #E8E8E8;
+    background-color: #FFFFFF;
+    border: 1.5px solid #111111;
     border-radius: 8px;
-    padding: 3px 10px;
+    padding: 3px 8px;
     font-size: 11px;
-    font-weight: 700;
-    color: #555555;
+    font-weight: 800;
+    color: #111111;
 }
 
 QLabel#StatusBadge {
     border-radius: 10px;
-    padding: 4px 12px;
+    padding: 4px 10px;
     font-size: 11px;
     font-weight: 800;
+    border: 1.5px solid #111111;
 }
 QLabel#StatusBadge[status="running"] {
-    background-color: #E8F5E9;
-    color: #2E7D32;
-    border: 1px solid #C8E6C9;
+    background-color: #DCFCE7;
+    color: #15803D;
+    border: 1.5px solid #16A34A;
 }
 QLabel#StatusBadge[status="starting"] {
-    background-color: #FFF8E1;
-    color: #F57F17;
-    border: 1px solid #FFECB3;
+    background-color: #FEF3C7;
+    color: #B45309;
+    border: 1.5px solid #D97706;
 }
 QLabel#StatusBadge[status="stopped"] {
-    background-color: #F5F5F5;
-    color: #999999;
-    border: 1px solid #EEEEEE;
+    background-color: #F3F4F6;
+    color: #4B5563;
+    border: 1.5px solid #111111;
 }
 QLabel#StatusBadge[status="error"] {
-    background-color: #FFEBEE;
-    color: #C62828;
-    border: 1px solid #FFCDD2;
+    background-color: #FEE2E2;
+    color: #B91C1C;
+    border: 1.5px solid #DC2626;
 }
 
 QLabel#MetricsLabel {
     font-size: 11px;
-    color: #1976D2;
+    color: #0284C7;
     font-family: monospace;
     font-weight: 700;
 }
 
-/* ─── Log Console (Dark terminal feel) ─── */
+/* ─── Log Console (Dark terminal feel with clean black border) ─── */
 QFrame#LogDrawer {
     background-color: #1A1A1A;
-    border-top: 3px solid #FFC107;
+    border: 2.5px solid #111111;
     border-radius: 18px;
 }
 QTextEdit#LogViewer {

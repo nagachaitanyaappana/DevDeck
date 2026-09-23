@@ -6,7 +6,7 @@ Provides 1-click Start/Stop, Browser launch, Logs toggle, and developer shortcut
 import os
 from PyQt6.QtWidgets import (
     QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
-    QMenu, QMessageBox, QWidget
+    QMenu, QMessageBox, QWidget, QStyleOption, QStyle
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QAction, QCursor, QPainter
@@ -31,6 +31,7 @@ class ElidedLabel(QLabel):
     def __init__(self, text="", parent=None):
         super().__init__(text, parent)
         self._full_text = text
+        self.setStyleSheet("background: transparent;")
         if text:
             self.setToolTip(text)
 
@@ -72,11 +73,19 @@ class ProjectCard(QFrame):
         self.status = "stopped"
         self.detected_url = self.project.get("url", "")
         self.setObjectName("ProjectCard")
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._init_ui()
+
+    def paintEvent(self, event):
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)
+        super().paintEvent(event)
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(14, 12, 14, 12)
+        layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(10)
 
         # ─── Top Row: Icon Squircle, Title, Stack Badge, Port Badge, Favorite, More, Close ───
@@ -86,6 +95,7 @@ class ProjectCard(QFrame):
         # Stack Icon Squircle (Soft pastel circle like in Figma design)
         icon_squircle = QFrame()
         icon_squircle.setObjectName("IconSquircle")
+        icon_squircle.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         sq_layout = QHBoxLayout(icon_squircle)
         sq_layout.setContentsMargins(0, 0, 0, 0)
         sq_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -240,6 +250,33 @@ class ProjectCard(QFrame):
         bot_row.addWidget(self.folder_btn)
 
         layout.addLayout(bot_row)
+        self.update_card_style("figma")
+
+    def update_card_style(self, theme: str = "figma"):
+        self.theme = theme
+        is_running = (self.status == "running")
+        if theme == "figma":
+            border = "3px solid #16A34A" if is_running else "2px solid #111111"
+            self.setStyleSheet(f"""
+                QFrame#ProjectCard {{
+                    background-color: #FFFFFF;
+                    border: {border};
+                    border-radius: 18px;
+                }}
+            """)
+            self.title_label.setStyleSheet("background: transparent; color: #111111; font-weight: 900; font-size: 15px;")
+            self.path_label.setStyleSheet("background: transparent; color: #666666; font-size: 11px;")
+        else:
+            border = "2px solid #10b981" if is_running else "1.5px solid #283449"
+            self.setStyleSheet(f"""
+                QFrame#ProjectCard {{
+                    background-color: #151b27;
+                    border: {border};
+                    border-radius: 14px;
+                }}
+            """)
+            self.title_label.setStyleSheet("background: transparent; color: #f1f5f9; font-weight: 800; font-size: 14px;")
+            self.path_label.setStyleSheet("background: transparent; color: #64748b; font-size: 11px;")
 
     def set_status(self, status: str):
         self.status = status
@@ -250,6 +287,9 @@ class ProjectCard(QFrame):
         self.setProperty("running", "true" if status == "running" else "false")
         self.style().unpolish(self)
         self.style().polish(self)
+
+        theme = getattr(self, "theme", "figma")
+        self.update_card_style(theme)
 
         if status == "running":
             self.status_badge.setText("● Running")

@@ -302,6 +302,8 @@ class MainWindow(QMainWindow):
             app.setStyleSheet(DARK_THEME_QSS if new_theme == "dark" else FIGMA_THEME_QSS)
         for b in [self.total_badge, self.running_badge, self.ports_badge]:
             self._apply_badge_style(b)
+        for card in self.cards.values():
+            card.update_card_style(new_theme)
 
     def _scan_projects(self, silent: bool = False):
         scanner = ProjectScanner(self.config.get_scan_dirs(), max_depth=5)
@@ -369,6 +371,7 @@ class MainWindow(QMainWindow):
             if url:
                 card.set_detected_url(url)
 
+            card.update_card_style(self.config.data.get("theme", "figma"))
             self.cards[p_id] = card
 
         self._apply_filters()
