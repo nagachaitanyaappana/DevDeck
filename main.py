@@ -44,9 +44,8 @@ def main():
     config_mgr = ConfigManager()
     process_mgr = ProcessManager()
 
-    # Apply Neo-Clean Figma UI Theme Stylesheet (or configured theme)
-    theme_choice = config_mgr.data.get("theme", "figma")
-    app.setStyleSheet(DARK_THEME_QSS if theme_choice == "dark" else FIGMA_THEME_QSS)
+    # Apply Modern Blue-Black Dark Theme
+    app.setStyleSheet(DARK_THEME_QSS)
 
     # Clean shutdown of all running child servers on app exit
     app.aboutToQuit.connect(process_mgr.stop_all)

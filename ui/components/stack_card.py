@@ -48,8 +48,8 @@ class ServiceMiniRow(QFrame):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet("""
             QFrame {
-                background-color: #F9FAFB;
-                border: 1px solid #E5E7EB;
+                background-color: #1a2234;
+                border: 1px solid #2a3852;
                 border-radius: 10px;
                 padding: 4px 8px;
             }
@@ -60,7 +60,7 @@ class ServiceMiniRow(QFrame):
         layout.setSpacing(8)
 
         # Service tech icon & name
-        self.theme = "figma"
+        self.theme = "dark"
         icon = STACK_ICONS.get(service.get("stack", ""), "💻")
         name = service.get("name", "Service")
         self.icon_lbl = QLabel(icon)
@@ -68,7 +68,7 @@ class ServiceMiniRow(QFrame):
         layout.addWidget(self.icon_lbl)
 
         self.name_label = QLabel(name)
-        self.name_label.setStyleSheet("font-weight: 800; font-size: 13px; color: #111111; background: transparent;")
+        self.name_label.setStyleSheet("font-weight: 800; font-size: 13px; color: #f1f5f9; background: transparent;")
         layout.addWidget(self.name_label)
 
         # Port Button (Clickable to change port!)
@@ -164,48 +164,41 @@ class ServiceMiniRow(QFrame):
         name = self.service.get("name", "Service")
         self.port_btn.setText(f"🔌 :{port}" if port else "🔌 Port")
         self.port_btn.setToolTip(f"Click to change port for {name} (currently :{port or 'None'})")
-        th = getattr(self, "theme", "figma")
-        if th == "figma":
-            if port:
-                self.port_btn.setStyleSheet("color: #0369A1; background-color: #E0F2FE; border: 1.5px solid #BAE6FD; border-radius: 8px; font-family: monospace; font-size: 12px; font-weight: 800; padding: 4px 8px;")
-            else:
-                self.port_btn.setStyleSheet("color: #4B5563; background-color: #F3F4F6; border: 1.5px solid #CBD5E1; border-radius: 8px; font-size: 12px; font-weight: 700; padding: 4px 8px;")
+        if port:
+            self.port_btn.setStyleSheet("color: #60a5fa; background-color: #1e3a5f; border: 1px solid #2563eb; border-radius: 8px; font-family: monospace; font-size: 12px; font-weight: 800; padding: 4px 8px;")
         else:
-            if port:
-                self.port_btn.setStyleSheet("color: #60a5fa; background-color: #1e3a5f; border: 1px solid #2563eb; border-radius: 8px; font-family: monospace; font-size: 12px; font-weight: 800; padding: 4px 8px;")
-            else:
-                self.port_btn.setStyleSheet("color: #94a3b8; background-color: #1e2638; border: 1px solid #2e3c54; border-radius: 8px; font-size: 12px; font-weight: 700; padding: 4px 8px;")
+            self.port_btn.setStyleSheet("color: #94a3b8; background-color: #1e2638; border: 1px solid #2e3c54; border-radius: 8px; font-size: 12px; font-weight: 700; padding: 4px 8px;")
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         menu.setStyleSheet("""
             QMenu {
-                background-color: #111111;
-                border: 2px solid #333333;
-                border-radius: 10px;
+                background-color: #151b27;
+                border: 1px solid #2e3c54;
+                border-radius: 8px;
                 padding: 6px;
-                color: #FFFFFF;
+                color: #f1f5f9;
             }
             QMenu::item {
                 padding: 8px 20px;
                 border-radius: 6px;
-                color: #FFFFFF;
+                color: #f1f5f9;
                 background-color: transparent;
                 font-weight: 600;
                 font-size: 12px;
             }
             QMenu::item:hover, QMenu::item:selected {
-                background-color: #FFC107;
-                color: #111111;
+                background-color: #2563eb;
+                color: #ffffff;
                 font-weight: 800;
             }
             QMenu::item:disabled {
-                color: #666666;
+                color: #64748b;
                 background-color: transparent;
             }
             QMenu::separator {
                 height: 1px;
-                background-color: #2E2E2E;
+                background-color: #242f44;
                 margin: 4px 8px;
             }
         """)
@@ -235,142 +228,75 @@ class ServiceMiniRow(QFrame):
 
         menu.exec(event.globalPos())
 
-    def update_row_style(self, theme: str):
-        self.theme = theme
-        if theme == "figma":
-            self.name_label.setStyleSheet("font-weight: 800; font-size: 13px; color: #111111; background: transparent;")
-            self.cmd_lbl.setStyleSheet("font-family: monospace; font-size: 11px; color: #4B5563; background: transparent;")
-            for btn in [self.code_btn, self.term_btn, self.folder_btn, self.logs_btn, self.url_btn, self.restart_btn]:
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #FFFFFF;
-                        border: 1.5px solid #111111;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #111111;
-                        padding: 0px;
-                    }
-                    QPushButton:hover {
-                        background-color: #FFF9C4;
-                    }
-                """)
-        else:
-            self.name_label.setStyleSheet("font-weight: 800; font-size: 13px; color: #f1f5f9; background: transparent;")
-            self.cmd_lbl.setStyleSheet("font-family: monospace; font-size: 11px; color: #94a3b8; background: transparent;")
-            for btn in [self.code_btn, self.term_btn, self.folder_btn, self.logs_btn, self.url_btn, self.restart_btn]:
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #1e2638;
-                        border: 1px solid #2e3c54;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #f1f5f9;
-                        padding: 0px;
-                    }
-                    QPushButton:hover {
-                        background-color: #2e3c54;
-                    }
-                """)
+    def update_row_style(self, theme: str = "dark"):
+        self.theme = "dark"
+        self.name_label.setStyleSheet("font-weight: 800; font-size: 13px; color: #f1f5f9; background: transparent;")
+        self.cmd_lbl.setStyleSheet("font-family: monospace; font-size: 11px; color: #94a3b8; background: transparent;")
+        for btn in [self.code_btn, self.term_btn, self.folder_btn, self.logs_btn, self.url_btn, self.restart_btn]:
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e2638;
+                    border: 1px solid #2e3c54;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #f1f5f9;
+                    padding: 0px;
+                }
+                QPushButton:hover {
+                    background-color: #2e3c54;
+                }
+            """)
         self._update_port_btn_style()
-        self.set_status(self.status, theme)
+        self.set_status(self.status, "dark")
 
     def set_status(self, status: str, theme: Optional[str] = None):
         self.status = status
-        if theme:
-            self.theme = theme
-        th = getattr(self, "theme", "figma")
-        if th == "figma":
-            if status == "running":
-                self.status_lbl.setText("● Running")
-                self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #15803D; background: transparent;")
-                self.setStyleSheet("""
-                    QFrame {
-                        background-color: #F0FDF4;
-                        border: 1px solid #BBF7D0;
-                        border-radius: 10px;
-                        padding: 4px 8px;
-                    }
-                """)
-            elif status == "starting":
-                self.status_lbl.setText("⏳ Starting...")
-                self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #D97706; background: transparent;")
-                self.setStyleSheet("""
-                    QFrame {
-                        background-color: #FFFBEB;
-                        border: 1px solid #FDE68A;
-                        border-radius: 10px;
-                        padding: 4px 8px;
-                    }
-                """)
-            elif status == "error":
-                self.status_lbl.setText("⚠️ Error")
-                self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #DC2626; background: transparent;")
-                self.setStyleSheet("""
-                    QFrame {
-                        background-color: #FEF2F2;
-                        border: 1px solid #FECACA;
-                        border-radius: 10px;
-                        padding: 4px 8px;
-                    }
-                """)
-            else:
-                self.status_lbl.setText("● Stopped")
-                self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 700; color: #6B7280; background: transparent;")
-                self.setStyleSheet("""
-                    QFrame {
-                        background-color: #F9FAFB;
-                        border: 1px solid #E5E7EB;
-                        border-radius: 10px;
-                        padding: 4px 8px;
-                    }
-                """)
+        self.theme = "dark"
+        if status == "running":
+            self.status_lbl.setText("● Running")
+            self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #34d399; background: transparent;")
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #064e3b;
+                    border: 1px solid #059669;
+                    border-radius: 10px;
+                    padding: 4px 8px;
+                }
+            """)
+        elif status == "starting":
+            self.status_lbl.setText("⏳ Starting...")
+            self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #fbbf24; background: transparent;")
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #451a03;
+                    border: 1px solid #d97706;
+                    border-radius: 10px;
+                    padding: 4px 8px;
+                }
+            """)
+        elif status == "error":
+            self.status_lbl.setText("⚠️ Error")
+            self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #f87171; background: transparent;")
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #4c0519;
+                    border: 1px solid #e11d48;
+                    border-radius: 10px;
+                    padding: 4px 8px;
+                }
+            """)
         else:
-            if status == "running":
-                self.status_lbl.setText("● Running")
-                self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #34d399; background: transparent;")
-                self.setStyleSheet("""
-                    QFrame {
-                        background-color: #064e3b;
-                        border: 1px solid #059669;
-                        border-radius: 10px;
-                        padding: 4px 8px;
-                    }
-                """)
-            elif status == "starting":
-                self.status_lbl.setText("⏳ Starting...")
-                self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #fbbf24; background: transparent;")
-                self.setStyleSheet("""
-                    QFrame {
-                        background-color: #451a03;
-                        border: 1px solid #d97706;
-                        border-radius: 10px;
-                        padding: 4px 8px;
-                    }
-                """)
-            elif status == "error":
-                self.status_lbl.setText("⚠️ Error")
-                self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 800; color: #f87171; background: transparent;")
-                self.setStyleSheet("""
-                    QFrame {
-                        background-color: #4c0519;
-                        border: 1px solid #e11d48;
-                        border-radius: 10px;
-                        padding: 4px 8px;
-                    }
-                """)
-            else:
-                self.status_lbl.setText("● Stopped")
-                self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 700; color: #94a3b8; background: transparent;")
-                self.setStyleSheet("""
-                    QFrame {
-                        background-color: #1a2234;
-                        border: 1px solid #2a3852;
-                        border-radius: 10px;
-                        padding: 4px 8px;
-                    }
-                """)
+            self.status_lbl.setText("● Stopped")
+            self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 700; color: #94a3b8; background: transparent;")
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #1a2234;
+                    border: 1px solid #2a3852;
+                    border-radius: 10px;
+                    padding: 4px 8px;
+                }
+            """)
 
 
 class StackCard(QFrame):
@@ -414,14 +340,14 @@ class StackCard(QFrame):
         top_row = QHBoxLayout()
         top_row.setSpacing(10)
 
-        # Icon squircle (pastel orange/yellow circle)
+        # Icon squircle (pastel blue/dark circle)
         icon_box = QFrame()
         icon_box.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        icon_box.setStyleSheet("background-color: #FEF08A; border: 2px solid #111111; border-radius: 20px; min-width: 40px; max-width: 40px; min-height: 40px; max-height: 40px;")
+        icon_box.setStyleSheet("background-color: #1e2638; border: 1px solid #2d3952; border-radius: 20px; min-width: 40px; max-width: 40px; min-height: 40px; max-height: 40px;")
         ib_layout = QHBoxLayout(icon_box)
         ib_layout.setContentsMargins(0, 0, 0, 0)
         ib_lbl = QLabel("⚡")
-        ib_lbl.setStyleSheet("font-size: 20px; background: transparent;")
+        ib_lbl.setStyleSheet("font-size: 20px; color: #38bdf8; background: transparent;")
         ib_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         ib_layout.addWidget(ib_lbl)
         top_row.addWidget(icon_box)
@@ -430,9 +356,9 @@ class StackCard(QFrame):
         t_box = QVBoxLayout()
         t_box.setSpacing(2)
         self.title_lbl = QLabel(self.stack.get("name", "Project Stack"))
-        self.title_lbl.setStyleSheet("font-size: 15px; font-weight: 900; color: #111111; background: transparent;")
+        self.title_lbl.setStyleSheet("font-size: 15px; font-weight: 900; color: #f1f5f9; background: transparent;")
         self.sub_lbl = QLabel(f"MULTI-PROJECT STACK ({len(self.stack.get('services', []))} SERVICES)")
-        self.sub_lbl.setStyleSheet("font-size: 10px; font-weight: 800; color: #6B7280; letter-spacing: 0.5px; background: transparent;")
+        self.sub_lbl.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; background: transparent;")
         t_box.addWidget(self.title_lbl)
         t_box.addWidget(self.sub_lbl)
         top_row.addLayout(t_box)
@@ -441,7 +367,7 @@ class StackCard(QFrame):
 
         # Overall Status Badge
         self.overall_status_badge = QLabel("● Stopped")
-        self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #111111; border-radius: 10px; padding: 4px 10px; background-color: #F3F4F6; color: #4B5563;")
+        self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1px solid #2e3c54; border-radius: 10px; padding: 4px 10px; background-color: #1e2430; color: #94a3b8;")
         top_row.addWidget(self.overall_status_badge)
 
         # Edit button
@@ -527,7 +453,7 @@ class StackCard(QFrame):
 
         layout.addLayout(bot_row)
 
-        self.update_card_style("figma")
+        self.update_card_style("dark")
 
     def _get_stack_path(self) -> str:
         paths = [s.get("path") for s in self.stack.get("services", []) if s.get("path") and os.path.exists(s.get("path"))]
@@ -566,93 +492,66 @@ class StackCard(QFrame):
                 break
         self.service_port_changed.emit(self.stack, srv, new_port)
 
-    def update_card_style(self, theme: str = "figma"):
-        self.theme = theme
+    def update_card_style(self, theme: str = "dark"):
+        self.theme = "dark"
         any_running = any(r.status == "running" for r in self.service_rows.values())
-        if theme == "figma":
-            border = "3px solid #16A34A" if any_running else "2px solid #111111"
-            self.setStyleSheet(f"""
-                QFrame#StackCard {{
-                    background-color: #FFFFFF;
-                    border: {border};
-                    border-radius: 18px;
-                }}
-            """)
-            self.title_lbl.setStyleSheet("font-size: 15px; font-weight: 900; color: #111111; background: transparent;")
-            if hasattr(self, "sub_lbl"):
-                self.sub_lbl.setStyleSheet("font-size: 10px; font-weight: 800; color: #6B7280; letter-spacing: 0.5px; background: transparent;")
-            self.edit_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #FFFFFF;
-                    border: 1.5px solid #111111;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    color: #111111;
-                    padding: 0px;
-                }
-                QPushButton:hover {
-                    background-color: #FFF9C4;
-                }
-            """)
-            self.close_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #FFFFFF;
-                    border: 1.5px solid #111111;
-                    border-radius: 8px;
-                    font-size: 15px;
-                    font-weight: 900;
-                    color: #111111;
-                    padding: 0px;
-                }
-                QPushButton:hover {
-                    background-color: #FEE2E2;
-                    color: #DC2626;
-                }
-            """)
-            self.restart_stack_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #FFFFFF;
-                    color: #111111;
-                    font-weight: 800;
-                    font-size: 13px;
-                    border: 2px solid #111111;
-                    border-radius: 12px;
-                    padding: 8px 16px;
-                }
-                QPushButton:hover {
-                    background-color: #FFF9C4;
-                }
-            """)
-            self.open_urls_btn.setStyleSheet("background-color: #FFFFFF; color: #111111; font-weight: 800; font-size: 13px; border: 2px solid #111111; border-radius: 12px; padding: 8px 16px;")
-            for btn in [self.code_btn, self.term_btn, self.folder_btn]:
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #FFFFFF;
-                        border: 1.5px solid #111111;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #111111;
-                        padding: 0px;
-                    }
-                    QPushButton:hover {
-                        background-color: #FFF9C4;
-                    }
-                """)
-        else:
-            border = "2px solid #10b981" if any_running else "1.5px solid #283449"
-            self.setStyleSheet(f"""
-                QFrame#StackCard {{
-                    background-color: #151b27;
-                    border: {border};
-                    border-radius: 14px;
-                }}
-            """)
-            self.title_lbl.setStyleSheet("font-size: 15px; font-weight: 900; color: #f1f5f9; background: transparent;")
-            if hasattr(self, "sub_lbl"):
-                self.sub_lbl.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; background: transparent;")
-            self.edit_btn.setStyleSheet("""
+        border = "2px solid #10b981" if any_running else "1.5px solid #283449"
+        self.setStyleSheet(f"""
+            QFrame#StackCard {{
+                background-color: #151b27;
+                border: {border};
+                border-radius: 14px;
+            }}
+        """)
+        self.title_lbl.setStyleSheet("font-size: 15px; font-weight: 900; color: #f1f5f9; background: transparent;")
+        if hasattr(self, "sub_lbl"):
+            self.sub_lbl.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; background: transparent;")
+        self.edit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e2638;
+                border: 1px solid #2e3c54;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                color: #f1f5f9;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                background-color: #2e3c54;
+            }
+        """)
+        self.close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e2638;
+                border: 1px solid #2e3c54;
+                border-radius: 8px;
+                font-size: 15px;
+                font-weight: 900;
+                color: #f1f5f9;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                background-color: #4c0519;
+                color: #f87171;
+            }
+        """)
+        self.restart_stack_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e2638;
+                color: #f1f5f9;
+                font-weight: 800;
+                font-size: 13px;
+                border: 1px solid #2e3c54;
+                border-radius: 12px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background-color: #2e3c54;
+            }
+        """)
+        self.open_urls_btn.setStyleSheet("background-color: #1e2638; color: #f1f5f9; font-weight: 800; font-size: 13px; border: 1px solid #2e3c54; border-radius: 12px; padding: 8px 16px;")
+        for btn in [self.code_btn, self.term_btn, self.folder_btn]:
+            btn.setStyleSheet("""
                 QPushButton {
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
@@ -666,58 +565,13 @@ class StackCard(QFrame):
                     background-color: #2e3c54;
                 }
             """)
-            self.close_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #1e2638;
-                    border: 1px solid #2e3c54;
-                    border-radius: 8px;
-                    font-size: 15px;
-                    font-weight: 900;
-                    color: #f1f5f9;
-                    padding: 0px;
-                }
-                QPushButton:hover {
-                    background-color: #4c0519;
-                    color: #f87171;
-                }
-            """)
-            self.restart_stack_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #1e2638;
-                    color: #f1f5f9;
-                    font-weight: 800;
-                    font-size: 13px;
-                    border: 1px solid #2e3c54;
-                    border-radius: 12px;
-                    padding: 8px 16px;
-                }
-                QPushButton:hover {
-                    background-color: #2e3c54;
-                }
-            """)
-            self.open_urls_btn.setStyleSheet("background-color: #1e2638; color: #f1f5f9; font-weight: 800; font-size: 13px; border: 1px solid #2e3c54; border-radius: 12px; padding: 8px 16px;")
-            for btn in [self.code_btn, self.term_btn, self.folder_btn]:
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #1e2638;
-                        border: 1px solid #2e3c54;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #f1f5f9;
-                        padding: 0px;
-                    }
-                    QPushButton:hover {
-                        background-color: #2e3c54;
-                    }
-                """)
 
         for row in self.service_rows.values():
-            row.update_row_style(theme)
+            row.update_row_style("dark")
 
     def set_service_status(self, service_id: str, status: str):
         if service_id in self.service_rows:
-            self.service_rows[service_id].set_status(status, getattr(self, "theme", "figma"))
+            self.service_rows[service_id].set_status(status, "dark")
             self._update_overall_state()
 
     def set_service_url(self, service_id: str, url: str):
@@ -730,39 +584,21 @@ class StackCard(QFrame):
         running = sum(1 for r in self.service_rows.values() if r.status == "running")
         starting = sum(1 for r in self.service_rows.values() if r.status == "starting")
 
-        theme = getattr(self, "theme", "figma")
-        if theme == "figma":
-            if running == total and total > 0:
-                self.overall_status_badge.setText(f"● {running}/{total} Running")
-                self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #16A34A; border-radius: 10px; padding: 4px 10px; background-color: #DCFCE7; color: #15803D;")
-                self.main_btn.setText("⏹ Stop Stack")
-                self.main_btn.setStyleSheet("background-color: #DC2626; color: #FFFFFF; font-weight: 900; font-size: 12px; border: 2px solid #111111; border-radius: 12px; padding: 7px 18px;")
-            elif running > 0 or starting > 0:
-                self.overall_status_badge.setText(f"⏳ {running}/{total} Running")
-                self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #D97706; border-radius: 10px; padding: 4px 10px; background-color: #FEF3C7; color: #B45309;")
-                self.main_btn.setText("⏹ Stop Stack")
-                self.main_btn.setStyleSheet("background-color: #DC2626; color: #FFFFFF; font-weight: 900; font-size: 12px; border: 2px solid #111111; border-radius: 12px; padding: 7px 18px;")
-            else:
-                self.overall_status_badge.setText("● Stopped")
-                self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #111111; border-radius: 10px; padding: 4px 10px; background-color: #F3F4F6; color: #4B5563;")
-                self.main_btn.setText(f"▶ Start Stack ({total})")
-                self.main_btn.setStyleSheet("background-color: #111111; color: #FFFFFF; font-weight: 900; font-size: 12px; border: 2px solid #111111; border-radius: 12px; padding: 7px 18px;")
+        if running == total and total > 0:
+            self.overall_status_badge.setText(f"● {running}/{total} Running")
+            self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #059669; border-radius: 10px; padding: 4px 10px; background-color: #064e3b; color: #34d399;")
+            self.main_btn.setText("⏹ Stop Stack")
+            self.main_btn.setStyleSheet("background-color: #881337; color: #fff1f2; font-weight: 900; font-size: 12px; border: 1.5px solid #f43f5e; border-radius: 12px; padding: 7px 18px;")
+        elif running > 0 or starting > 0:
+            self.overall_status_badge.setText(f"⏳ {running}/{total} Running")
+            self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #d97706; border-radius: 10px; padding: 4px 10px; background-color: #451a03; color: #fbbf24;")
+            self.main_btn.setText("⏹ Stop Stack")
+            self.main_btn.setStyleSheet("background-color: #881337; color: #fff1f2; font-weight: 900; font-size: 12px; border: 1.5px solid #f43f5e; border-radius: 12px; padding: 7px 18px;")
         else:
-            if running == total and total > 0:
-                self.overall_status_badge.setText(f"● {running}/{total} Running")
-                self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #059669; border-radius: 10px; padding: 4px 10px; background-color: #064e3b; color: #34d399;")
-                self.main_btn.setText("⏹ Stop Stack")
-                self.main_btn.setStyleSheet("background-color: #881337; color: #fff1f2; font-weight: 900; font-size: 12px; border: 1.5px solid #f43f5e; border-radius: 12px; padding: 7px 18px;")
-            elif running > 0 or starting > 0:
-                self.overall_status_badge.setText(f"⏳ {running}/{total} Running")
-                self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #d97706; border-radius: 10px; padding: 4px 10px; background-color: #451a03; color: #fbbf24;")
-                self.main_btn.setText("⏹ Stop Stack")
-                self.main_btn.setStyleSheet("background-color: #881337; color: #fff1f2; font-weight: 900; font-size: 12px; border: 1.5px solid #f43f5e; border-radius: 12px; padding: 7px 18px;")
-            else:
-                self.overall_status_badge.setText("● Stopped")
-                self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #2e3c54; border-radius: 10px; padding: 4px 10px; background-color: #1e2430; color: #94a3b8;")
-                self.main_btn.setText(f"▶ Start Stack ({total})")
-                self.main_btn.setStyleSheet("background-color: #065f46; color: #ecfdf5; font-weight: 900; font-size: 12px; border: 1.5px solid #10b981; border-radius: 12px; padding: 7px 18px;")
+            self.overall_status_badge.setText("● Stopped")
+            self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 800; border: 1.5px solid #2e3c54; border-radius: 10px; padding: 4px 10px; background-color: #1e2430; color: #94a3b8;")
+            self.main_btn.setText(f"▶ Start Stack ({total})")
+            self.main_btn.setStyleSheet("background-color: #065f46; color: #ecfdf5; font-weight: 900; font-size: 12px; border: 1.5px solid #10b981; border-radius: 12px; padding: 7px 18px;")
 
         # Enable Open URLs button if any service has URL or port
         has_any_url = any(bool(r.detected_url) or (r.status == "running" and bool(r.service.get("port"))) for r in self.service_rows.values())

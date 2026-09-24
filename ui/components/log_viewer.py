@@ -105,7 +105,7 @@ class LogViewer(QFrame):
                 font-size: 11px;
             }
             QLineEdit#LogSearch:focus {
-                border: 1px solid #FFC107;
+                border: 1px solid #3b82f6;
             }
             QCheckBox#LogAutoScroll {
                 color: #FFFFFF;
@@ -121,8 +121,8 @@ class LogViewer(QFrame):
                 background-color: #1A1A1A;
             }
             QCheckBox#LogAutoScroll::indicator:checked {
-                background-color: #FFC107;
-                border: 1.5px solid #FFC107;
+                background-color: #2563eb;
+                border: 1.5px solid #3b82f6;
             }
             QPushButton#LogBtn {
                 background-color: #1A1A1A;

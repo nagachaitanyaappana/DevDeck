@@ -7,7 +7,7 @@
 
 **DevDeck** is a fast, responsive, native Linux desktop dashboard built with Python and PyQt6. It centralizes your entire development environment into a single, clean workspace—eliminating terminal sprawl, forgotten ports, and multi-service startup headaches.
 
-Designed with an aesthetic Neo-Brutalist / Figma-inspired interface, DevDeck gives you manual, deterministic control over your individual projects and complex multi-project traces.
+Designed with an aesthetic modern blue-black dark interface, DevDeck gives you manual, deterministic control over your individual projects and complex multi-project traces.
 
 ---
 
@@ -29,10 +29,10 @@ Designed with an aesthetic Neo-Brutalist / Figma-inspired interface, DevDeck giv
 - **Full ANSI Color Formatting**: Preserves terminal output styling, colors, and banners from modern toolchains (Vite, Next.js, Spring Boot, FastAPI, etc.).
 - **Console Utilities**: Instant log filtering/search, toggleable autoscroll, one-click copy, and full-screen maximization (`Ctrl + Shift + L`).
 
-### 🎨 Dual Theme: Neo-Brutalist Figma & Modern Dark
-- **Figma Neo-Brutalist Theme**: High-contrast, clean lines, vibrant amber/yellow canvas, bold typography, and tactile pill buttons.
-- **Modern Slate Dark Theme**: Deep slate-blue/charcoal palette optimized for low-light coding sessions.
-- **High-Contrast Context Menus**: Crisp white text on dark menus with vibrant yellow highlights for seamless readability.
+### 🎨 Sleek Blue-Black Dark Theme
+- **Universal Modern Dark Palette**: Deep obsidian-blue/charcoal styling (`#0f141c` base, `#151b27` cards, `#2563eb` electric blue accents) designed for clarity and eye comfort.
+- **Consistent Component Aesthetics**: Refined borders, status badges, modal dialogs, and button states all tuned to the blue dark theme.
+- **High-Contrast Menus & Popups**: Crisp white text on dark menus with vivid blue hover highlights for seamless readability.
 
 ### 📊 Live Resource Monitoring & Safety
 - **Per-Project Telemetry**: Real-time CPU % and memory (RAM) usage tracking for active processes.

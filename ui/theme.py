@@ -912,32 +912,32 @@ QComboBox QAbstractItemView::item:selected {
 }
 
 QMenu {
-    background-color: #111111;
-    border: 1px solid #333333;
+    background-color: #151b27;
+    border: 1px solid #2e3c54;
     border-radius: 8px;
     padding: 6px;
-    color: #FFFFFF;
+    color: #f1f5f9;
 }
 QMenu::item {
     padding: 8px 20px;
     border-radius: 6px;
-    color: #FFFFFF;
+    color: #f1f5f9;
     background-color: transparent;
     font-weight: 600;
     font-size: 12px;
 }
 QMenu::item:hover, QMenu::item:selected {
-    background-color: #FFC107;
-    color: #111111;
+    background-color: #2563eb;
+    color: #ffffff;
     font-weight: 800;
 }
 QMenu::item:disabled {
-    color: #666666;
+    color: #64748b;
     background-color: transparent;
 }
 QMenu::separator {
     height: 1px;
-    background-color: #2E2E2E;
+    background-color: #242f44;
     margin: 4px 6px;
 }
 
@@ -990,3 +990,7 @@ QToolTip {
     font-weight: 600;
 }
 """
+
+# Alias FIGMA_THEME_QSS to DARK_THEME_QSS so the blue-black theme is universally used everywhere
+FIGMA_THEME_QSS = DARK_THEME_QSS
+

@@ -244,125 +244,67 @@ class ProjectCard(QFrame):
         bot_row.addWidget(self.folder_btn)
 
         layout.addLayout(bot_row)
-        self.update_card_style("figma")
+        self.update_card_style("dark")
 
-    def update_card_style(self, theme: str = "figma"):
-        self.theme = theme
+    def update_card_style(self, theme: str = "dark"):
+        self.theme = "dark"
         is_running = (self.status == "running")
-        if theme == "figma":
-            border = "3px solid #16A34A" if is_running else "2px solid #111111"
-            self.setStyleSheet(f"""
-                QFrame#ProjectCard {{
-                    background-color: #FFFFFF;
-                    border: {border};
-                    border-radius: 18px;
-                }}
-            """)
-            self.title_label.setStyleSheet("background: transparent; color: #111111; font-weight: 900; font-size: 15px;")
-            self.path_label.setStyleSheet("background: transparent; color: #666666; font-size: 11px;")
-            self.close_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #FFFFFF;
-                    border: 1.5px solid #111111;
-                    border-radius: 8px;
-                    font-size: 15px;
-                    font-weight: 900;
-                    color: #111111;
-                    padding: 0px;
-                }
-                QPushButton:hover {
-                    background-color: #FEE2E2;
-                    color: #DC2626;
-                }
-            """)
-            for btn in [self.more_btn, self.code_btn, self.term_btn, self.folder_btn]:
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #FFFFFF;
-                        border: 1.5px solid #111111;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #111111;
-                        padding: 0px;
-                    }
-                    QPushButton:hover {
-                        background-color: #FFF9C4;
-                    }
-                """)
-            is_fav = self.project.get("favorite", False)
-            fav_col = "#F59E0B" if is_fav else "#111111"
-            self.fav_btn.setStyleSheet(f"""
-                QPushButton {{
-                    background-color: #FFFFFF;
-                    border: 1.5px solid #111111;
-                    border-radius: 8px;
-                    font-size: 17px;
-                    font-weight: bold;
-                    color: {fav_col};
-                    padding: 0px;
-                }}
-                QPushButton:hover {{
-                    background-color: #FFF9C4;
-                }}
-            """)
-        else:
-            border = "2px solid #10b981" if is_running else "1.5px solid #283449"
-            self.setStyleSheet(f"""
-                QFrame#ProjectCard {{
-                    background-color: #151b27;
-                    border: {border};
-                    border-radius: 14px;
-                }}
-            """)
-            self.title_label.setStyleSheet("background: transparent; color: #f1f5f9; font-weight: 800; font-size: 14px;")
-            self.path_label.setStyleSheet("background: transparent; color: #64748b; font-size: 11px;")
-            self.close_btn.setStyleSheet("""
+        border = "2px solid #10b981" if is_running else "1.5px solid #283449"
+        self.setStyleSheet(f"""
+            QFrame#ProjectCard {{
+                background-color: #151b27;
+                border: {border};
+                border-radius: 14px;
+            }}
+        """)
+        self.title_label.setStyleSheet("background: transparent; color: #f1f5f9; font-weight: 800; font-size: 14px;")
+        self.path_label.setStyleSheet("background: transparent; color: #64748b; font-size: 11px;")
+        self.close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e2638;
+                border: 1px solid #2e3c54;
+                border-radius: 8px;
+                font-size: 15px;
+                font-weight: 900;
+                color: #f1f5f9;
+                padding: 0px;
+            }
+            QPushButton:hover {
+                background-color: #4c0519;
+                color: #f87171;
+            }
+        """)
+        for btn in [self.more_btn, self.code_btn, self.term_btn, self.folder_btn]:
+            btn.setStyleSheet("""
                 QPushButton {
                     background-color: #1e2638;
                     border: 1px solid #2e3c54;
                     border-radius: 8px;
-                    font-size: 15px;
-                    font-weight: 900;
+                    font-size: 16px;
+                    font-weight: bold;
                     color: #f1f5f9;
                     padding: 0px;
                 }
                 QPushButton:hover {
-                    background-color: #4c0519;
-                    color: #f87171;
+                    background-color: #2e3c54;
                 }
             """)
-            for btn in [self.more_btn, self.code_btn, self.term_btn, self.folder_btn]:
-                btn.setStyleSheet("""
-                    QPushButton {
-                        background-color: #1e2638;
-                        border: 1px solid #2e3c54;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: bold;
-                        color: #f1f5f9;
-                        padding: 0px;
-                    }
-                    QPushButton:hover {
-                        background-color: #2e3c54;
-                    }
-                """)
-            is_fav = self.project.get("favorite", False)
-            fav_col = "#F59E0B" if is_fav else "#f1f5f9"
-            self.fav_btn.setStyleSheet(f"""
-                QPushButton {{
-                    background-color: #1e2638;
-                    border: 1px solid #2e3c54;
-                    border-radius: 8px;
-                    font-size: 17px;
-                    font-weight: bold;
-                    color: {fav_col};
-                    padding: 0px;
-                }}
-                QPushButton:hover {{
-                    background-color: #2e3c54;
-                }}
-            """)
+        is_fav = self.project.get("favorite", False)
+        fav_col = "#F59E0B" if is_fav else "#f1f5f9"
+        self.fav_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: #1e2638;
+                border: 1px solid #2e3c54;
+                border-radius: 8px;
+                font-size: 17px;
+                font-weight: bold;
+                color: {fav_col};
+                padding: 0px;
+            }}
+            QPushButton:hover {{
+                background-color: #2e3c54;
+            }}
+        """)
         self._update_port_btn_label()
 
     def set_status(self, status: str):
@@ -476,23 +418,19 @@ class ProjectCard(QFrame):
         fav = not self.project.get("favorite", False)
         self.project["favorite"] = fav
         self.fav_btn.setText("★" if fav else "☆")
-        theme = getattr(self, "theme", "figma")
-        fav_col = "#F59E0B" if fav else ("#111111" if theme == "figma" else "#f1f5f9")
-        bg_col = "#FFFFFF" if theme == "figma" else "#1e2638"
-        border_col = "1.5px solid #111111" if theme == "figma" else "1px solid #2e3c54"
-        hover_col = "#FFF9C4" if theme == "figma" else "#2e3c54"
+        fav_col = "#F59E0B" if fav else "#f1f5f9"
         self.fav_btn.setStyleSheet(f"""
             QPushButton {{
-                background-color: {bg_col};
-                border: {border_col};
+                background-color: #1e2638;
+                border: 1px solid #2e3c54;
                 border-radius: 8px;
-                font-size: 14px;
+                font-size: 17px;
                 font-weight: bold;
                 color: {fav_col};
                 padding: 0px;
             }}
             QPushButton:hover {{
-                background-color: {hover_col};
+                background-color: #2e3c54;
             }}
         """)
         self.favorite_toggled.emit(self.project["id"])
@@ -503,32 +441,32 @@ class ProjectCard(QFrame):
         menu = QMenu(self)
         menu.setStyleSheet("""
             QMenu {
-                background-color: #111111;
-                border: 2px solid #333333;
-                border-radius: 10px;
+                background-color: #151b27;
+                border: 1px solid #2e3c54;
+                border-radius: 8px;
                 padding: 6px;
-                color: #FFFFFF;
+                color: #f1f5f9;
             }
             QMenu::item {
                 padding: 8px 20px;
                 border-radius: 6px;
-                color: #FFFFFF;
+                color: #f1f5f9;
                 background-color: transparent;
                 font-weight: 600;
                 font-size: 12px;
             }
             QMenu::item:hover, QMenu::item:selected {
-                background-color: #FFC107;
-                color: #111111;
+                background-color: #2563eb;
+                color: #ffffff;
                 font-weight: 800;
             }
             QMenu::item:disabled {
-                color: #666666;
+                color: #64748b;
                 background-color: transparent;
             }
             QMenu::separator {
                 height: 1px;
-                background-color: #2E2E2E;
+                background-color: #242f44;
                 margin: 4px 8px;
             }
         """)

@@ -86,8 +86,8 @@ class MainWindow(QMainWindow):
         # 2. Hero Pill Badge (like "30K+ downloads")
         self.hero_tag = QLabel("⚡ ONE-CLICK RUNNER")
         self.hero_tag.setStyleSheet(
-            "background-color: #111111; color: #FFFFFF; font-weight: 800; "
-            "font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;"
+            "background-color: #1e2638; color: #60a5fa; font-weight: 800; "
+            "font-size: 11px; border: 1px solid #2e3c54; border-radius: 12px; padding: 4px 12px; max-width: 170px;"
         )
         left_layout.addWidget(self.hero_tag)
 
@@ -111,7 +111,7 @@ class MainWindow(QMainWindow):
 
         # 5. Category Filter Pills
         self.filter_label = QLabel("CATEGORIES")
-        self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #555555; letter-spacing: 0.5px; margin-top: 4px;")
+        self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; margin-top: 4px;")
         left_layout.addWidget(self.filter_label)
 
         filter_grid = QGridLayout()
@@ -160,16 +160,10 @@ class MainWindow(QMainWindow):
 
         bottom_utils = QHBoxLayout()
         bottom_utils.setSpacing(8)
-        self.toggle_logs_btn = QPushButton("📋 Logs")
+        self.toggle_logs_btn = QPushButton("📋 Console Logs")
         self.toggle_logs_btn.setObjectName("IconBtn")
         self.toggle_logs_btn.clicked.connect(self._toggle_logs)
         bottom_utils.addWidget(self.toggle_logs_btn)
-
-        self.theme_btn = QPushButton("🌓 Theme")
-        self.theme_btn.setObjectName("IconBtn")
-        self.theme_btn.setToolTip("Toggle Theme (Figma Yellow / Dark)")
-        self.theme_btn.clicked.connect(self._toggle_theme)
-        bottom_utils.addWidget(self.theme_btn)
         actions_box.addLayout(bottom_utils)
 
         left_layout.addLayout(actions_box)
@@ -244,12 +238,12 @@ class MainWindow(QMainWindow):
         es_btns.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         es_add_p = QPushButton("➕ Add Project")
-        es_add_p.setStyleSheet("color: #FFFFFF; background-color: #111111; border: 2px solid #111111; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
+        es_add_p.setStyleSheet("color: #FFFFFF; background-color: #2563eb; border: 1.5px solid #3b82f6; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
         es_add_p.clicked.connect(self._open_add_dialog)
         es_btns.addWidget(es_add_p)
 
         es_add_s = QPushButton("⚡ New Stack")
-        es_add_s.setStyleSheet("color: #111111; background-color: #FFF9C4; border: 2px solid #111111; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
+        es_add_s.setStyleSheet("color: #f1f5f9; background-color: #1e2638; border: 1.5px solid #2e3c54; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
         es_add_s.clicked.connect(self._open_new_stack_dialog)
         es_btns.addWidget(es_add_s)
         es_layout.addLayout(es_btns)
@@ -294,20 +288,12 @@ class MainWindow(QMainWindow):
         return badge
 
     def _apply_badge_style(self, badge: QFrame):
-        theme = self.config.data.get("theme", "figma")
-        if theme == "figma":
-            badge.setStyleSheet("background-color: #111111; border: none; border-radius: 16px; padding: 4px 14px;")
-            badge.val_label.setStyleSheet("color: #FFC107; font-weight: 900; font-size: 14px; background: transparent;")
-            badge.sub_label.setStyleSheet("color: #FFFFFF; font-weight: 800; font-size: 10px; letter-spacing: 0.5px; background: transparent;")
-        else:
-            badge.setStyleSheet("background-color: #1e2638; border: 1px solid #2d3952; border-radius: 14px; padding: 3px 10px;")
-            badge.val_label.setStyleSheet("color: #60a5fa; font-weight: 900; font-size: 13px; background: transparent;")
-            badge.sub_label.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 10px; background: transparent;")
+        badge.setStyleSheet("background-color: #1e2638; border: 1px solid #2d3952; border-radius: 14px; padding: 3px 10px;")
+        badge.val_label.setStyleSheet("color: #60a5fa; font-weight: 900; font-size: 13px; background: transparent;")
+        badge.sub_label.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 10px; background: transparent;")
 
     def _apply_section_headers_style(self):
-        theme = self.config.data.get("theme", "figma")
-        col = "#111111" if theme == "figma" else "#94a3b8"
-        style = f"font-size: 11px; font-weight: 900; color: {col}; letter-spacing: 0.8px; padding: 6px 2px; margin-top: 6px; background: transparent;"
+        style = "font-size: 11px; font-weight: 900; color: #94a3b8; letter-spacing: 0.8px; padding: 6px 2px; margin-top: 6px; background: transparent;"
         if hasattr(self, "traces_header"):
             self.traces_header.setStyleSheet(style)
         if hasattr(self, "projects_header"):
@@ -328,32 +314,32 @@ class MainWindow(QMainWindow):
         tray_menu = QMenu()
         tray_menu.setStyleSheet("""
             QMenu {
-                background-color: #111111;
-                border: 2px solid #333333;
+                background-color: #151b27;
+                border: 1.5px solid #2e3c54;
                 border-radius: 10px;
                 padding: 6px;
-                color: #FFFFFF;
+                color: #f1f5f9;
             }
             QMenu::item {
                 padding: 8px 20px;
                 border-radius: 6px;
-                color: #FFFFFF;
+                color: #f1f5f9;
                 background-color: transparent;
                 font-weight: 600;
                 font-size: 12px;
             }
             QMenu::item:hover, QMenu::item:selected {
-                background-color: #FFC107;
-                color: #111111;
+                background-color: #2563eb;
+                color: #ffffff;
                 font-weight: 800;
             }
             QMenu::item:disabled {
-                color: #666666;
+                color: #64748b;
                 background-color: transparent;
             }
             QMenu::separator {
                 height: 1px;
-                background-color: #2E2E2E;
+                background-color: #2e3c54;
                 margin: 4px 8px;
             }
         """)
@@ -511,7 +497,7 @@ class MainWindow(QMainWindow):
             if url:
                 card.set_detected_url(url)
 
-            card.update_card_style(self.config.data.get("theme", "figma"))
+            card.update_card_style("dark")
             self.cards[p_id] = card
 
         self._apply_filters()
@@ -670,7 +656,7 @@ class MainWindow(QMainWindow):
                 if url:
                     card.set_service_url(srv_id, url)
 
-            card.update_card_style(self.config.data.get("theme", "figma"))
+            card.update_card_style("dark")
             self.stack_cards[s_id] = card
 
     def _open_new_stack_dialog(self):
