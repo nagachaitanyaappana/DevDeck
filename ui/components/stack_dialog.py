@@ -29,9 +29,9 @@ class ServiceRow(QFrame):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet("""
             QFrame {
-                background-color: #1a2234;
-                border: 1px solid #2a3852;
-                border-radius: 14px;
+                background-color: #111827;
+                border: 1px solid #1f2937;
+                border-radius: 12px;
             }
         """)
 
@@ -44,7 +44,7 @@ class ServiceRow(QFrame):
         top_bar.setSpacing(8)
 
         self.service_badge = QLabel("📦 Service / Component")
-        self.service_badge.setStyleSheet("font-weight: 800; font-size: 11px; color: #38bdf8; background: transparent;")
+        self.service_badge.setStyleSheet("font-weight: 700; font-size: 11px; color: #38bdf8; background: transparent;")
         top_bar.addWidget(self.service_badge)
 
         top_bar.addStretch()
@@ -56,20 +56,20 @@ class ServiceRow(QFrame):
                 self.autofill_combo.addItem(p.get("name", "Project"), p)
             self.autofill_combo.setStyleSheet("""
                 QComboBox {
-                    color: #f1f5f9;
-                    background-color: #131924;
+                    color: #f9fafb;
+                    background-color: #0b0f17;
                     font-size: 11px;
                     font-weight: 600;
                     padding: 3px 8px;
-                    border: 1px solid #2e3c54;
-                    border-radius: 8px;
+                    border: 1px solid #1f2937;
+                    border-radius: 6px;
                 }
                 QComboBox QAbstractItemView {
-                    background-color: #151b27;
-                    color: #f1f5f9;
-                    border: 1px solid #2e3c54;
-                    selection-background-color: #2563eb;
-                    selection-color: #ffffff;
+                    background-color: #0b0f17;
+                    color: #f9fafb;
+                    border: 1px solid #1f2937;
+                    selection-background-color: #1f2937;
+                    selection-color: #34d399;
                 }
             """)
             self.autofill_combo.currentIndexChanged.connect(self._on_autofill_selected)
@@ -78,16 +78,16 @@ class ServiceRow(QFrame):
         self.remove_btn = QPushButton("🗑 Remove")
         self.remove_btn.setStyleSheet("""
             QPushButton {
-                background-color: #4c0519;
-                border: 1px solid #991b1b;
+                background-color: #271418;
+                border: 1px solid #7f1d1d;
                 color: #f87171;
                 font-weight: 700;
                 font-size: 11px;
-                border-radius: 8px;
+                border-radius: 6px;
                 padding: 4px 10px;
             }
             QPushButton:hover {
-                background-color: #881337;
+                background-color: #3b1419;
             }
         """)
         top_bar.addWidget(self.remove_btn)
@@ -101,10 +101,10 @@ class ServiceRow(QFrame):
         n_box = QVBoxLayout()
         n_box.setSpacing(2)
         n_label = QLabel("Service Name:")
-        n_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #94a3b8; background: transparent;")
+        n_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; background: transparent;")
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("e.g. Backend, Frontend, API")
-        self.name_input.setStyleSheet("color: #f1f5f9; background-color: #131924; border: 1px solid #2e3c54; border-radius: 8px; padding: 6px 10px; font-weight: 600;")
+        self.name_input.setStyleSheet("color: #f9fafb; background-color: #0b0f17; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 10px; font-weight: 600;")
         n_box.addWidget(n_label)
         n_box.addWidget(self.name_input)
         r1.addLayout(n_box, 2)
@@ -112,24 +112,24 @@ class ServiceRow(QFrame):
         s_box = QVBoxLayout()
         s_box.setSpacing(2)
         s_label = QLabel("Tech Stack:")
-        s_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #94a3b8; background: transparent;")
+        s_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; background: transparent;")
         self.stack_combo = QComboBox()
         self.stack_combo.addItems(STACK_OPTIONS)
         self.stack_combo.setStyleSheet("""
             QComboBox {
-                color: #f1f5f9;
-                background-color: #131924;
-                border: 1px solid #2e3c54;
-                border-radius: 8px;
+                color: #f9fafb;
+                background-color: #0b0f17;
+                border: 1px solid #1f2937;
+                border-radius: 6px;
                 padding: 6px 10px;
                 font-weight: 600;
             }
             QComboBox QAbstractItemView {
-                background-color: #151b27;
-                color: #f1f5f9;
-                border: 1px solid #2e3c54;
-                selection-background-color: #2563eb;
-                selection-color: #ffffff;
+                background-color: #0b0f17;
+                color: #f9fafb;
+                border: 1px solid #1f2937;
+                selection-background-color: #1f2937;
+                selection-color: #34d399;
             }
         """)
         s_box.addWidget(s_label)
@@ -139,10 +139,10 @@ class ServiceRow(QFrame):
         p_box = QVBoxLayout()
         p_box.setSpacing(2)
         p_label = QLabel("Port:")
-        p_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #94a3b8; background: transparent;")
+        p_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; background: transparent;")
         self.port_input = QLineEdit()
         self.port_input.setPlaceholderText("e.g. 8080")
-        self.port_input.setStyleSheet("color: #f1f5f9; background-color: #131924; border: 1px solid #2e3c54; border-radius: 8px; padding: 6px 10px; font-weight: 600; max-width: 80px;")
+        self.port_input.setStyleSheet("color: #f9fafb; background-color: #0b0f17; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 10px; font-weight: 600; max-width: 80px;")
         p_box.addWidget(p_label)
         p_box.addWidget(self.port_input)
         r1.addLayout(p_box, 1)
@@ -153,27 +153,28 @@ class ServiceRow(QFrame):
         path_box = QVBoxLayout()
         path_box.setSpacing(2)
         path_label = QLabel("Directory Path:")
-        path_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #94a3b8; background: transparent;")
+        path_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; background: transparent;")
         
         path_row = QHBoxLayout()
         path_row.setSpacing(6)
         self.path_input = QLineEdit()
         self.path_input.setPlaceholderText("/home/naga/Projects/...")
-        self.path_input.setStyleSheet("color: #f1f5f9; background-color: #131924; border: 1px solid #2e3c54; border-radius: 8px; padding: 6px 10px; font-weight: 500;")
+        self.path_input.setStyleSheet("color: #f9fafb; background-color: #0b0f17; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 10px; font-weight: 500;")
         path_row.addWidget(self.path_input)
 
         browse_btn = QPushButton("📁 Browse")
         browse_btn.setStyleSheet("""
             QPushButton {
-                color: #f1f5f9;
-                background-color: #1e2638;
-                border: 1px solid #2e3c54;
-                border-radius: 8px;
+                color: #f9fafb;
+                background-color: #111827;
+                border: 1px solid #1f2937;
+                border-radius: 6px;
                 padding: 6px 12px;
                 font-weight: 600;
             }
             QPushButton:hover {
-                background-color: #2e3c54;
+                background-color: #1f2937;
+                border-color: #374151;
             }
         """)
         browse_btn.clicked.connect(self._browse_dir)
@@ -272,8 +273,8 @@ class StackDialog(QDialog):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet("""
             QDialog {
-                background-color: #151b27;
-                border: 1.5px solid #2e3c54;
+                background-color: #0b0f17;
+                border: 1px solid #1f2937;
                 border-radius: 14px;
             }
         """)
@@ -289,9 +290,9 @@ class StackDialog(QDialog):
         title_box = QVBoxLayout()
         title_box.setSpacing(2)
         title = QLabel("⚡ Multi-Project Stack")
-        title.setStyleSheet("font-size: 20px; font-weight: 900; color: #f1f5f9; background: transparent;")
+        title.setStyleSheet("font-size: 20px; font-weight: 800; color: #f9fafb; background: transparent;")
         sub = QLabel("Group multiple services (e.g. Backend + Frontend) to launch simultaneously with 1 click.")
-        sub.setStyleSheet("font-size: 11px; color: #94a3b8; font-weight: 600; background: transparent;")
+        sub.setStyleSheet("font-size: 11px; color: #9ca3af; font-weight: 500; background: transparent;")
         title_box.addWidget(title)
         title_box.addWidget(sub)
         root.addLayout(title_box)
@@ -300,23 +301,23 @@ class StackDialog(QDialog):
         name_box = QVBoxLayout()
         name_box.setSpacing(4)
         name_label = QLabel("Stack Name:")
-        name_label.setStyleSheet("font-size: 11px; font-weight: 800; color: #94a3b8; background: transparent;")
+        name_label.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; background: transparent;")
         self.stack_name_input = QLineEdit()
         self.stack_name_input.setPlaceholderText("e.g. ITIAP Fullstack, Minecraft Tools Hub")
         self.stack_name_input.setText(self.stack_data.get("name", ""))
         self.stack_name_input.setStyleSheet("""
             QLineEdit {
-                color: #f1f5f9;
-                background-color: #1a2234;
-                border: 1.5px solid #2e3c54;
-                border-radius: 10px;
+                color: #f9fafb;
+                background-color: #111827;
+                border: 1px solid #1f2937;
+                border-radius: 8px;
                 padding: 8px 12px;
-                font-weight: 700;
+                font-weight: 600;
                 font-size: 13px;
             }
             QLineEdit:focus {
-                border: 1.5px solid #3b82f6;
-                background-color: #1a2234;
+                border: 1px solid #10b981;
+                background-color: #111827;
             }
         """)
         name_box.addWidget(name_label)
@@ -325,7 +326,7 @@ class StackDialog(QDialog):
 
         # Scroll area for services
         services_label = QLabel("Services in this Stack:")
-        services_label.setStyleSheet("font-size: 11px; font-weight: 800; color: #94a3b8; margin-top: 4px; background: transparent;")
+        services_label.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; margin-top: 4px; background: transparent;")
         root.addWidget(services_label)
 
         self.scroll = QScrollArea()
@@ -357,17 +358,17 @@ class StackDialog(QDialog):
         add_service_btn = QPushButton("➕ Add Another Service to Stack")
         add_service_btn.setStyleSheet("""
             QPushButton {
-                background-color: #1e2638;
-                border: 1.5px solid #3b82f6;
-                border-radius: 10px;
+                background-color: #111827;
+                border: 1px solid #1f2937;
+                border-radius: 8px;
                 padding: 8px;
-                font-weight: 800;
+                font-weight: 700;
                 font-size: 12px;
-                color: #60a5fa;
+                color: #34d399;
             }
             QPushButton:hover {
-                background-color: #2563eb;
-                color: #ffffff;
+                background-color: #1f2937;
+                border-color: #10b981;
             }
         """)
         add_service_btn.clicked.connect(lambda: self._add_service_row())
@@ -380,16 +381,17 @@ class StackDialog(QDialog):
         cancel_btn = QPushButton("Cancel")
         cancel_btn.setStyleSheet("""
             QPushButton {
-                color: #94a3b8;
-                background-color: #1e2638;
-                border: 1.5px solid #2e3c54;
-                border-radius: 12px;
+                color: #9ca3af;
+                background-color: #111827;
+                border: 1px solid #1f2937;
+                border-radius: 8px;
                 padding: 8px 20px;
-                font-weight: 800;
+                font-weight: 700;
             }
             QPushButton:hover {
-                background-color: #2e3c54;
-                color: #f1f5f9;
+                background-color: #1f2937;
+                border-color: #374151;
+                color: #f9fafb;
             }
         """)
         cancel_btn.clicked.connect(self.reject)
@@ -400,16 +402,17 @@ class StackDialog(QDialog):
         save_btn = QPushButton("💾 Save Stack")
         save_btn.setStyleSheet("""
             QPushButton {
-                background-color: #2563eb;
+                background-color: #10b981;
                 color: #ffffff;
-                border: 1.5px solid #3b82f6;
-                border-radius: 12px;
+                border: 1px solid #10b981;
+                border-radius: 8px;
                 padding: 9px 26px;
-                font-weight: 900;
+                font-weight: 700;
                 font-size: 13px;
             }
             QPushButton:hover {
-                background-color: #1d4ed8;
+                background-color: #059669;
+                border-color: #059669;
             }
         """)
         save_btn.clicked.connect(self._on_save)

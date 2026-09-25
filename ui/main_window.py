@@ -25,6 +25,46 @@ from .components.project_dialog import ProjectDialog
 from .components.stack_card import StackCard
 from .components.stack_dialog import StackDialog
 
+class NavItem(QPushButton):
+    """Linear / modern dark dashboard navigation item with left icon and right-aligned count."""
+    def __init__(self, filter_id: str, label: str, icon_str: str, parent=None):
+        super().__init__(parent)
+        self.filter_id = filter_id
+        self.label_text = label
+        self.icon_str = icon_str
+        self.count = 0
+        self.setObjectName("NavItem")
+        self.setCheckable(True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFixedHeight(34)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(10, 0, 10, 0)
+        layout.setSpacing(9)
+
+        self.icon_lbl = QLabel(icon_str)
+        self.icon_lbl.setStyleSheet("font-size: 13px; background: transparent;")
+        layout.addWidget(self.icon_lbl)
+
+        self.title_lbl = QLabel(label)
+        self.title_lbl.setStyleSheet("font-size: 12px; font-weight: 600; color: #94a3b8; background: transparent;")
+        layout.addWidget(self.title_lbl)
+
+        layout.addStretch()
+
+        self.count_badge = QLabel("0")
+        self.count_badge.setStyleSheet(
+            "background-color: #111827; color: #9ca3af; font-size: 10px; font-weight: 700; "
+            "border: 1px solid #1f2937; border-radius: 8px; padding: 1px 6px; min-width: 14px;"
+        )
+        self.count_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.count_badge)
+
+    def set_count(self, count: int):
+        self.count = count
+        self.count_badge.setText(str(count))
+
+
 class MainWindow(QMainWindow):
     def __init__(self, config_manager: ConfigManager, process_manager: ProcessManager, app_icon: QIcon = None):
         super().__init__()
@@ -67,104 +107,210 @@ class MainWindow(QMainWindow):
         
         # Horizontal Split: Left Hero Panel + Right Cards & Logs
         root_layout = QHBoxLayout(central)
-        root_layout.setContentsMargins(24, 20, 24, 20)
-        root_layout.setSpacing(24)
+        root_layout.setContentsMargins(20, 18, 20, 18)
+        root_layout.setSpacing(20)
 
-        # ─── LEFT: Hero Control Panel (Figma Reference Style) ───
+        # ─── LEFT: Modern Sidebar (Linear / Figma Developer Console Style) ───
         left_panel = QFrame()
         left_panel.setObjectName("HeroPanel")
-        left_panel.setFixedWidth(290)
+        left_panel.setFixedWidth(275)
         left_layout = QVBoxLayout(left_panel)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(14)
+        left_layout.setContentsMargins(14, 14, 14, 14)
+        left_layout.setSpacing(12)
 
-        # 1. Bold Title (like "20+ Modals Popups Alerts")
-        hero_title = QLabel("DevDeck\nProjects\nLauncher")
-        hero_title.setObjectName("HeroTitle")
-        left_layout.addWidget(hero_title)
+        # 1. App Brand Header (Icon + Title + Version Badge + Subtitle)
+        brand_container = QWidget()
+        brand_layout = QHBoxLayout(brand_container)
+        brand_layout.setContentsMargins(2, 0, 2, 0)
+        brand_layout.setSpacing(10)
 
-        # 2. Hero Pill Badge (like "30K+ downloads")
-        self.hero_tag = QLabel("⚡ ONE-CLICK RUNNER")
-        self.hero_tag.setStyleSheet(
-            "background-color: #1e2638; color: #60a5fa; font-weight: 800; "
-            "font-size: 11px; border: 1px solid #2e3c54; border-radius: 12px; padding: 4px 12px; max-width: 170px;"
+        brand_icon = QLabel()
+        if not self.app_icon.isNull():
+            brand_icon.setPixmap(self.app_icon.pixmap(32, 32))
+        brand_icon.setFixedSize(32, 32)
+        brand_layout.addWidget(brand_icon)
+
+        brand_text_box = QVBoxLayout()
+        brand_text_box.setSpacing(2)
+
+        title_row = QHBoxLayout()
+        title_row.setSpacing(6)
+        app_title = QLabel("DevDeck")
+        app_title.setObjectName("HeroTitle")
+        app_title.setStyleSheet("font-size: 17px; font-weight: 800; color: #f9fafb; letter-spacing: -0.4px;")
+        title_row.addWidget(app_title)
+
+        version_badge = QLabel("v1.0.1")
+        version_badge.setStyleSheet(
+            "background-color: #111827; color: #34d399; font-size: 10px; font-weight: 700; "
+            "border: 1px solid #1f2937; border-radius: 6px; padding: 1px 6px;"
         )
-        left_layout.addWidget(self.hero_tag)
+        title_row.addWidget(version_badge)
+        title_row.addStretch()
+        brand_text_box.addLayout(title_row)
 
-        # 3. Stats Badges (Stacked vertically as clean pills)
-        stats_box = QVBoxLayout()
-        stats_box.setSpacing(8)
-        self.total_badge = self._create_stat_badge("0", "PROJECTS")
-        self.running_badge = self._create_stat_badge("0", "RUNNING")
-        self.ports_badge = self._create_stat_badge("0", "ACTIVE PORTS")
-        stats_box.addWidget(self.total_badge)
-        stats_box.addWidget(self.running_badge)
-        stats_box.addWidget(self.ports_badge)
-        left_layout.addLayout(stats_box)
+        app_sub = QLabel("Developer Control Center")
+        app_sub.setStyleSheet("font-size: 11px; font-weight: 500; color: #9ca3af;")
+        brand_text_box.addWidget(app_sub)
 
-        # 4. Search Bar
+        brand_layout.addLayout(brand_text_box)
+        left_layout.addWidget(brand_container)
+
+        # 2. Telemetry Card (3-Column Minimal Stats: TOTAL, ACTIVE, PORTS)
+        stats_card = QFrame()
+        stats_card.setObjectName("StatsCard")
+        stats_card.setStyleSheet(
+            "background-color: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 6px 4px;"
+        )
+        stats_layout = QHBoxLayout(stats_card)
+        stats_layout.setContentsMargins(4, 4, 4, 4)
+        stats_layout.setSpacing(2)
+
+        self.total_badge = self._create_mini_stat("0", "TOTAL", "#f9fafb")
+        self.running_badge = self._create_mini_stat("0", "ACTIVE", "#10b981")
+        self.ports_badge = self._create_mini_stat("0", "PORTS", "#38bdf8")
+
+        stats_layout.addWidget(self.total_badge)
+        stats_layout.addWidget(self._create_vdivider())
+        stats_layout.addWidget(self.running_badge)
+        stats_layout.addWidget(self._create_vdivider())
+        stats_layout.addWidget(self.ports_badge)
+        left_layout.addWidget(stats_card)
+
+        # 3. Search Bar with Ctrl+F shortcut pill
+        search_box = QFrame()
+        search_box.setStyleSheet(
+            "background-color: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 2px 8px;"
+        )
+        search_layout = QHBoxLayout(search_box)
+        search_layout.setContentsMargins(4, 2, 6, 2)
+        search_layout.setSpacing(6)
+
+        search_icon = QLabel("🔍")
+        search_icon.setStyleSheet("font-size: 12px; color: #9ca3af; background: transparent;")
+        search_layout.addWidget(search_icon)
+
         self.search_input = QLineEdit()
         self.search_input.setObjectName("SearchBar")
-        self.search_input.setPlaceholderText("🔍  Search projects... (Ctrl+F)")
+        self.search_input.setPlaceholderText("Search projects or stacks...")
+        self.search_input.setStyleSheet(
+            "background: transparent; border: none; color: #f9fafb; font-size: 12px; padding: 4px 0;"
+        )
         self.search_input.textChanged.connect(self._on_search_changed)
-        left_layout.addWidget(self.search_input)
+        search_layout.addWidget(self.search_input)
 
-        # 5. Category Filter Pills
-        self.filter_label = QLabel("CATEGORIES")
-        self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; margin-top: 4px;")
-        left_layout.addWidget(self.filter_label)
+        shortcut_pill = QLabel("Ctrl+F")
+        shortcut_pill.setStyleSheet(
+            "background-color: #0b0f17; color: #9ca3af; font-size: 10px; font-weight: 700; "
+            "border: 1px solid #1f2937; border-radius: 4px; padding: 2px 5px;"
+        )
+        search_layout.addWidget(shortcut_pill)
+        left_layout.addWidget(search_box)
 
-        filter_grid = QGridLayout()
-        filter_grid.setSpacing(6)
-        self.filter_buttons = {}
-        filters = ["All", "⚡ Stacks", "Running", "Favorites", "Node / Web", "Java / Spring", "Python"]
-        for idx, f in enumerate(filters):
-            btn = QPushButton(f)
-            btn.setObjectName("FilterPill")
-            btn.setCheckable(True)
-            if f == "All":
-                btn.setChecked(True)
-                btn.setProperty("checked", "true")
-            btn.clicked.connect(lambda checked, name=f: self._set_filter(name))
-            filter_grid.addWidget(btn, idx // 2, idx % 2)
-            self.filter_buttons[f] = btn
-        left_layout.addLayout(filter_grid)
+        # 4. Navigation Menu (Vertical List with Icons and Count Badges)
+        nav_scroll = QScrollArea()
+        nav_scroll.setWidgetResizable(True)
+        nav_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        nav_scroll.setStyleSheet("background: transparent; border: none;")
+        nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        nav_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        left_layout.addStretch()
+        nav_container = QWidget()
+        nav_container.setStyleSheet("background: transparent;")
+        nav_layout = QVBoxLayout(nav_container)
+        nav_layout.setContentsMargins(0, 0, 0, 0)
+        nav_layout.setSpacing(3)
 
-        # 6. Global Action Buttons
+        # Workspace section
+        ws_label = QLabel("WORKSPACE")
+        ws_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #6b7280; letter-spacing: 0.8px; margin-top: 2px; margin-bottom: 2px; padding-left: 6px;")
+        nav_layout.addWidget(ws_label)
+
+        self.filter_buttons: Dict[str, NavItem] = {}
+        workspace_items = [
+            ("All", "All Projects", "⚡"),
+            ("⚡ Stacks", "Multi-Stacks", "📦"),
+            ("Running", "Active Servers", "🟢"),
+            ("Favorites", "Favorites", "⭐"),
+        ]
+        for f_id, label, icon in workspace_items:
+            item = NavItem(f_id, label, icon)
+            if f_id == "All":
+                item.setChecked(True)
+                item.setProperty("checked", "true")
+                item.title_lbl.setStyleSheet("font-size: 12px; font-weight: 700; color: #34d399; background: transparent;")
+                item.count_badge.setStyleSheet(
+                    "background-color: #052e16; color: #34d399; font-size: 10px; font-weight: 700; "
+                    "border: 1px solid #10b981; border-radius: 8px; padding: 1px 6px; min-width: 14px;"
+                )
+            item.clicked.connect(lambda checked, name=f_id: self._set_filter(name))
+            nav_layout.addWidget(item)
+            self.filter_buttons[f_id] = item
+
+        # Ecosystem section
+        eco_label = QLabel("ECOSYSTEM")
+        eco_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #6b7280; letter-spacing: 0.8px; margin-top: 10px; margin-bottom: 2px; padding-left: 6px;")
+        nav_layout.addWidget(eco_label)
+
+        eco_items = [
+            ("Node / Web", "Node & Web", "🌐"),
+            ("Java / Spring", "Java & Spring", "🍃"),
+            ("Python", "Python", "🐍"),
+        ]
+        for f_id, label, icon in eco_items:
+            item = NavItem(f_id, label, icon)
+            item.clicked.connect(lambda checked, name=f_id: self._set_filter(name))
+            nav_layout.addWidget(item)
+            self.filter_buttons[f_id] = item
+
+        nav_layout.addStretch()
+        nav_scroll.setWidget(nav_container)
+        left_layout.addWidget(nav_scroll, 1)
+
+        # 5. Global Action Buttons
         actions_box = QVBoxLayout()
-        actions_box.setSpacing(8)
+        actions_box.setSpacing(7)
 
         add_row = QHBoxLayout()
-        add_row.setSpacing(8)
+        add_row.setSpacing(7)
 
         add_btn = QPushButton("➕ Project")
         add_btn.setObjectName("PrimaryBtn")
+        add_btn.setStyleSheet(
+            "background-color: #10b981; color: #ffffff; font-weight: 700; "
+            "border: 1px solid #10b981; border-radius: 8px; padding: 7px 12px; font-size: 12px;"
+        )
         add_btn.setToolTip("Add a single project manually")
         add_btn.clicked.connect(self._open_add_dialog)
         add_row.addWidget(add_btn)
 
-        stack_btn = QPushButton("⚡ New Stack")
-        stack_btn.setObjectName("PrimaryBtn")
+        stack_btn = QPushButton("⚡ Stack")
+        stack_btn.setStyleSheet(
+            "background-color: #111827; border: 1px solid #1f2937; color: #f9fafb; "
+            "font-weight: 700; border-radius: 8px; padding: 7px 12px; font-size: 12px;"
+        )
         stack_btn.setToolTip("Create a multi-project stack (e.g. ITIAP Backend + Frontend)")
         stack_btn.clicked.connect(self._open_new_stack_dialog)
         add_row.addWidget(stack_btn)
         actions_box.addLayout(add_row)
 
         self.stop_all_btn = QPushButton("⏹ Stop All Running")
-        self.stop_all_btn.setObjectName("StopBtn")
+        self.stop_all_btn.setStyleSheet(
+            "background-color: #271418; border: 1px solid #7f1d1d; color: #f87171; "
+            "font-weight: 700; border-radius: 8px; padding: 7px 14px; font-size: 12px;"
+        )
         self.stop_all_btn.setToolTip("Stop all active servers safely")
         self.stop_all_btn.clicked.connect(self._stop_all)
         actions_box.addWidget(self.stop_all_btn)
 
-        bottom_utils = QHBoxLayout()
-        bottom_utils.setSpacing(8)
         self.toggle_logs_btn = QPushButton("📋 Console Logs")
         self.toggle_logs_btn.setObjectName("IconBtn")
+        self.toggle_logs_btn.setStyleSheet(
+            "background-color: #111827; border: 1px solid #1f2937; color: #e5e7eb; "
+            "font-weight: 600; border-radius: 8px; padding: 7px 14px; font-size: 12px;"
+        )
         self.toggle_logs_btn.clicked.connect(self._toggle_logs)
-        bottom_utils.addWidget(self.toggle_logs_btn)
-        actions_box.addLayout(bottom_utils)
+        actions_box.addWidget(self.toggle_logs_btn)
 
         left_layout.addLayout(actions_box)
         root_layout.addWidget(left_panel)
@@ -208,9 +354,9 @@ class MainWindow(QMainWindow):
         self.empty_state_frame.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.empty_state_frame.setStyleSheet("""
             QFrame#EmptyStateFrame {
-                background-color: #151b27;
-                border: 1.5px solid #283449;
-                border-radius: 18px;
+                background-color: #111827;
+                border: 1px solid #1f2937;
+                border-radius: 14px;
                 padding: 40px 24px;
             }
         """)
@@ -224,12 +370,12 @@ class MainWindow(QMainWindow):
         es_layout.addWidget(self.es_icon)
 
         self.es_title = QLabel("No Projects or Stacks Yet")
-        self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #f1f5f9; background: transparent;")
+        self.es_title.setStyleSheet("font-size: 17px; font-weight: 800; color: #f9fafb; background: transparent;")
         self.es_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         es_layout.addWidget(self.es_title)
 
         self.es_sub = QLabel("DevDeck is ready. Add projects manually or create multi-service stacks.")
-        self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #94a3b8; background: transparent;")
+        self.es_sub.setStyleSheet("font-size: 12px; font-weight: 500; color: #9ca3af; background: transparent;")
         self.es_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
         es_layout.addWidget(self.es_sub)
 
@@ -241,12 +387,12 @@ class MainWindow(QMainWindow):
         es_btns.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         es_add_p = QPushButton("➕ Add Project")
-        es_add_p.setStyleSheet("color: #FFFFFF; background-color: #2563eb; border: 1.5px solid #3b82f6; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
+        es_add_p.setStyleSheet("color: #FFFFFF; background-color: #10b981; border: 1px solid #10b981; border-radius: 8px; padding: 7px 16px; font-weight: 700; font-size: 12px;")
         es_add_p.clicked.connect(self._open_add_dialog)
         es_btns.addWidget(es_add_p)
 
         es_add_s = QPushButton("⚡ New Stack")
-        es_add_s.setStyleSheet("color: #f1f5f9; background-color: #1e2638; border: 1.5px solid #2e3c54; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
+        es_add_s.setStyleSheet("color: #f9fafb; background-color: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 16px; font-weight: 700; font-size: 12px;")
         es_add_s.clicked.connect(self._open_new_stack_dialog)
         es_btns.addWidget(es_add_s)
         es_layout.addWidget(self.es_btns_widget)
@@ -262,45 +408,57 @@ class MainWindow(QMainWindow):
         self.log_viewer.open_url_requested.connect(open_url)
         self.splitter.addWidget(self.log_viewer)
 
-        # Start with logs drawer visible but compact
-        self._prev_splitter_sizes = [550, 180]
-        self.splitter.setSizes([550, 180])
+        # Start with logs drawer collapsed by default so cards have full room
+        self._prev_splitter_sizes = [720, 0]
+        self.splitter.setSizes([720, 0])
 
         right_layout.addWidget(self.splitter)
         root_layout.addWidget(right_container, 1)
 
-    def _create_stat_badge(self, initial_val: str, label_text: str) -> QFrame:
+    def _create_mini_stat(self, initial_val: str, label_text: str, val_color: str = "#f8fafc") -> QFrame:
         badge = QFrame()
-        badge.setObjectName("StatBadge")
         badge.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        ly = QHBoxLayout(badge)
-        ly.setContentsMargins(12, 4, 12, 4)
-        ly.setSpacing(6)
+        badge.setStyleSheet("background: transparent; border: none;")
+        ly = QVBoxLayout(badge)
+        ly.setContentsMargins(2, 2, 2, 2)
+        ly.setSpacing(2)
+        ly.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         val_label = QLabel(initial_val)
         val_label.setObjectName("StatValue")
+        val_label.setStyleSheet(f"color: {val_color}; font-weight: 800; font-size: 16px; background: transparent;")
+        val_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         ly.addWidget(val_label)
 
         sub_label = QLabel(label_text)
         sub_label.setObjectName("StatLabel")
+        sub_label.setStyleSheet("color: #9ca3af; font-weight: 700; font-size: 9px; background: transparent;")
+        sub_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         ly.addWidget(sub_label)
 
         badge.val_label = val_label
         badge.sub_label = sub_label
-        self._apply_badge_style(badge)
         return badge
 
+    def _create_vdivider(self) -> QFrame:
+        divider = QFrame()
+        divider.setFrameShape(QFrame.Shape.VLine)
+        divider.setStyleSheet("color: #1f2937; background-color: #1f2937; max-width: 1px; min-width: 1px;")
+        return divider
+
+    def _create_stat_badge(self, initial_val: str, label_text: str) -> QFrame:
+        return self._create_mini_stat(initial_val, label_text)
+
     def _apply_badge_style(self, badge: QFrame):
-        badge.setStyleSheet("background-color: #1e2638; border: 1px solid #2d3952; border-radius: 14px; padding: 3px 10px;")
-        badge.val_label.setStyleSheet("color: #60a5fa; font-weight: 900; font-size: 13px; background: transparent;")
-        badge.sub_label.setStyleSheet("color: #94a3b8; font-weight: 700; font-size: 10px; background: transparent;")
+        pass
 
     def _apply_section_headers_style(self):
-        style = "font-size: 11px; font-weight: 900; color: #94a3b8; letter-spacing: 0.8px; padding: 6px 2px; margin-top: 6px; background: transparent;"
+        style = "font-size: 11px; font-weight: 800; color: #9ca3af; letter-spacing: 0.8px; padding: 6px 2px; margin-top: 4px; background: transparent;"
         if hasattr(self, "traces_header"):
             self.traces_header.setStyleSheet(style)
         if hasattr(self, "projects_header"):
             self.projects_header.setStyleSheet(style)
+
 
     def _init_shortcuts(self):
         QShortcut(QKeySequence("Ctrl+F"), self, activated=self.search_input.setFocus)
@@ -317,32 +475,32 @@ class MainWindow(QMainWindow):
         tray_menu = QMenu()
         tray_menu.setStyleSheet("""
             QMenu {
-                background-color: #151b27;
-                border: 1.5px solid #2e3c54;
+                background-color: #0b0f17;
+                border: 1px solid #1f2937;
                 border-radius: 10px;
                 padding: 6px;
-                color: #f1f5f9;
+                color: #f9fafb;
             }
             QMenu::item {
                 padding: 8px 20px;
                 border-radius: 6px;
-                color: #f1f5f9;
+                color: #e5e7eb;
                 background-color: transparent;
                 font-weight: 600;
                 font-size: 12px;
             }
             QMenu::item:hover, QMenu::item:selected {
-                background-color: #2563eb;
-                color: #ffffff;
-                font-weight: 800;
+                background-color: #1f2937;
+                color: #10b981;
+                font-weight: 700;
             }
             QMenu::item:disabled {
-                color: #64748b;
+                color: #4b5563;
                 background-color: transparent;
             }
             QMenu::separator {
                 height: 1px;
-                background-color: #2e3c54;
+                background-color: #1f2937;
                 margin: 4px 8px;
             }
         """)
@@ -418,24 +576,21 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if app:
             app.setStyleSheet(DARK_THEME_QSS)
-        self.hero_tag.setStyleSheet("background-color: #1e2638; color: #60a5fa; border: 1px solid #2d3952; font-weight: 800; font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;")
-        if hasattr(self, "filter_label"):
-            self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; margin-top: 4px;")
+        if hasattr(self, "hero_tag"):
+            self.hero_tag.setStyleSheet("background-color: #1e2638; color: #60a5fa; border: 1px solid #2d3952; font-weight: 800; font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;")
         if hasattr(self, "empty_state_frame"):
             self.empty_state_frame.setStyleSheet("""
                 QFrame#EmptyStateFrame {
-                    background-color: #151b27;
-                    border: 1.5px solid #283449;
-                    border-radius: 18px;
+                    background-color: #111827;
+                    border: 1px solid #1f2937;
+                    border-radius: 14px;
                     padding: 40px 24px;
                 }
             """)
             if hasattr(self, "es_title"):
-                self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #f1f5f9; background: transparent;")
+                self.es_title.setStyleSheet("font-size: 17px; font-weight: 800; color: #f9fafb; background: transparent;")
             if hasattr(self, "es_sub"):
-                self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #94a3b8; background: transparent;")
-        for b in [self.total_badge, self.running_badge, self.ports_badge]:
-            self._apply_badge_style(b)
+                self.es_sub.setStyleSheet("font-size: 12px; font-weight: 500; color: #9ca3af; background: transparent;")
         self._apply_section_headers_style()
         for card in self.cards.values():
             card.update_card_style("dark")
@@ -737,12 +892,24 @@ class MainWindow(QMainWindow):
 
     def _set_filter(self, filter_name: str):
         self.active_filter = filter_name
-        for name, btn in self.filter_buttons.items():
+        for name, item in self.filter_buttons.items():
             is_active = (name == filter_name)
-            btn.setChecked(is_active)
-            btn.setProperty("checked", "true" if is_active else "false")
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
+            item.setChecked(is_active)
+            item.setProperty("checked", "true" if is_active else "false")
+            if is_active:
+                item.title_lbl.setStyleSheet("font-size: 12px; font-weight: 700; color: #34d399; background: transparent;")
+                item.count_badge.setStyleSheet(
+                    "background-color: #052e16; color: #34d399; font-size: 10px; font-weight: 700; "
+                    "border: 1px solid #10b981; border-radius: 8px; padding: 1px 6px; min-width: 14px;"
+                )
+            else:
+                item.title_lbl.setStyleSheet("font-size: 12px; font-weight: 600; color: #9ca3af; background: transparent;")
+                item.count_badge.setStyleSheet(
+                    "background-color: #111827; color: #9ca3af; font-size: 10px; font-weight: 700; "
+                    "border: 1px solid #1f2937; border-radius: 8px; padding: 1px 6px; min-width: 14px;"
+                )
+            item.style().unpolish(item)
+            item.style().polish(item)
         self._apply_filters()
 
     def _on_search_changed(self, text: str):
@@ -957,9 +1124,9 @@ class MainWindow(QMainWindow):
             "Python": c_py,
         }
 
-        for cat_name, btn in self.filter_buttons.items():
+        for cat_name, item in self.filter_buttons.items():
             cnt = cat_counts.get(cat_name, 0)
-            btn.setText(f"{cat_name} ({cnt})")
+            item.set_count(cnt)
 
         # Update tray tooltip
         if hasattr(self, 'tray'):

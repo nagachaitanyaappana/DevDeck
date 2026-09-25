@@ -82,60 +82,62 @@ class LogViewer(QFrame):
         self.setObjectName("LogDrawer")
         self.setStyleSheet("""
             QFrame#LogDrawer {
-                background-color: #0A0A0A;
-                border: 2px solid #111111;
-                border-radius: 16px;
+                background-color: #0b0f17;
+                border: 1px solid #1f2937;
+                border-radius: 14px;
             }
             QTextEdit#LogViewer {
-                background-color: #000000;
-                color: #00FF66;
-                border: 1px solid #222222;
-                border-radius: 10px;
+                background-color: #030712;
+                color: #34d399;
+                border: 1px solid #1f2937;
+                border-radius: 8px;
                 font-family: 'JetBrains Mono', 'Fira Code', 'DejaVu Sans Mono', monospace;
                 font-size: 12px;
                 padding: 10px;
-                selection-background-color: #2563EB;
+                selection-background-color: #1f2937;
+                selection-color: #34d399;
             }
             QLineEdit#LogSearch {
-                background-color: #1A1A1A;
-                color: #FFFFFF;
-                border: 1px solid #333333;
-                border-radius: 8px;
+                background-color: #111827;
+                color: #f9fafb;
+                border: 1px solid #1f2937;
+                border-radius: 6px;
                 padding: 4px 8px;
                 font-size: 11px;
             }
             QLineEdit#LogSearch:focus {
-                border: 1px solid #3b82f6;
+                border: 1px solid #10b981;
             }
             QCheckBox#LogAutoScroll {
-                color: #FFFFFF;
+                color: #9ca3af;
                 font-size: 11px;
-                font-weight: 700;
+                font-weight: 600;
                 background: transparent;
             }
             QCheckBox#LogAutoScroll::indicator {
                 width: 14px;
                 height: 14px;
-                border: 1.5px solid #666666;
+                border: 1px solid #374151;
                 border-radius: 4px;
-                background-color: #1A1A1A;
+                background-color: #111827;
             }
             QCheckBox#LogAutoScroll::indicator:checked {
-                background-color: #2563eb;
-                border: 1.5px solid #3b82f6;
+                background-color: #10b981;
+                border: 1px solid #10b981;
             }
             QPushButton#LogBtn {
-                background-color: #1A1A1A;
-                color: #E5E7EB;
-                border: 1px solid #333333;
-                border-radius: 8px;
+                background-color: #111827;
+                color: #e5e7eb;
+                border: 1px solid #1f2937;
+                border-radius: 6px;
                 padding: 4px 10px;
                 font-size: 11px;
-                font-weight: 700;
+                font-weight: 600;
             }
             QPushButton#LogBtn:hover {
-                background-color: #2A2A2A;
-                color: #FFFFFF;
+                background-color: #1f2937;
+                border-color: #374151;
+                color: #f9fafb;
             }
         """)
 
@@ -149,7 +151,7 @@ class LogViewer(QFrame):
 
         # Project Info Header
         self.title_label = QLabel("📋 Console Logs: No project selected")
-        self.title_label.setStyleSheet("font-weight: 800; font-size: 12px; color: #FFFFFF; background: transparent;")
+        self.title_label.setStyleSheet("font-weight: 700; font-size: 12px; color: #f9fafb; background: transparent;")
         toolbar.addWidget(self.title_label)
 
         # URL button if detected
@@ -158,16 +160,17 @@ class LogViewer(QFrame):
         self.url_btn.setVisible(False)
         self.url_btn.setStyleSheet("""
             QPushButton#BrowserBtn {
-                background-color: #2563EB;
-                color: #FFFFFF;
-                border: none;
-                border-radius: 8px;
+                background-color: #111827;
+                color: #38bdf8;
+                border: 1px solid #1f2937;
+                border-radius: 6px;
                 padding: 4px 10px;
                 font-size: 11px;
-                font-weight: 700;
+                font-weight: 600;
             }
             QPushButton#BrowserBtn:hover {
-                background-color: #1D4ED8;
+                background-color: #1f2937;
+                border-color: #0284c7;
             }
         """)
         self.url_btn.clicked.connect(self._on_open_url_clicked)
@@ -179,7 +182,7 @@ class LogViewer(QFrame):
         self.search_input = QLineEdit()
         self.search_input.setObjectName("LogSearch")
         self.search_input.setPlaceholderText("Filter logs...")
-        self.search_input.setStyleSheet("max-width: 180px; padding: 4px 8px; font-size: 11px; background-color: #1A1A1A; color: #FFFFFF; border: 1px solid #333333; border-radius: 8px;")
+        self.search_input.setStyleSheet("max-width: 180px; padding: 4px 8px; font-size: 11px; background-color: #111827; color: #f9fafb; border: 1px solid #1f2937; border-radius: 6px;")
         self.search_input.textChanged.connect(self._on_filter_changed)
         toolbar.addWidget(self.search_input)
 
@@ -187,41 +190,41 @@ class LogViewer(QFrame):
         self.scroll_cb = QCheckBox("Autoscroll")
         self.scroll_cb.setObjectName("LogAutoScroll")
         self.scroll_cb.setChecked(True)
-        self.scroll_cb.setStyleSheet("color: #A3A3A3; font-size: 11px; font-weight: 600; background: transparent;")
+        self.scroll_cb.setStyleSheet("color: #9ca3af; font-size: 11px; font-weight: 600; background: transparent;")
         self.scroll_cb.toggled.connect(self._on_scroll_toggled)
         toolbar.addWidget(self.scroll_cb)
 
         # Clear Logs Button
         self.clear_btn = QPushButton("Clear")
         self.clear_btn.setObjectName("LogBtn")
-        self.clear_btn.setStyleSheet("background-color: #1A1A1A; color: #E5E7EB; border: 1px solid #333333; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 800;")
+        self.clear_btn.setStyleSheet("background-color: #111827; color: #e5e7eb; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600;")
         self.clear_btn.clicked.connect(self.clear_logs)
         toolbar.addWidget(self.clear_btn)
 
         # Copy Logs Button
         self.copy_btn = QPushButton("Copy All")
         self.copy_btn.setObjectName("LogBtn")
-        self.copy_btn.setStyleSheet("background-color: #1A1A1A; color: #E5E7EB; border: 1px solid #333333; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 800;")
+        self.copy_btn.setStyleSheet("background-color: #111827; color: #e5e7eb; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600;")
         self.copy_btn.clicked.connect(self._copy_all)
         toolbar.addWidget(self.copy_btn)
 
         # Fullscreen / Maximize Button
         self.fullscreen_btn = QPushButton("⛶")
-        self.fullscreen_btn.setFixedSize(34, 34)
+        self.fullscreen_btn.setFixedSize(30, 30)
         self.fullscreen_btn.setStyleSheet("""
             QPushButton {
-                background-color: #1A1A1A;
-                color: #A3A3A3;
-                border: 1px solid #333333;
-                border-radius: 8px;
+                background-color: #111827;
+                color: #9ca3af;
+                border: 1px solid #1f2937;
+                border-radius: 6px;
                 padding: 0px;
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #2A2A2A;
-                color: #FFFFFF;
-                border-color: #555555;
+                background-color: #1f2937;
+                color: #ffffff;
+                border-color: #374151;
             }
         """)
         self.fullscreen_btn.setToolTip("Toggle Fullscreen Console (Ctrl+Shift+L)")
@@ -230,21 +233,21 @@ class LogViewer(QFrame):
 
         # Close / Minimize Button
         self.close_btn = QPushButton("✕")
-        self.close_btn.setFixedSize(34, 34)
+        self.close_btn.setFixedSize(30, 30)
         self.close_btn.setStyleSheet("""
             QPushButton {
-                background-color: #1A1A1A;
-                color: #888888;
-                border: 1px solid #333333;
-                border-radius: 8px;
+                background-color: #111827;
+                color: #9ca3af;
+                border: 1px solid #1f2937;
+                border-radius: 6px;
                 padding: 0px;
-                font-size: 16px;
-                font-weight: 900;
+                font-size: 13px;
+                font-weight: 700;
             }
             QPushButton:hover {
-                background-color: #7F1D1D;
-                color: #F87171;
-                border-color: #DC2626;
+                background-color: #3b1419;
+                color: #f87171;
+                border-color: #7f1d1d;
             }
         """)
         self.close_btn.setToolTip("Close Console Drawer (Ctrl+L)")
