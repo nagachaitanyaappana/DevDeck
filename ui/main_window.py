@@ -341,11 +341,25 @@ class MainWindow(QMainWindow):
         self.cards_layout.setColumnStretch(1, 1)
         self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-        # Section Headers for Stacks and Projects
-        self.traces_header = QLabel("⚡ MULTI-PROJECT TRACES")
+        # Section Headers for Stacks and Projects (Figma-style pill tags)
+        self.traces_header_widget = QWidget()
+        th_layout = QHBoxLayout(self.traces_header_widget)
+        th_layout.setContentsMargins(2, 6, 2, 2)
+        th_layout.setSpacing(8)
+        self.traces_header = QLabel("⚡ Multi-Project Stacks")
         self.traces_header.setObjectName("SectionHeader")
-        self.projects_header = QLabel("📦 INDIVIDUAL PROJECTS")
+        th_layout.addWidget(self.traces_header)
+        th_layout.addStretch()
+
+        self.projects_header_widget = QWidget()
+        ph_layout = QHBoxLayout(self.projects_header_widget)
+        ph_layout.setContentsMargins(2, 10, 2, 2)
+        ph_layout.setSpacing(8)
+        self.projects_header = QLabel("📦 Individual Projects")
         self.projects_header.setObjectName("SectionHeader")
+        ph_layout.addWidget(self.projects_header)
+        ph_layout.addStretch()
+
         self._apply_section_headers_style()
 
         # Empty State Display when 0 cards match or exist
@@ -453,7 +467,17 @@ class MainWindow(QMainWindow):
         pass
 
     def _apply_section_headers_style(self):
-        style = "font-size: 11px; font-weight: 800; color: #9ca3af; letter-spacing: 0.8px; padding: 6px 2px; margin-top: 4px; background: transparent;"
+        style = """
+            QLabel#SectionHeader {
+                background-color: #1f2937;
+                color: #e5e7eb;
+                border: 1px solid #374151;
+                border-radius: 12px;
+                padding: 4px 14px;
+                font-size: 11px;
+                font-weight: 700;
+            }
+        """
         if hasattr(self, "traces_header"):
             self.traces_header.setStyleSheet(style)
         if hasattr(self, "projects_header"):
@@ -1005,28 +1029,28 @@ class MainWindow(QMainWindow):
         # Full-width multi-service traces (columns 0 and 1)
         if visible_stacks:
             if visible_projects or self.active_filter == "All":
-                self.traces_header.setText(f"⚡ MULTI-PROJECT TRACES ({len(visible_stacks)})")
-                self.traces_header.setVisible(True)
-                self.cards_layout.addWidget(self.traces_header, current_grid_row, 0, 1, 2)
+                self.traces_header.setText(f"⚡ Multi-Project Stacks  ·  {len(visible_stacks)}")
+                self.traces_header_widget.setVisible(True)
+                self.cards_layout.addWidget(self.traces_header_widget, current_grid_row, 0, 1, 2)
                 current_grid_row += 1
             else:
-                self.traces_header.setVisible(False)
+                self.traces_header_widget.setVisible(False)
 
             for scard in visible_stacks:
                 self.cards_layout.addWidget(scard, current_grid_row, 0, 1, 2)
                 current_grid_row += 1
         else:
-            self.traces_header.setVisible(False)
+            self.traces_header_widget.setVisible(False)
 
         # 2-Column Grid for Individual Projects
         if visible_projects:
             if visible_stacks:
-                self.projects_header.setText(f"📦 INDIVIDUAL PROJECTS ({len(visible_projects)})")
-                self.projects_header.setVisible(True)
-                self.cards_layout.addWidget(self.projects_header, current_grid_row, 0, 1, 2)
+                self.projects_header.setText(f"📦 Individual Projects  ·  {len(visible_projects)}")
+                self.projects_header_widget.setVisible(True)
+                self.cards_layout.addWidget(self.projects_header_widget, current_grid_row, 0, 1, 2)
                 current_grid_row += 1
             else:
-                self.projects_header.setVisible(False)
+                self.projects_header_widget.setVisible(False)
 
             for idx, pcard in enumerate(visible_projects):
                 r = current_grid_row + (idx // 2)

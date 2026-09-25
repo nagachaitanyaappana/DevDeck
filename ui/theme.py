@@ -795,7 +795,7 @@ QPushButton#NavItem[checked="true"] {
 QFrame#ProjectCard, QFrame#StackCard {
     background-color: #111827;
     border: 1px solid #1f2937;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 14px;
 }
 QFrame#ProjectCard:hover, QFrame#StackCard:hover {
@@ -803,6 +803,16 @@ QFrame#ProjectCard:hover, QFrame#StackCard:hover {
 }
 QFrame#ProjectCard[running="true"], QFrame#StackCard[running="true"] {
     border: 1.5px solid #10b981;
+}
+
+QLabel#SectionHeader {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 4px 14px;
+    font-size: 11px;
+    font-weight: 700;
 }
 
 QLabel#CardTitle {
