@@ -208,8 +208,8 @@ class MainWindow(QMainWindow):
         self.empty_state_frame.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.empty_state_frame.setStyleSheet("""
             QFrame#EmptyStateFrame {
-                background-color: #FFFFFF;
-                border: 2px solid #111111;
+                background-color: #151b27;
+                border: 1.5px solid #283449;
                 border-radius: 18px;
                 padding: 40px 24px;
             }
@@ -218,22 +218,25 @@ class MainWindow(QMainWindow):
         es_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         es_layout.setSpacing(10)
 
-        es_icon = QLabel("📁✨")
-        es_icon.setStyleSheet("font-size: 38px; background: transparent;")
-        es_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        es_layout.addWidget(es_icon)
+        self.es_icon = QLabel("📁✨")
+        self.es_icon.setStyleSheet("font-size: 38px; background: transparent;")
+        self.es_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        es_layout.addWidget(self.es_icon)
 
         self.es_title = QLabel("No Projects or Stacks Yet")
-        self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #111111; background: transparent;")
+        self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #f1f5f9; background: transparent;")
         self.es_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         es_layout.addWidget(self.es_title)
 
         self.es_sub = QLabel("DevDeck is ready. Add projects manually or create multi-service stacks.")
-        self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #666666; background: transparent;")
+        self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #94a3b8; background: transparent;")
         self.es_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
         es_layout.addWidget(self.es_sub)
 
-        es_btns = QHBoxLayout()
+        self.es_btns_widget = QWidget()
+        self.es_btns_widget.setStyleSheet("background: transparent;")
+        es_btns = QHBoxLayout(self.es_btns_widget)
+        es_btns.setContentsMargins(0, 4, 0, 0)
         es_btns.setSpacing(10)
         es_btns.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -246,7 +249,7 @@ class MainWindow(QMainWindow):
         es_add_s.setStyleSheet("color: #f1f5f9; background-color: #1e2638; border: 1.5px solid #2e3c54; border-radius: 12px; padding: 8px 18px; font-weight: 900; font-size: 12px;")
         es_add_s.clicked.connect(self._open_new_stack_dialog)
         es_btns.addWidget(es_add_s)
-        es_layout.addLayout(es_btns)
+        es_layout.addWidget(self.es_btns_widget)
         self.empty_state_frame.setVisible(False)
 
         self.scroll_area.setWidget(self.cards_container)
@@ -410,54 +413,34 @@ class MainWindow(QMainWindow):
             self.log_viewer.set_fullscreen_state(False)
 
     def _toggle_theme(self):
-        current = self.config.data.get("theme", "figma")
-        new_theme = "dark" if current == "figma" else "figma"
-        self.config.data["theme"] = new_theme
+        self.config.data["theme"] = "dark"
         self.config.save()
         app = QApplication.instance()
         if app:
-            app.setStyleSheet(DARK_THEME_QSS if new_theme == "dark" else FIGMA_THEME_QSS)
-        if new_theme == "dark":
-            self.hero_tag.setStyleSheet("background-color: #1e2638; color: #60a5fa; border: 1px solid #2d3952; font-weight: 800; font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;")
-            if hasattr(self, "filter_label"):
-                self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; margin-top: 4px;")
-            if hasattr(self, "empty_state_frame"):
-                self.empty_state_frame.setStyleSheet("""
-                    QFrame#EmptyStateFrame {
-                        background-color: #151b27;
-                        border: 1.5px solid #283449;
-                        border-radius: 18px;
-                        padding: 40px 24px;
-                    }
-                """)
-                if hasattr(self, "es_title"):
-                    self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #f1f5f9; background: transparent;")
-                if hasattr(self, "es_sub"):
-                    self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #94a3b8; background: transparent;")
-        else:
-            self.hero_tag.setStyleSheet("background-color: #111111; color: #FFFFFF; font-weight: 800; font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;")
-            if hasattr(self, "filter_label"):
-                self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #555555; letter-spacing: 0.5px; margin-top: 4px;")
-            if hasattr(self, "empty_state_frame"):
-                self.empty_state_frame.setStyleSheet("""
-                    QFrame#EmptyStateFrame {
-                        background-color: #FFFFFF;
-                        border: 2px solid #111111;
-                        border-radius: 18px;
-                        padding: 40px 24px;
-                    }
-                """)
-                if hasattr(self, "es_title"):
-                    self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #111111; background: transparent;")
-                if hasattr(self, "es_sub"):
-                    self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #666666; background: transparent;")
+            app.setStyleSheet(DARK_THEME_QSS)
+        self.hero_tag.setStyleSheet("background-color: #1e2638; color: #60a5fa; border: 1px solid #2d3952; font-weight: 800; font-size: 11px; border-radius: 12px; padding: 4px 12px; max-width: 170px;")
+        if hasattr(self, "filter_label"):
+            self.filter_label.setStyleSheet("font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; margin-top: 4px;")
+        if hasattr(self, "empty_state_frame"):
+            self.empty_state_frame.setStyleSheet("""
+                QFrame#EmptyStateFrame {
+                    background-color: #151b27;
+                    border: 1.5px solid #283449;
+                    border-radius: 18px;
+                    padding: 40px 24px;
+                }
+            """)
+            if hasattr(self, "es_title"):
+                self.es_title.setStyleSheet("font-size: 18px; font-weight: 900; color: #f1f5f9; background: transparent;")
+            if hasattr(self, "es_sub"):
+                self.es_sub.setStyleSheet("font-size: 12px; font-weight: 600; color: #94a3b8; background: transparent;")
         for b in [self.total_badge, self.running_badge, self.ports_badge]:
             self._apply_badge_style(b)
         self._apply_section_headers_style()
         for card in self.cards.values():
-            card.update_card_style(new_theme)
+            card.update_card_style("dark")
         for scard in self.stack_cards.values():
-            scard.update_card_style(new_theme)
+            scard.update_card_style("dark")
 
     def _render_projects(self, projects: List[dict]):
         # Clear existing cards
@@ -889,10 +872,46 @@ class MainWindow(QMainWindow):
         # Empty State
         total_visible = len(visible_stacks) + len(visible_projects)
         if total_visible == 0 and hasattr(self, 'empty_state_frame'):
+            self._update_empty_state_content()
             self.empty_state_frame.setVisible(True)
             self.cards_layout.addWidget(self.empty_state_frame, 0, 0, 1, 2)
         elif hasattr(self, 'empty_state_frame'):
             self.empty_state_frame.setVisible(False)
+
+    def _update_empty_state_content(self):
+        filter_name = getattr(self, "active_filter", "All")
+        search = getattr(self, "search_query", "").strip()
+
+        if search:
+            self.es_icon.setText("🔍")
+            self.es_title.setText(f"No Results for '{search}'")
+            self.es_sub.setText("No projects or stacks match your search query.")
+            if hasattr(self, "es_btns_widget"):
+                self.es_btns_widget.setVisible(False)
+        elif filter_name == "Running":
+            self.es_icon.setText("⏸️")
+            self.es_title.setText("No Projects or Stacks Running")
+            self.es_sub.setText("Start a project or stack from 'All' to monitor it here.")
+            if hasattr(self, "es_btns_widget"):
+                self.es_btns_widget.setVisible(False)
+        elif filter_name == "Favorites":
+            self.es_icon.setText("⭐")
+            self.es_title.setText("No Favorite Projects Yet")
+            self.es_sub.setText("Click the star icon on any project card to bookmark it here.")
+            if hasattr(self, "es_btns_widget"):
+                self.es_btns_widget.setVisible(False)
+        elif filter_name == "⚡ Stacks":
+            self.es_icon.setText("⚡")
+            self.es_title.setText("No Multi-Project Stacks Yet")
+            self.es_sub.setText("Create a stack to launch frontend, backend, and services together.")
+            if hasattr(self, "es_btns_widget"):
+                self.es_btns_widget.setVisible(True)
+        else:
+            self.es_icon.setText("📁✨")
+            self.es_title.setText("No Projects or Stacks Yet")
+            self.es_sub.setText("DevDeck is ready. Add projects manually or create multi-service stacks.")
+            if hasattr(self, "es_btns_widget"):
+                self.es_btns_widget.setVisible(True)
 
     def _update_stats(self):
         total = len(self.cards)

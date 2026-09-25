@@ -413,7 +413,7 @@ class StackCard(QFrame):
 
         # Start / Stop All Button
         self.main_btn = QPushButton(f"▶ Start Stack ({len(self.stack.get('services', []))})")
-        self.main_btn.setStyleSheet("background-color: #111111; color: #FFFFFF; font-weight: 900; font-size: 12px; border: 2px solid #111111; border-radius: 12px; padding: 7px 18px;")
+        self.main_btn.setStyleSheet("background-color: #065f46; color: #ecfdf5; font-weight: 900; font-size: 12px; border: 1.5px solid #10b981; border-radius: 12px; padding: 7px 18px;")
         self.main_btn.clicked.connect(self._on_toggle_stack)
         bot_row.addWidget(self.main_btn)
 
@@ -426,7 +426,7 @@ class StackCard(QFrame):
         # Open URLs Button
         self.open_urls_btn = QPushButton("🌐 Open All URLs")
         self.open_urls_btn.setEnabled(False)
-        self.open_urls_btn.setStyleSheet("background-color: #FFFFFF; color: #111111; font-weight: 800; font-size: 12px; border: 2px solid #111111; border-radius: 12px; padding: 7px 14px;")
+        self.open_urls_btn.setStyleSheet("background-color: #1e2638; color: #f1f5f9; font-weight: 800; font-size: 12px; border: 1px solid #2e3c54; border-radius: 12px; padding: 7px 14px;")
         self.open_urls_btn.clicked.connect(self._on_open_urls)
         bot_row.addWidget(self.open_urls_btn)
 
