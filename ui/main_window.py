@@ -4,6 +4,7 @@ Integrates project cards, search, filtering, process lifecycle, logs drawer, and
 """
 
 import os
+import sys
 from typing import Dict, List, Optional
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
@@ -30,13 +31,12 @@ class MainWindow(QMainWindow):
         self.config = config_manager
         self.process_manager = process_manager
         
-        icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "icon.png")
         if app_icon and not app_icon.isNull():
             self.app_icon = app_icon
-        elif os.path.exists(icon_path):
-            self.app_icon = QIcon(icon_path)
         else:
-            self.app_icon = QIcon()
+            base_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            icon_path = os.path.join(base_dir, "assets", "icon.png")
+            self.app_icon = QIcon(icon_path) if os.path.exists(icon_path) else QIcon()
         
         self.cards: Dict[str, ProjectCard] = {}
         self.stack_cards: Dict[str, StackCard] = {}

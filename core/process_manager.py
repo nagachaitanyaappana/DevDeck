@@ -70,8 +70,15 @@ class ProjectProcess(QObject):
         self.status_changed.emit(self.project_id, "starting")
         self._append_log(f"⚡ Starting command: {self.command}\n📁 In directory: {self.cwd}\n" + "─" * 50 + "\n", False)
         
-        # Use shell to execute commands properly (handles npm, gradle, pipes, args)
-        self.process.start("/bin/bash", ["-c", self.command])
+        # Use shell to execute commands properly across platforms
+        import sys
+        if sys.platform == "win32":
+            self.process.start("cmd.exe", ["/c", self.command])
+        else:
+            shell = os.environ.get("SHELL", "/bin/bash")
+            if not os.path.exists(shell):
+                shell = "/bin/sh"
+            self.process.start(shell, ["-c", self.command])
         if self.process.waitForStarted(1500):
             self.status_changed.emit(self.project_id, "running")
         else:

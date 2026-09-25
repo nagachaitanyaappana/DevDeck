@@ -2,10 +2,10 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green.svg)](https://riverbankcomputing.com/software/pyqt/)
-[![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://www.linux.org/)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-orange.svg)](https://github.com/nagachaitanyaappana/DevDeck/releases)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
-**DevDeck** is a fast, responsive, native Linux desktop dashboard built with Python and PyQt6. It centralizes your entire development environment into a single, clean workspace—eliminating terminal sprawl, forgotten ports, and multi-service startup headaches.
+**DevDeck** is a fast, responsive, native desktop dashboard built with Python and PyQt6 for Linux, Windows, and macOS. It centralizes your entire development environment into a single, clean workspace—eliminating terminal sprawl, forgotten ports, and multi-service startup headaches.
 
 Designed with an aesthetic modern blue-black dark interface, DevDeck gives you manual, deterministic control over your individual projects and complex multi-project traces.
 
@@ -52,31 +52,36 @@ Designed with an aesthetic modern blue-black dark interface, DevDeck gives you m
 
 ---
 
-## 🚀 Getting Started
+## 📦 Download Pre-built Binaries
+
+Ready-to-use standalone executables for all platforms are available on the **[GitHub Releases](https://github.com/nagachaitanyaappana/DevDeck/releases)** page:
+
+| Platform | Package | Description |
+| :--- | :--- | :--- |
+| **Linux (x86_64)** | `DevDeck-linux-x86_64.tar.gz` | Standalone executable + `.desktop` launcher & icon |
+| **Windows (x64)** | `DevDeck-windows-x64.zip` | Standalone `DevDeck.exe` |
+| **macOS (Apple Silicon)** | `DevDeck-macos-arm64.zip` | Standalone `DevDeck.app` bundle |
+| **macOS (Intel)** | `DevDeck-macos-x64.zip` | Standalone `DevDeck.app` bundle |
+
+---
+
+## 🚀 Running from Source
 
 ### Prerequisites
 
-- **Linux** (Tested on Ubuntu, Debian, Arch Linux, XFCE, GNOME, KDE)
 - **Python 3.10+**
-- **PyQt6** and **psutil**
+- **Linux, Windows, or macOS**
 
 ```bash
 # Clone the repository
 git clone https://github.com/nagachaitanyaappana/DevDeck.git
 cd DevDeck
 
-# Install Python dependencies
-pip install PyQt6 psutil
-```
+# Install dependencies
+pip install -r requirements.txt
 
-### Running DevDeck
-
-```bash
-# Direct Python execution
+# Run DevDeck
 python3 main.py
-
-# Or if installed to PATH / Desktop entry:
-devdeck
 ```
 
 ---

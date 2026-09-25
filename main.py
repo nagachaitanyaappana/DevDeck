@@ -20,6 +20,12 @@ from core.process_manager import ProcessManager
 from ui.theme import FIGMA_THEME_QSS, DARK_THEME_QSS
 from ui.main_window import MainWindow
 
+def get_resource_path(relative_path: str) -> str:
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
+
 def main():
     # Allow clean Ctrl+C handling in terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -35,7 +41,7 @@ def main():
     app.setDesktopFileName("devdeck.desktop")
 
     # Load App Icon
-    icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "icon.png")
+    icon_path = get_resource_path(os.path.join("assets", "icon.png"))
     app_icon = QIcon(icon_path) if os.path.exists(icon_path) else QIcon()
     if not app_icon.isNull():
         app.setWindowIcon(app_icon)

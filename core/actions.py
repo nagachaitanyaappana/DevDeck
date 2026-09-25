@@ -3,6 +3,8 @@ Quick Actions for DevDeck.
 Handles opening projects in VS Code, Terminal, File Manager, and Web Browser.
 """
 
+import os
+import sys
 import shutil
 import subprocess
 from PyQt6.QtCore import QUrl
@@ -16,15 +18,29 @@ def open_url(url: str):
 
 def open_in_vscode(path: str):
     """Opens the directory in Visual Studio Code."""
-    code_bin = shutil.which("code") or shutil.which("codium")
+    code_bin = shutil.which("code") or shutil.which("codium") or shutil.which("code.cmd")
     if code_bin:
         subprocess.Popen([code_bin, path], start_new_session=True)
     else:
-        # Fallback to xdg-open
-        subprocess.Popen(["xdg-open", path], start_new_session=True)
+        if sys.platform == "win32":
+            os.startfile(path)
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", path], start_new_session=True)
+        else:
+            subprocess.Popen(["xdg-open", path], start_new_session=True)
 
 def open_in_terminal(path: str):
     """Opens an interactive terminal in the specified directory."""
+    if sys.platform == "win32":
+        if shutil.which("wt"):
+            subprocess.Popen(["wt", "-d", path], start_new_session=True)
+        else:
+            subprocess.Popen(f'start cmd /k "cd /d {path}"', shell=True)
+        return
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", "-a", "Terminal", path], start_new_session=True)
+        return
+
     terminals = [
         ("xfce4-terminal", ["xfce4-terminal", f"--working-directory={path}"]),
         ("gnome-terminal", ["gnome-terminal", f"--working-directory={path}"]),
@@ -41,8 +57,13 @@ def open_in_terminal(path: str):
 
 def open_in_file_manager(path: str):
     """Opens the directory in the default file manager."""
-    fm = shutil.which("thunar") or shutil.which("nautilus") or shutil.which("dolphin") or "xdg-open"
-    subprocess.Popen([fm, path], start_new_session=True)
+    if sys.platform == "win32":
+        os.startfile(path)
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", path], start_new_session=True)
+    else:
+        fm = shutil.which("thunar") or shutil.which("nautilus") or shutil.which("dolphin") or "xdg-open"
+        subprocess.Popen([fm, path], start_new_session=True)
 
 def get_process_on_port(port: int):
     """Finds which PID and process is holding a TCP port."""
