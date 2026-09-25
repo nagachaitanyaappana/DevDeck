@@ -60,17 +60,3 @@ exe = EXE(
     entitlements_file=None,
     icon=icon_file if os.path.exists(icon_file) else None,
 )
-
-if sys.platform == "darwin":
-    app = BUNDLE(
-        exe,
-        name='DevDeck.app',
-        icon=icon_file if os.path.exists(icon_file) else None,
-        bundle_identifier='com.devdeck.app',
-        info_plist={
-            'NSHighResolutionCapable': 'True',
-            'LSBackgroundOnly': 'False',
-            'CFBundleDisplayName': 'DevDeck',
-            'CFBundleName': 'DevDeck',
-        },
-    )
