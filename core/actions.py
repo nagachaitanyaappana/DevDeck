@@ -66,7 +66,7 @@ def open_in_file_manager(path: str):
         subprocess.Popen([fm, path], start_new_session=True)
 
 def get_process_on_port(port: int):
-    """Finds which PID and process is holding a TCP port."""
+    """Finds which PID, process, and working directory is holding a TCP port."""
     if not port:
         return None
     import psutil
@@ -77,12 +77,56 @@ def get_process_on_port(port: int):
                 if pid:
                     try:
                         p = psutil.Process(pid)
-                        return {"pid": pid, "name": p.name(), "cmdline": " ".join(p.cmdline()[:3])}
+                        cwd = None
+                        try:
+                            cwd = p.cwd()
+                        except Exception:
+                            pass
+                        return {
+                            "pid": pid,
+                            "name": p.name(),
+                            "cwd": cwd,
+                            "cmdline": " ".join(p.cmdline())
+                        }
                     except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        return {"pid": pid, "name": "unknown"}
+                        return {"pid": pid, "name": "unknown", "cwd": None, "cmdline": ""}
     except Exception:
         pass
     return None
+
+def is_project_running(project: dict, process_manager) -> bool:
+    """
+    Accurately checks if a project/service is running.
+    Prevents false positives when multiple projects share the same port.
+    """
+    p_id = project.get("id")
+    if p_id and process_manager.get_status(p_id) in ["running", "starting"]:
+        return True
+
+    port = project.get("port")
+    if not port or not process_manager.is_port_listening(port):
+        return False
+
+    info = get_process_on_port(port)
+    if not info:
+        return False
+
+    proj_path = project.get("path")
+    if proj_path:
+        norm_proj = os.path.normpath(proj_path)
+        proc_cwd = info.get("cwd")
+        if proc_cwd:
+            norm_cwd = os.path.normpath(proc_cwd)
+            # True match if the process is running in this directory or a child/parent
+            if norm_cwd == norm_proj or norm_cwd.startswith(norm_proj + os.sep) or norm_proj.startswith(norm_cwd + os.sep):
+                return True
+        cmdline = info.get("cmdline", "")
+        if norm_proj in cmdline:
+            return True
+        # A process is listening on this port, but it belongs to a DIFFERENT directory / project!
+        return False
+
+    return True
 
 def kill_process_on_port(port: int) -> bool:
     """Safely kills whatever process is holding the specified port."""

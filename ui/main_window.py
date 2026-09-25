@@ -17,7 +17,7 @@ from PyQt6.QtGui import QIcon, QAction, QKeySequence, QShortcut, QColor
 
 from core.config_manager import ConfigManager
 from core.process_manager import ProcessManager
-from core.actions import open_url, open_in_vscode, open_in_terminal, open_in_file_manager, kill_process_on_port
+from core.actions import open_url, open_in_vscode, open_in_terminal, open_in_file_manager, kill_process_on_port, is_project_running
 from ui.theme import FIGMA_THEME_QSS, DARK_THEME_QSS
 from .components.project_card import ProjectCard
 from .components.log_viewer import LogViewer
@@ -685,18 +685,17 @@ class MainWindow(QMainWindow):
             card.port_changed.connect(self._on_port_changed)
             card.kill_port_requested.connect(self._on_kill_port_requested)
 
-            # Check if already running in process manager or listening on port
+            # Check if already running in process manager or accurately matching on port
             p_id = p["id"]
+            is_running = is_project_running(p, self.process_manager)
             pm_status = self.process_manager.get_status(p_id)
             if pm_status in ["running", "starting"]:
                 card.set_status(pm_status)
-            elif p.get("port") and self.process_manager.is_port_listening(p["port"]):
-                card.set_status("running")
             else:
-                card.set_status("stopped")
+                card.set_status("running" if is_running else "stopped")
 
             url = self.process_manager.get_detected_url(p_id)
-            if not url and p.get("port") and self.process_manager.is_port_listening(p["port"]):
+            if not url and is_running and p.get("port"):
                 url = p.get("url") or f"http://localhost:{p['port']}"
             if url:
                 card.set_detected_url(url)
@@ -875,16 +874,15 @@ class MainWindow(QMainWindow):
             # Reconcile status & detected URL for each member service
             for service in stack.get("services", []):
                 srv_id = service["id"]
+                is_running = is_project_running(service, self.process_manager)
                 pm_status = self.process_manager.get_status(srv_id)
                 if pm_status in ["running", "starting"]:
                     card.set_service_status(srv_id, pm_status)
-                elif service.get("port") and self.process_manager.is_port_listening(service["port"]):
-                    card.set_service_status(srv_id, "running")
                 else:
-                    card.set_service_status(srv_id, "stopped")
+                    card.set_service_status(srv_id, "running" if is_running else "stopped")
 
                 url = self.process_manager.get_detected_url(srv_id)
-                if not url and service.get("port") and self.process_manager.is_port_listening(service["port"]):
+                if not url and is_running and service.get("port"):
                     url = f"http://localhost:{service['port']}"
                 if url:
                     card.set_service_url(srv_id, url)
@@ -1183,50 +1181,50 @@ class MainWindow(QMainWindow):
         # 1. Sync Individual Project Cards
         for p_id, card in self.cards.items():
             proj = card.project
-            port = proj.get("port")
+            is_running = is_project_running(proj, self.process_manager)
             pm_status = self.process_manager.get_status(p_id)
             if pm_status in ["running", "starting"]:
                 new_status = pm_status
-            elif port and self.process_manager.is_port_listening(port):
-                new_status = "running"
             else:
-                new_status = "stopped"
+                new_status = "running" if is_running else "stopped"
 
             if card.status != new_status:
                 card.set_status(new_status)
                 changed = True
 
             # URL Sync
-            url = self.process_manager.get_detected_url(p_id)
-            if not url and port and self.process_manager.is_port_listening(port):
-                url = proj.get("url") or f"http://localhost:{port}"
-            if url and card.detected_url != url:
-                card.set_detected_url(url)
+            if is_running:
+                url = self.process_manager.get_detected_url(p_id) or proj.get("url") or (f"http://localhost:{proj['port']}" if proj.get("port") else None)
+                if url and card.detected_url != url:
+                    card.set_detected_url(url)
+                    changed = True
+            elif card.detected_url:
+                card.set_detected_url(None)
                 changed = True
 
         # 2. Sync Stack Cards
         for s_id, scard in self.stack_cards.items():
             for service in scard.stack.get("services", []):
                 srv_id = service["id"]
-                srv_port = service.get("port")
+                is_running = is_project_running(service, self.process_manager)
                 pm_status = self.process_manager.get_status(srv_id)
                 if pm_status in ["running", "starting"]:
                     srv_status = pm_status
-                elif srv_port and self.process_manager.is_port_listening(srv_port):
-                    srv_status = "running"
                 else:
-                    srv_status = "stopped"
+                    srv_status = "running" if is_running else "stopped"
 
                 curr_row = scard.service_rows.get(srv_id)
                 if curr_row and curr_row.status != srv_status:
                     scard.set_service_status(srv_id, srv_status)
                     changed = True
 
-                srv_url = self.process_manager.get_detected_url(srv_id)
-                if not srv_url and srv_port and self.process_manager.is_port_listening(srv_port):
-                    srv_url = f"http://localhost:{srv_port}"
-                if srv_url and curr_row and curr_row.detected_url != srv_url:
-                    scard.set_service_url(srv_id, srv_url)
+                if is_running and service.get("port"):
+                    srv_url = self.process_manager.get_detected_url(srv_id) or f"http://localhost:{service['port']}"
+                    if curr_row and curr_row.detected_url != srv_url:
+                        scard.set_service_url(srv_id, srv_url)
+                        changed = True
+                elif curr_row and curr_row.detected_url:
+                    curr_row.detected_url = None
                     changed = True
 
         if changed:
