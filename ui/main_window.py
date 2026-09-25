@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QSystemTrayIcon, QMenu, QMessageBox, QApplication,
     QGraphicsDropShadowEffect, QSizeGrip, QGridLayout
 )
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QTimer
 from PyQt6.QtGui import QIcon, QAction, QKeySequence, QShortcut, QColor
 
 from core.config_manager import ConfigManager
@@ -101,6 +101,12 @@ class MainWindow(QMainWindow):
         self._apply_filters()
         self._update_stats()
 
+        # Background Port and Process Live Reconciler Timer (polls every 3s)
+        self.port_poll_timer = QTimer(self)
+        self.port_poll_timer.setInterval(3000)
+        self.port_poll_timer.timeout.connect(self._sync_all_statuses)
+        self.port_poll_timer.start()
+
     def _init_ui(self):
         central = QWidget()
         self.setCentralWidget(central)
@@ -140,7 +146,7 @@ class MainWindow(QMainWindow):
         app_title.setStyleSheet("font-size: 17px; font-weight: 800; color: #f9fafb; letter-spacing: -0.4px;")
         title_row.addWidget(app_title)
 
-        version_badge = QLabel("v1.0.1")
+        version_badge = QLabel("v1.0.2")
         version_badge.setStyleSheet(
             "background-color: #111827; color: #34d399; font-size: 10px; font-weight: 700; "
             "border: 1px solid #1f2937; border-radius: 6px; padding: 1px 6px;"
@@ -540,7 +546,7 @@ class MainWindow(QMainWindow):
         tray_menu.addSeparator()
 
         quit_act = QAction("Quit DevDeck", self)
-        quit_act.triggered.connect(QApplication.instance().quit)
+        quit_act.triggered.connect(self._quit_app)
         tray_menu.addAction(quit_act)
 
         self.tray.setContextMenu(tray_menu)
@@ -555,6 +561,35 @@ class MainWindow(QMainWindow):
         self.show()
         self.raise_()
         self.activateWindow()
+        self._sync_all_statuses()
+
+    def _quit_app(self):
+        """Cleanly stop all background servers and exit DevDeck."""
+        self._force_quit = True
+        self._stop_all()
+        QApplication.instance().quit()
+
+    def closeEvent(self, event):
+        """Minimize to system tray when window is closed, keeping all servers active."""
+        if getattr(self, "_force_quit", False):
+            self._stop_all()
+            event.accept()
+            return
+
+        if hasattr(self, "tray") and self.tray is not None:
+            event.ignore()
+            self.hide()
+            if self.tray.isVisible():
+                self.tray.showMessage(
+                    "DevDeck Running in Background",
+                    "DevDeck is minimized to the system tray. Your servers and multi-stacks continue running.\nClick tray icon to reopen.",
+                    QSystemTrayIcon.MessageIcon.Information,
+                    2500
+                )
+            return
+
+        self._stop_all()
+        event.accept()
 
     def _on_console_fullscreen_toggled(self, is_fullscreen: bool):
         sizes = self.splitter.sizes()
@@ -652,7 +687,14 @@ class MainWindow(QMainWindow):
 
             # Check if already running in process manager or listening on port
             p_id = p["id"]
-            card.set_status(self.process_manager.get_status(p_id))
+            pm_status = self.process_manager.get_status(p_id)
+            if pm_status in ["running", "starting"]:
+                card.set_status(pm_status)
+            elif p.get("port") and self.process_manager.is_port_listening(p["port"]):
+                card.set_status("running")
+            else:
+                card.set_status("stopped")
+
             url = self.process_manager.get_detected_url(p_id)
             if not url and p.get("port") and self.process_manager.is_port_listening(p["port"]):
                 url = p.get("url") or f"http://localhost:{p['port']}"
@@ -679,7 +721,20 @@ class MainWindow(QMainWindow):
         self._update_stats()
 
     def _stop_project(self, project_id: str):
-        self.process_manager.stop_project(project_id)
+        if self.process_manager.get_status(project_id) in ["running", "starting"]:
+            self.process_manager.stop_project(project_id)
+        else:
+            # Check if listening on configured port externally
+            proj = self.config.get_project(project_id)
+            if not proj:
+                for s in self.config.get_stacks().values():
+                    for srv in s.get("services", []):
+                        if srv["id"] == project_id:
+                            proj = srv
+                            break
+            if proj and proj.get("port") and self.process_manager.is_port_listening(proj["port"]):
+                kill_process_on_port(proj["port"])
+        self._sync_all_statuses()
         self._update_stats()
 
     def _restart_project(self, project: dict):
@@ -689,6 +744,15 @@ class MainWindow(QMainWindow):
 
     def _stop_all(self):
         self.process_manager.stop_all()
+        # Also terminate external processes on configured ports
+        for p in self.config.get_projects().values():
+            if p.get("port") and self.process_manager.is_port_listening(p["port"]):
+                kill_process_on_port(p["port"])
+        for s in self.config.get_stacks().values():
+            for srv in s.get("services", []):
+                if srv.get("port") and self.process_manager.is_port_listening(srv["port"]):
+                    kill_process_on_port(srv["port"])
+        self._sync_all_statuses()
         self._update_stats()
 
     def _view_logs(self, project: dict):
@@ -811,7 +875,14 @@ class MainWindow(QMainWindow):
             # Reconcile status & detected URL for each member service
             for service in stack.get("services", []):
                 srv_id = service["id"]
-                card.set_service_status(srv_id, self.process_manager.get_status(srv_id))
+                pm_status = self.process_manager.get_status(srv_id)
+                if pm_status in ["running", "starting"]:
+                    card.set_service_status(srv_id, pm_status)
+                elif service.get("port") and self.process_manager.is_port_listening(service["port"]):
+                    card.set_service_status(srv_id, "running")
+                else:
+                    card.set_service_status(srv_id, "stopped")
+
                 url = self.process_manager.get_detected_url(srv_id)
                 if not url and service.get("port") and self.process_manager.is_port_listening(service["port"]):
                     url = f"http://localhost:{service['port']}"
@@ -880,7 +951,8 @@ class MainWindow(QMainWindow):
     def _stop_stack(self, stack: dict):
         """Stops all services in a stack."""
         for s in stack.get("services", []):
-            self.process_manager.stop_project(s["id"])
+            self._stop_project(s["id"])
+        self._sync_all_statuses()
         self._update_stats()
 
     def _restart_stack(self, stack: dict):
@@ -1103,6 +1175,62 @@ class MainWindow(QMainWindow):
             self.es_sub.setText("DevDeck is ready. Add projects manually or create multi-service stacks.")
             if hasattr(self, "es_btns_widget"):
                 self.es_btns_widget.setVisible(True)
+
+    def _sync_all_statuses(self):
+        """Reconciles live process states and listening TCP ports for all cards & stacks."""
+        changed = False
+
+        # 1. Sync Individual Project Cards
+        for p_id, card in self.cards.items():
+            proj = card.project
+            port = proj.get("port")
+            pm_status = self.process_manager.get_status(p_id)
+            if pm_status in ["running", "starting"]:
+                new_status = pm_status
+            elif port and self.process_manager.is_port_listening(port):
+                new_status = "running"
+            else:
+                new_status = "stopped"
+
+            if card.status != new_status:
+                card.set_status(new_status)
+                changed = True
+
+            # URL Sync
+            url = self.process_manager.get_detected_url(p_id)
+            if not url and port and self.process_manager.is_port_listening(port):
+                url = proj.get("url") or f"http://localhost:{port}"
+            if url and card.detected_url != url:
+                card.set_detected_url(url)
+                changed = True
+
+        # 2. Sync Stack Cards
+        for s_id, scard in self.stack_cards.items():
+            for service in scard.stack.get("services", []):
+                srv_id = service["id"]
+                srv_port = service.get("port")
+                pm_status = self.process_manager.get_status(srv_id)
+                if pm_status in ["running", "starting"]:
+                    srv_status = pm_status
+                elif srv_port and self.process_manager.is_port_listening(srv_port):
+                    srv_status = "running"
+                else:
+                    srv_status = "stopped"
+
+                curr_row = scard.service_rows.get(srv_id)
+                if curr_row and curr_row.status != srv_status:
+                    scard.set_service_status(srv_id, srv_status)
+                    changed = True
+
+                srv_url = self.process_manager.get_detected_url(srv_id)
+                if not srv_url and srv_port and self.process_manager.is_port_listening(srv_port):
+                    srv_url = f"http://localhost:{srv_port}"
+                if srv_url and curr_row and curr_row.detected_url != srv_url:
+                    scard.set_service_url(srv_id, srv_url)
+                    changed = True
+
+        if changed:
+            self._update_stats()
 
     def _update_stats(self):
         total = len(self.cards)

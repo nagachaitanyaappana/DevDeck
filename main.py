@@ -39,6 +39,7 @@ def main():
     app.setApplicationName("DevDeck")
     app.setApplicationDisplayName("DevDeck")
     app.setDesktopFileName("devdeck.desktop")
+    app.setQuitOnLastWindowClosed(False)
 
     # Load App Icon
     icon_path = get_resource_path(os.path.join("assets", "icon.png"))
