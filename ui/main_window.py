@@ -146,7 +146,7 @@ class MainWindow(QMainWindow):
         app_title.setStyleSheet("font-size: 17px; font-weight: 800; color: #f9fafb; letter-spacing: -0.4px;")
         title_row.addWidget(app_title)
 
-        version_badge = QLabel("v1.0.2")
+        version_badge = QLabel("v1.0.3")
         version_badge.setStyleSheet(
             "background-color: #111827; color: #34d399; font-size: 10px; font-weight: 700; "
             "border: 1px solid #1f2937; border-radius: 6px; padding: 1px 6px;"
