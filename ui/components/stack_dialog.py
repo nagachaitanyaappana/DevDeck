@@ -2,6 +2,7 @@
 Stack Creation & Editing Dialog for DevDeck.
 Allows users to manually create or configure multi-project stacks (e.g. ITIAP Backend + Frontend)
 with individual paths, launch commands, and ports for 1-click simultaneous launching.
+Styled with Figma theme (purple/violet color scheme).
 """
 
 import os
@@ -26,14 +27,8 @@ class ServiceRow(QFrame):
     def __init__(self, service_data: Optional[Dict] = None, existing_projects: Optional[List[Dict]] = None, parent=None):
         super().__init__(parent)
         self.existing_projects = existing_projects or []
+        self.setObjectName("ServiceRow")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet("""
-            QFrame {
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 12px;
-            }
-        """)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(14, 12, 14, 12)
@@ -43,53 +38,22 @@ class ServiceRow(QFrame):
         top_bar = QHBoxLayout()
         top_bar.setSpacing(8)
 
-        self.service_badge = QLabel("📦 Service / Component")
-        self.service_badge.setStyleSheet("font-weight: 700; font-size: 11px; color: #38bdf8; background: transparent;")
+        self.service_badge = QLabel("Service / Component")
+        self.service_badge.setObjectName("ServiceRowBadge")
         top_bar.addWidget(self.service_badge)
 
         top_bar.addStretch()
 
         if self.existing_projects:
             self.autofill_combo = QComboBox()
-            self.autofill_combo.addItem("⚡ Autofill from project...")
+            self.autofill_combo.addItem("Autofill from project…")
             for p in self.existing_projects:
                 self.autofill_combo.addItem(p.get("name", "Project"), p)
-            self.autofill_combo.setStyleSheet("""
-                QComboBox {
-                    color: #f9fafb;
-                    background-color: #0b0f17;
-                    font-size: 11px;
-                    font-weight: 600;
-                    padding: 3px 8px;
-                    border: 1px solid #1f2937;
-                    border-radius: 6px;
-                }
-                QComboBox QAbstractItemView {
-                    background-color: #0b0f17;
-                    color: #f9fafb;
-                    border: 1px solid #1f2937;
-                    selection-background-color: #1f2937;
-                    selection-color: #34d399;
-                }
-            """)
             self.autofill_combo.currentIndexChanged.connect(self._on_autofill_selected)
             top_bar.addWidget(self.autofill_combo)
 
-        self.remove_btn = QPushButton("🗑 Remove")
-        self.remove_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #271418;
-                border: 1px solid #7f1d1d;
-                color: #f87171;
-                font-weight: 700;
-                font-size: 11px;
-                border-radius: 6px;
-                padding: 4px 10px;
-            }
-            QPushButton:hover {
-                background-color: #3b1419;
-            }
-        """)
+        self.remove_btn = QPushButton("Remove")
+        self.remove_btn.setObjectName("StopBtn")
         top_bar.addWidget(self.remove_btn)
         layout.addLayout(top_bar)
 
@@ -101,10 +65,9 @@ class ServiceRow(QFrame):
         n_box = QVBoxLayout()
         n_box.setSpacing(2)
         n_label = QLabel("Service Name:")
-        n_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; background: transparent;")
+        n_label.setObjectName("DialogFieldLabel")
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("e.g. Backend, Frontend, API")
-        self.name_input.setStyleSheet("color: #f9fafb; background-color: #0b0f17; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 10px; font-weight: 600;")
         n_box.addWidget(n_label)
         n_box.addWidget(self.name_input)
         r1.addLayout(n_box, 2)
@@ -112,26 +75,9 @@ class ServiceRow(QFrame):
         s_box = QVBoxLayout()
         s_box.setSpacing(2)
         s_label = QLabel("Tech Stack:")
-        s_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; background: transparent;")
+        s_label.setObjectName("DialogFieldLabel")
         self.stack_combo = QComboBox()
         self.stack_combo.addItems(STACK_OPTIONS)
-        self.stack_combo.setStyleSheet("""
-            QComboBox {
-                color: #f9fafb;
-                background-color: #0b0f17;
-                border: 1px solid #1f2937;
-                border-radius: 6px;
-                padding: 6px 10px;
-                font-weight: 600;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #0b0f17;
-                color: #f9fafb;
-                border: 1px solid #1f2937;
-                selection-background-color: #1f2937;
-                selection-color: #34d399;
-            }
-        """)
         s_box.addWidget(s_label)
         s_box.addWidget(self.stack_combo)
         r1.addLayout(s_box, 1)
@@ -139,10 +85,9 @@ class ServiceRow(QFrame):
         p_box = QVBoxLayout()
         p_box.setSpacing(2)
         p_label = QLabel("Port:")
-        p_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; background: transparent;")
+        p_label.setObjectName("DialogFieldLabel")
         self.port_input = QLineEdit()
         self.port_input.setPlaceholderText("e.g. 8080")
-        self.port_input.setStyleSheet("color: #f9fafb; background-color: #0b0f17; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 10px; font-weight: 600; max-width: 80px;")
         p_box.addWidget(p_label)
         p_box.addWidget(self.port_input)
         r1.addLayout(p_box, 1)
@@ -153,30 +98,16 @@ class ServiceRow(QFrame):
         path_box = QVBoxLayout()
         path_box.setSpacing(2)
         path_label = QLabel("Directory Path:")
-        path_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; background: transparent;")
+        path_label.setObjectName("DialogFieldLabel")
         
         path_row = QHBoxLayout()
         path_row.setSpacing(6)
         self.path_input = QLineEdit()
         self.path_input.setPlaceholderText("/home/naga/Projects/...")
-        self.path_input.setStyleSheet("color: #f9fafb; background-color: #0b0f17; border: 1px solid #1f2937; border-radius: 6px; padding: 6px 10px; font-weight: 500;")
         path_row.addWidget(self.path_input)
 
-        browse_btn = QPushButton("📁 Browse")
-        browse_btn.setStyleSheet("""
-            QPushButton {
-                color: #f9fafb;
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 6px;
-                padding: 6px 12px;
-                font-weight: 600;
-            }
-            QPushButton:hover {
-                background-color: #1f2937;
-                border-color: #374151;
-            }
-        """)
+        browse_btn = QPushButton("Browse")
+        browse_btn.setObjectName("IconBtn")
         browse_btn.clicked.connect(self._browse_dir)
         path_row.addWidget(browse_btn)
 
@@ -188,10 +119,9 @@ class ServiceRow(QFrame):
         cmd_box = QVBoxLayout()
         cmd_box.setSpacing(2)
         cmd_label = QLabel("Launch Command:")
-        cmd_label.setStyleSheet("font-size: 10px; font-weight: 700; color: #94a3b8; background: transparent;")
+        cmd_label.setObjectName("DialogFieldLabel")
         self.cmd_input = QLineEdit()
         self.cmd_input.setPlaceholderText("e.g. ./mvnw spring-boot:run, npm run dev, python app.py")
-        self.cmd_input.setStyleSheet("color: #f1f5f9; background-color: #131924; border: 1px solid #2e3c54; border-radius: 8px; padding: 6px 10px; font-family: monospace; font-weight: 600;")
         cmd_box.addWidget(cmd_label)
         cmd_box.addWidget(self.cmd_input)
         layout.addLayout(cmd_box)
@@ -267,17 +197,10 @@ class StackDialog(QDialog):
         self.existing_projects = existing_projects or []
         self.service_rows: List[ServiceRow] = []
 
-        self.setWindowTitle("⚡ Multi-Project Stack Builder" if not stack_data else "⚙ Edit Stack")
+        self.setWindowTitle("Multi-Project Stack Builder" if not stack_data else "Edit Stack")
         self.resize(680, 600)
         self.setMinimumSize(580, 480)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #0b0f17;
-                border: 1px solid #1f2937;
-                border-radius: 14px;
-            }
-        """)
 
         self._init_ui()
 
@@ -289,10 +212,10 @@ class StackDialog(QDialog):
         # Header Title
         title_box = QVBoxLayout()
         title_box.setSpacing(2)
-        title = QLabel("⚡ Multi-Project Stack")
-        title.setStyleSheet("font-size: 20px; font-weight: 800; color: #f9fafb; background: transparent;")
+        title = QLabel("Multi-Project Stack")
+        title.setObjectName("DialogTitle")
         sub = QLabel("Group multiple services (e.g. Backend + Frontend) to launch simultaneously with 1 click.")
-        sub.setStyleSheet("font-size: 11px; color: #9ca3af; font-weight: 500; background: transparent;")
+        sub.setObjectName("DialogSubtitle")
         title_box.addWidget(title)
         title_box.addWidget(sub)
         root.addLayout(title_box)
@@ -301,41 +224,26 @@ class StackDialog(QDialog):
         name_box = QVBoxLayout()
         name_box.setSpacing(4)
         name_label = QLabel("Stack Name:")
-        name_label.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; background: transparent;")
+        name_label.setObjectName("DialogFieldLabel")
         self.stack_name_input = QLineEdit()
         self.stack_name_input.setPlaceholderText("e.g. ITIAP Fullstack, Minecraft Tools Hub")
         self.stack_name_input.setText(self.stack_data.get("name", ""))
-        self.stack_name_input.setStyleSheet("""
-            QLineEdit {
-                color: #f9fafb;
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 8px;
-                padding: 8px 12px;
-                font-weight: 600;
-                font-size: 13px;
-            }
-            QLineEdit:focus {
-                border: 1px solid #10b981;
-                background-color: #111827;
-            }
-        """)
         name_box.addWidget(name_label)
         name_box.addWidget(self.stack_name_input)
         root.addLayout(name_box)
 
         # Scroll area for services
         services_label = QLabel("Services in this Stack:")
-        services_label.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; margin-top: 4px; background: transparent;")
+        services_label.setObjectName("DialogFieldLabel")
         root.addWidget(services_label)
 
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self.scroll.setStyleSheet("background: transparent; border: none;")
+        self.scroll.setObjectName("StackDialogScroll")
 
         self.services_container = QWidget()
-        self.services_container.setStyleSheet("background: transparent;")
+        self.services_container.setObjectName("StackDialogContainer")
         self.services_layout = QVBoxLayout(self.services_container)
         self.services_layout.setContentsMargins(0, 0, 0, 0)
         self.services_layout.setSpacing(10)
@@ -355,22 +263,8 @@ class StackDialog(QDialog):
             self._add_service_row({"name": "Frontend"})
 
         # Button to add another service
-        add_service_btn = QPushButton("➕ Add Another Service to Stack")
-        add_service_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 8px;
-                padding: 8px;
-                font-weight: 700;
-                font-size: 12px;
-                color: #34d399;
-            }
-            QPushButton:hover {
-                background-color: #1f2937;
-                border-color: #10b981;
-            }
-        """)
+        add_service_btn = QPushButton("+  Add Another Service")
+        add_service_btn.setObjectName("IconBtn")
         add_service_btn.clicked.connect(lambda: self._add_service_row())
         root.addWidget(add_service_btn)
 
@@ -379,42 +273,14 @@ class StackDialog(QDialog):
         btn_box.setSpacing(10)
 
         cancel_btn = QPushButton("Cancel")
-        cancel_btn.setStyleSheet("""
-            QPushButton {
-                color: #9ca3af;
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 8px;
-                padding: 8px 20px;
-                font-weight: 700;
-            }
-            QPushButton:hover {
-                background-color: #1f2937;
-                border-color: #374151;
-                color: #f9fafb;
-            }
-        """)
+        cancel_btn.setObjectName("IconBtn")
         cancel_btn.clicked.connect(self.reject)
         btn_box.addWidget(cancel_btn)
 
         btn_box.addStretch()
 
-        save_btn = QPushButton("💾 Save Stack")
-        save_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #10b981;
-                color: #ffffff;
-                border: 1px solid #10b981;
-                border-radius: 8px;
-                padding: 9px 26px;
-                font-weight: 700;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #059669;
-                border-color: #059669;
-            }
-        """)
+        save_btn = QPushButton("Save Stack")
+        save_btn.setObjectName("PrimaryBtn")
         save_btn.clicked.connect(self._on_save)
         btn_box.addWidget(save_btn)
 

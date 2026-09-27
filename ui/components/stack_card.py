@@ -2,31 +2,50 @@
 Stack Card Component for DevDeck.
 Displays a multi-project group (e.g. ITIAP Backend + Frontend) as a single
 floating card with 1-click simultaneous launching, stopping, and port routing.
+Styled with Figma theme (purple/violet color scheme).
 """
 
-from typing import Dict, List, Optional
+import os
+from typing import Dict
 from PyQt6.QtWidgets import (
-    QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
-    QMessageBox, QWidget, QStyleOption, QStyle, QInputDialog, QMenu
+    QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QMessageBox, QWidget, QStyleOption, QStyle, QInputDialog, QMenu, QSizePolicy
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PyQt6.QtCore import Qt, pyqtSignal, QSize, QEvent
+from PyQt6.QtGui import QPainter, QAction, QCursor
 from PyQt6.QtGui import QPainter, QAction, QCursor
 
-STACK_ICONS = {
-    "Vite / React": "⚛️",
-    "Vite": "⚡",
-    "Next.js": "▲",
-    "Node.js": "🟢",
-    "Express": "🚂",
-    "Spring Boot (Gradle)": "🍃",
-    "Spring Boot (Maven)": "🍃",
-    "Gradle": "🐘",
-    "Python App": "🐍",
-    "Python CLI": "🐍",
-    "Django": "🎸",
-    "Flask / FastAPI": "🌶️",
-    "Docker Compose": "🐳",
-}
+from ui.icons import (
+    glyph_for, ICO_BROWSER, ICO_CODE, ICO_CLOSE, ICO_FAV_OFF, ICO_FAV_ON,
+    ICO_FOLDER, ICO_LOGS, ICO_RESTART, ICO_STACK, ICO_START, ICO_STOP,
+    ICO_TERMINAL,
+)
+
+
+class ElidedTitleLabel(QLabel):
+    """A label that elides its text instead of forcing the card to grow."""
+
+    def __init__(self, text: str = "", parent=None):
+        super().__init__(text, parent)
+        self._full_text = text
+        self.setToolTip(text)
+
+    def setText(self, text):
+        self._full_text = text
+        self.setToolTip(text)
+        super().setText(text)
+        self.update()
+
+    def minimumSizeHint(self):
+        h = super().minimumSizeHint().height()
+        return QSize(60, max(h, 16))
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        fm = self.fontMetrics()
+        elided = fm.elidedText(self._full_text, Qt.TextElideMode.ElideRight, self.width())
+        painter.drawText(self.rect(), self.alignment(), elided)
+
 
 class ServiceMiniRow(QFrame):
     """Sub-row representing one service inside the stack card."""
@@ -45,36 +64,33 @@ class ServiceMiniRow(QFrame):
         self.service = service
         self.status = "stopped"
         self.detected_url = ""
+        self.setObjectName("ServiceMiniRow")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet("""
-            QFrame {
-                background-color: #090e18;
-                border: 1px solid #162032;
-                border-radius: 8px;
-                padding: 3px 6px;
-            }
-        """)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 4, 8, 4)
-        layout.setSpacing(7)
+        layout.setContentsMargins(10, 6, 10, 6)
+        layout.setSpacing(8)
 
         # Service tech icon & name
-        self.theme = "dark"
-        icon = STACK_ICONS.get(service.get("stack", ""), "💻")
+        icon = glyph_for(service.get("stack", ""))
         name = service.get("name", "Service")
         self.icon_lbl = QLabel(icon)
-        self.icon_lbl.setStyleSheet("font-size: 15px; background: transparent;")
+        self.icon_lbl.setObjectName("ServiceIcon")
         layout.addWidget(self.icon_lbl)
 
         self.name_label = QLabel(name)
-        self.name_label.setStyleSheet("font-weight: 700; font-size: 13px; color: #f9fafb; background: transparent;")
+        self.name_label.setObjectName("ServiceName")
+        self.name_label.setToolTip(f"{name}\n{service.get('command', '')}")
+        # The name must never be squeezed out by the command snippet next to it.
+        self.name_label.setMinimumWidth(72)
+        self.name_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         layout.addWidget(self.name_label)
 
-        # Port Button (Clickable to change port!)
+        # Port control: the number is the content, so no pictogram.
         port = service.get("port")
-        self.port_btn = QPushButton(f"🔌 :{port}" if port else "🔌 Port")
-        self.port_btn.setToolTip(f"Click to change port for {name} (currently :{port or 'None'})")
+        self.port_btn = QPushButton(f":{port}" if port else "port")
+        self.port_btn.setToolTip(f"Assigned port for {name}: :{port or 'none'}\nClick to change")
+        self.port_btn.setObjectName("PortTag")
         self.port_btn.clicked.connect(self._quick_edit_port)
         layout.addWidget(self.port_btn)
 
@@ -86,59 +102,66 @@ class ServiceMiniRow(QFrame):
             cmd_snippet = cmd
         self.cmd_lbl = QLabel(f"$ {cmd_snippet}")
         self.cmd_lbl.setToolTip(cmd)
-        self.cmd_lbl.setStyleSheet("font-family: monospace; font-size: 11px; color: #9ca3af; background-color: #030712; border: 1px solid #1f2937; border-radius: 4px; padding: 2px 6px;")
-        layout.addWidget(self.cmd_lbl)
+        self.cmd_lbl.setObjectName("ServiceCmd")
+        # Command text is the first thing to give up space when the row is tight.
+        self.cmd_lbl.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        layout.addWidget(self.cmd_lbl, 1)
 
         layout.addStretch()
 
-        # Service Quick IDE / Terminal / Folder Shortcuts (sleek 26x26 buttons)
-        self.code_btn = QPushButton("💻")
-        self.code_btn.setFixedSize(26, 26)
+        # Service Quick IDE / Terminal / Folder Shortcuts (sleek 24x24 buttons)
+        self.code_btn = QPushButton(ICO_CODE)
+        self.code_btn.setFixedSize(24, 24)
         self.code_btn.setToolTip(f"Open {name} in VS Code")
+        self.code_btn.setObjectName("IconBtn")
         self.code_btn.clicked.connect(lambda: self.open_code_clicked.emit(self.service.get("path", "")))
         layout.addWidget(self.code_btn)
 
-        self.term_btn = QPushButton("📟")
-        self.term_btn.setFixedSize(26, 26)
+        self.term_btn = QPushButton(ICO_TERMINAL)
+        self.term_btn.setFixedSize(24, 24)
         self.term_btn.setToolTip(f"Open {name} in Terminal")
+        self.term_btn.setObjectName("IconBtn")
         self.term_btn.clicked.connect(lambda: self.open_terminal_clicked.emit(self.service.get("path", "")))
         layout.addWidget(self.term_btn)
 
-        self.folder_btn = QPushButton("📁")
-        self.folder_btn.setFixedSize(26, 26)
+        self.folder_btn = QPushButton(ICO_FOLDER)
+        self.folder_btn.setFixedSize(24, 24)
         self.folder_btn.setToolTip(f"Open {name} in File Manager")
+        self.folder_btn.setObjectName("IconBtn")
         self.folder_btn.clicked.connect(lambda: self.open_folder_clicked.emit(self.service.get("path", "")))
         layout.addWidget(self.folder_btn)
 
         # Service Open URL button
-        self.url_btn = QPushButton("🌐")
-        self.url_btn.setFixedSize(26, 26)
+        self.url_btn = QPushButton(ICO_BROWSER)
+        self.url_btn.setFixedSize(24, 24)
         self.url_btn.setToolTip(f"Open {name} in Browser")
+        self.url_btn.setObjectName("IconBtn")
         self.url_btn.clicked.connect(self._on_open_single_url)
         layout.addWidget(self.url_btn)
 
         # Service Logs button
-        self.logs_btn = QPushButton("📋")
-        self.logs_btn.setFixedSize(26, 26)
+        self.logs_btn = QPushButton(ICO_LOGS)
+        self.logs_btn.setFixedSize(24, 24)
         self.logs_btn.setToolTip(f"View logs for {name}")
+        self.logs_btn.setObjectName("IconBtn")
         self.logs_btn.clicked.connect(lambda: self.logs_clicked.emit(self.service))
         layout.addWidget(self.logs_btn)
 
         # Service Restart button
-        self.restart_btn = QPushButton("🔄")
-        self.restart_btn.setFixedSize(26, 26)
+        self.restart_btn = QPushButton(ICO_RESTART)
+        self.restart_btn.setFixedSize(24, 24)
         self.restart_btn.setToolTip(f"Restart {name}")
+        self.restart_btn.setObjectName("IconBtn")
         self.restart_btn.clicked.connect(lambda: self.restart_clicked.emit(self.service))
         layout.addWidget(self.restart_btn)
 
         # Status indicator
-        self.status_lbl = QLabel("● Stopped")
-        self.status_lbl.setMinimumWidth(72)
+        self.status_lbl = QLabel("Stopped")
+        self.status_lbl.setMinimumWidth(68)
         self.status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 600; color: #9ca3af; background-color: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 2px 8px;")
+        self.status_lbl.setObjectName("StatusBadge")
+        self.status_lbl.setProperty("status", "stopped")
         layout.addWidget(self.status_lbl)
-
-        self._update_port_btn_style()
 
     def _on_open_single_url(self):
         u = self.detected_url
@@ -158,148 +181,66 @@ class ServiceMiniRow(QFrame):
         )
         if ok:
             self.service["port"] = port
-            self._update_port_btn_style()
+            self.port_btn.setText(f":{port}" if port else "port")
             self.port_changed.emit(self.service, port)
 
-    def _update_port_btn_style(self):
-        port = self.service.get("port")
-        name = self.service.get("name", "Service")
-        self.port_btn.setText(f"🔌 :{port}" if port else "🔌 Port")
-        self.port_btn.setToolTip(f"Click to change port for {name} (currently :{port or 'None'})")
-        if port:
-            self.port_btn.setStyleSheet("color: #38bdf8; background-color: #111d2e; border: 1px solid #0284c7; border-radius: 6px; font-family: monospace; font-size: 11px; font-weight: 700; padding: 2px 7px;")
-        else:
-            self.port_btn.setStyleSheet("color: #9ca3af; background-color: #111827; border: 1px solid #1f2937; border-radius: 6px; font-size: 11px; font-weight: 600; padding: 2px 7px;")
+    def resizeEvent(self, event):
+        """Collapse the optional bits when the row gets narrow.
+
+        The command snippet and the two least-used shortcuts are the first to
+        go; the name, port, status and primary actions always stay.
+        """
+        super().resizeEvent(event)
+        compact = self.width() < 460
+        self.cmd_lbl.setVisible(not compact)
+        for btn in (self.folder_btn, self.restart_btn):
+            btn.setVisible(not compact)
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
-        menu.setStyleSheet("""
-            QMenu {
-                background-color: #0b0f17;
-                border: 1px solid #1f2937;
-                border-radius: 10px;
-                padding: 6px;
-                color: #f9fafb;
-            }
-            QMenu::item {
-                padding: 8px 18px;
-                border-radius: 6px;
-                color: #f9fafb;
-                background-color: transparent;
-                font-weight: 600;
-                font-size: 12px;
-            }
-            QMenu::item:hover, QMenu::item:selected {
-                background-color: #1f2937;
-                color: #34d399;
-                font-weight: 700;
-            }
-            QMenu::item:disabled {
-                color: #6b7280;
-                background-color: transparent;
-            }
-            QMenu::separator {
-                height: 1px;
-                background-color: #1f2937;
-                margin: 4px 6px;
-            }
-        """)
         name = self.service.get("name", "Service")
-        
+
         if self.status in ["running", "starting"]:
-            act_start_stop = QAction(f"⏹ Stop {name}", self)
+            act_start_stop = QAction(f"{ICO_STOP}  Stop {name}", self)
             act_start_stop.triggered.connect(lambda: self.stop_clicked.emit(self.service["id"]))
         else:
-            act_start_stop = QAction(f"▶ Start {name}", self)
+            act_start_stop = QAction(f"{ICO_START}  Start {name}", self)
             act_start_stop.triggered.connect(lambda: self.start_clicked.emit(self.service))
         menu.addAction(act_start_stop)
 
-        act_restart = QAction(f"🔄 Restart {name}", self)
+        act_restart = QAction(f"{ICO_RESTART}  Restart {name}", self)
         act_restart.triggered.connect(lambda: self.restart_clicked.emit(self.service))
         menu.addAction(act_restart)
 
-        act_port = QAction(f"🔌 Change Port (currently :{self.service.get('port') or 'None'})", self)
+        act_port = QAction(f"Change Port  ·  :{self.service.get('port') or 'none'}", self)
         act_port.triggered.connect(self._quick_edit_port)
         menu.addAction(act_port)
 
         menu.addSeparator()
 
-        act_logs = QAction(f"📋 View Logs for {name}", self)
+        act_logs = QAction(f"{ICO_LOGS}  View Logs for {name}", self)
         act_logs.triggered.connect(lambda: self.logs_clicked.emit(self.service))
         menu.addAction(act_logs)
 
         menu.exec(event.globalPos())
 
-    def update_row_style(self, theme: str = "dark"):
-        self.theme = "dark"
-        self.name_label.setStyleSheet("font-weight: 700; font-size: 13px; color: #f9fafb; background: transparent;")
-        self.cmd_lbl.setStyleSheet("font-family: monospace; font-size: 11px; color: #9ca3af; background-color: #030712; border: 1px solid #1f2937; border-radius: 4px; padding: 2px 6px;")
-        for btn in [self.code_btn, self.term_btn, self.folder_btn, self.logs_btn, self.url_btn, self.restart_btn]:
-            btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #111827;
-                    border: 1px solid #1f2937;
-                    border-radius: 6px;
-                    font-size: 13px;
-                    color: #9ca3af;
-                    padding: 0px;
-                }
-                QPushButton:hover {
-                    background-color: #1f2937;
-                    border-color: #374151;
-                    color: #ffffff;
-                }
-            """)
-        self._update_port_btn_style()
-        self.set_status(self.status, "dark")
-
-    def set_status(self, status: str, theme: Optional[str] = None):
+    def set_status(self, status: str):
         self.status = status
-        self.theme = "dark"
+        self.status_lbl.setProperty("status", status)
+        self.setProperty("status", status)
+        self.status_lbl.style().unpolish(self.status_lbl)
+        self.status_lbl.style().polish(self.status_lbl)
+        self.style().unpolish(self)
+        self.style().polish(self)
+
         if status == "running":
-            self.status_lbl.setText("● Running")
-            self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 700; color: #34d399; background-color: #052e16; border: 1px solid #10b981; border-radius: 12px; padding: 2px 8px;")
-            self.setStyleSheet("""
-                QFrame {
-                    background-color: #051b14;
-                    border: 1px solid #10b981;
-                    border-radius: 8px;
-                    padding: 3px 6px;
-                }
-            """)
+            self.status_lbl.setText("Running")
         elif status == "starting":
-            self.status_lbl.setText("⏳ Starting...")
-            self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 700; color: #fbbf24; background-color: #451a03; border: 1px solid #d97706; border-radius: 12px; padding: 2px 8px;")
-            self.setStyleSheet("""
-                QFrame {
-                    background-color: #1f1105;
-                    border: 1px solid #d97706;
-                    border-radius: 8px;
-                    padding: 3px 6px;
-                }
-            """)
+            self.status_lbl.setText("Starting…")
         elif status == "error":
-            self.status_lbl.setText("⚠️ Error")
-            self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 700; color: #f87171; background-color: #450a0a; border: 1px solid #dc2626; border-radius: 12px; padding: 2px 8px;")
-            self.setStyleSheet("""
-                QFrame {
-                    background-color: #271418;
-                    border: 1px solid #ef4444;
-                    border-radius: 8px;
-                    padding: 3px 6px;
-                }
-            """)
+            self.status_lbl.setText("Error")
         else:
-            self.status_lbl.setText("● Stopped")
-            self.status_lbl.setStyleSheet("font-size: 11px; font-weight: 600; color: #9ca3af; background-color: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 2px 8px;")
-            self.setStyleSheet("""
-                QFrame {
-                    background-color: #0b0f17;
-                    border: 1px solid #1f2937;
-                    border-radius: 8px;
-                    padding: 3px 6px;
-                }
-            """)
+            self.status_lbl.setText("Stopped")
 
 
 class StackCard(QFrame):
@@ -343,14 +284,14 @@ class StackCard(QFrame):
         top_row = QHBoxLayout()
         top_row.setSpacing(10)
 
-        # Icon squircle (refined dark container)
+        # Icon squircle (Figma style: soft purple with border)
         icon_box = QFrame()
+        icon_box.setObjectName("StackCardIconBox")
         icon_box.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        icon_box.setStyleSheet("background-color: #1f2937; border: 1px solid #374151; border-radius: 10px; min-width: 36px; max-width: 36px; min-height: 36px; max-height: 36px;")
         ib_layout = QHBoxLayout(icon_box)
         ib_layout.setContentsMargins(0, 0, 0, 0)
-        ib_lbl = QLabel("⚡")
-        ib_lbl.setStyleSheet("font-size: 18px; color: #38bdf8; background: transparent;")
+        ib_lbl = QLabel(ICO_STACK)
+        ib_lbl.setObjectName("StackCardIcon")
         ib_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         ib_layout.addWidget(ib_lbl)
         top_row.addWidget(icon_box)
@@ -358,62 +299,35 @@ class StackCard(QFrame):
         # Title & Subtitle
         t_box = QVBoxLayout()
         t_box.setSpacing(2)
-        self.title_lbl = QLabel(self.stack.get("name", "Project Stack"))
-        self.title_lbl.setStyleSheet("font-size: 15px; font-weight: 700; color: #f9fafb; background: transparent;")
-        self.sub_lbl = QLabel(f"MULTI-PROJECT STACK ({len(self.stack.get('services', []))} SERVICES)")
-        self.sub_lbl.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; letter-spacing: 0.5px; background: transparent;")
+        self.title_lbl = ElidedTitleLabel(self.stack.get("name", "Project Stack"))
+        self.title_lbl.setObjectName("StackCardTitle")
+        self.sub_lbl = QLabel(f"{len(self.stack.get('services', []))} services")
+        self.sub_lbl.setObjectName("StackCardSub")
         t_box.addWidget(self.title_lbl)
         t_box.addWidget(self.sub_lbl)
-        top_row.addLayout(t_box)
+        top_row.addLayout(t_box, 1)
 
         top_row.addStretch()
 
         # Overall Status Badge
-        self.overall_status_badge = QLabel("● Stopped")
-        self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 600; border: 1px solid #374151; border-radius: 12px; padding: 3px 10px; background-color: #1f2937; color: #9ca3af;")
+        self.overall_status_badge = QLabel("Stopped")
+        self.overall_status_badge.setObjectName("StatusBadge")
+        self.overall_status_badge.setProperty("status", "stopped")
         top_row.addWidget(self.overall_status_badge)
 
         # Edit button
         self.edit_btn = QPushButton("⚙")
-        self.edit_btn.setFixedSize(28, 28)
+        self.edit_btn.setFixedSize(24, 24)
         self.edit_btn.setToolTip("Edit Stack Settings")
-        self.edit_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 6px;
-                font-size: 13px;
-                color: #9ca3af;
-                padding: 0px;
-            }
-            QPushButton:hover {
-                background-color: #1f2937;
-                border-color: #374151;
-                color: #ffffff;
-            }
-        """)
+        self.edit_btn.setObjectName("IconBtn")
         self.edit_btn.clicked.connect(lambda: self.edit_stack_clicked.emit(self.stack))
         top_row.addWidget(self.edit_btn)
 
         # Delete button
-        self.close_btn = QPushButton("✕")
-        self.close_btn.setFixedSize(28, 28)
+        self.close_btn = QPushButton(ICO_CLOSE)
+        self.close_btn.setFixedSize(24, 24)
         self.close_btn.setToolTip("Remove Stack from Deck")
-        self.close_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 6px;
-                font-size: 12px;
-                color: #9ca3af;
-                padding: 0px;
-            }
-            QPushButton:hover {
-                background-color: #3b1419;
-                border-color: #7f1d1d;
-                color: #f87171;
-            }
-        """)
+        self.close_btn.setObjectName("IconBtn")
         self.close_btn.clicked.connect(lambda: self.remove_stack_clicked.emit(self.stack["id"]))
         top_row.addWidget(self.close_btn)
 
@@ -445,22 +359,22 @@ class StackCard(QFrame):
         bot_row.setSpacing(6)
 
         # Start / Stop All Button
-        self.main_btn = QPushButton(f"▶ Start Stack ({len(self.stack.get('services', []))})")
-        self.main_btn.setStyleSheet("background-color: #10b981; color: #ffffff; font-weight: 700; font-size: 12px; border: 1px solid #10b981; border-radius: 8px; padding: 7px 14px;")
+        self.main_btn = QPushButton(f"{ICO_START} Start Stack ({len(self.stack.get('services', []))})")
+        self.main_btn.setObjectName("StartBtn")
         self.main_btn.clicked.connect(self._on_toggle_stack)
         bot_row.addWidget(self.main_btn)
 
         # Restart Stack Button
-        self.restart_stack_btn = QPushButton("🔄 Restart Stack")
+        self.restart_stack_btn = QPushButton(f"{ICO_RESTART} Restart")
         self.restart_stack_btn.setToolTip("Restart all services in this stack")
-        self.restart_stack_btn.setStyleSheet("background-color: #111827; color: #e5e7eb; font-weight: 600; font-size: 12px; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 12px;")
+        self.restart_stack_btn.setObjectName("IconBtn")
         self.restart_stack_btn.clicked.connect(lambda: self.restart_stack_clicked.emit(self.stack))
         bot_row.addWidget(self.restart_stack_btn)
 
         # Open URLs Button
-        self.open_urls_btn = QPushButton("🌐 Open All URLs")
+        self.open_urls_btn = QPushButton(f"{ICO_BROWSER} Open URLs")
         self.open_urls_btn.setEnabled(False)
-        self.open_urls_btn.setStyleSheet("background-color: #111827; color: #38bdf8; font-weight: 600; font-size: 12px; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 12px;")
+        self.open_urls_btn.setObjectName("BrowserBtn")
         self.open_urls_btn.clicked.connect(self._on_open_urls)
         bot_row.addWidget(self.open_urls_btn)
 
@@ -468,34 +382,18 @@ class StackCard(QFrame):
 
         # Quick IDE / Terminal / Folder Shortcuts for Stack
         for btn, tip, handler, icon_name in [
-            (QPushButton("💻"), "Open Stack in VS Code", self._on_open_code, "code_btn"),
-            (QPushButton("📟"), "Open Stack in Terminal", self._on_open_terminal, "term_btn"),
-            (QPushButton("📁"), "Open Stack in File Manager", self._on_open_folder, "folder_btn"),
+            (QPushButton(ICO_CODE), "Open Stack in VS Code", self._on_open_code, "code_btn"),
+            (QPushButton(ICO_TERMINAL), "Open Stack in Terminal", self._on_open_terminal, "term_btn"),
+            (QPushButton(ICO_FOLDER), "Open Stack in File Manager", self._on_open_folder, "folder_btn"),
         ]:
             setattr(self, icon_name, btn)
-            btn.setFixedSize(26, 26)
+            btn.setFixedSize(24, 24)
             btn.setToolTip(tip)
-            btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #111827;
-                    border: 1px solid #1f2937;
-                    border-radius: 6px;
-                    font-size: 12px;
-                    color: #9ca3af;
-                    padding: 0px;
-                }
-                QPushButton:hover {
-                    background-color: #1f2937;
-                    border-color: #374151;
-                    color: #ffffff;
-                }
-            """)
+            btn.setObjectName("IconBtn")
             btn.clicked.connect(handler)
             bot_row.addWidget(btn)
 
         layout.addLayout(bot_row)
-
-        self.update_card_style("dark")
 
     def _get_stack_path(self) -> str:
         paths = [s.get("path") for s in self.stack.get("services", []) if s.get("path") and os.path.exists(s.get("path"))]
@@ -534,89 +432,9 @@ class StackCard(QFrame):
                 break
         self.service_port_changed.emit(self.stack, srv, new_port)
 
-    def update_card_style(self, theme: str = "dark"):
-        self.theme = "dark"
-        any_running = any(r.status == "running" for r in self.service_rows.values())
-        border = "1.5px solid #10b981" if any_running else "1px solid #1f2937"
-        self.setStyleSheet(f"""
-            QFrame#StackCard {{
-                background-color: #111827;
-                border: {border};
-                border-radius: 12px;
-            }}
-        """)
-        self.title_lbl.setStyleSheet("font-size: 15px; font-weight: 700; color: #f9fafb; background: transparent;")
-        if hasattr(self, "sub_lbl"):
-            self.sub_lbl.setStyleSheet("font-size: 10px; font-weight: 700; color: #9ca3af; letter-spacing: 0.5px; background: transparent;")
-        self.edit_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 6px;
-                font-size: 13px;
-                color: #9ca3af;
-                padding: 0px;
-            }
-            QPushButton:hover {
-                background-color: #1f2937;
-                border-color: #374151;
-                color: #ffffff;
-            }
-        """)
-        self.close_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 6px;
-                font-size: 12px;
-                color: #9ca3af;
-                padding: 0px;
-            }
-            QPushButton:hover {
-                background-color: #3b1419;
-                border-color: #7f1d1d;
-                color: #f87171;
-            }
-        """)
-        self.restart_stack_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #111827;
-                color: #e5e7eb;
-                font-weight: 600;
-                font-size: 12px;
-                border: 1px solid #1f2937;
-                border-radius: 8px;
-                padding: 7px 14px;
-            }
-            QPushButton:hover {
-                background-color: #1f2937;
-                color: #ffffff;
-            }
-        """)
-        self.open_urls_btn.setStyleSheet("background-color: #111827; color: #38bdf8; font-weight: 600; font-size: 12px; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 14px;")
-        for btn in [self.code_btn, self.term_btn, self.folder_btn]:
-            btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #111827;
-                    border: 1px solid #1f2937;
-                    border-radius: 6px;
-                    font-size: 13px;
-                    color: #9ca3af;
-                    padding: 0px;
-                }
-                QPushButton:hover {
-                    background-color: #1f2937;
-                    border-color: #374151;
-                    color: #ffffff;
-                }
-            """)
-
-        for row in self.service_rows.values():
-            row.update_row_style("dark")
-
     def set_service_status(self, service_id: str, status: str):
         if service_id in self.service_rows:
-            self.service_rows[service_id].set_status(status, "dark")
+            self.service_rows[service_id].set_status(status)
             self._update_overall_state()
 
     def set_service_url(self, service_id: str, url: str):
@@ -629,24 +447,33 @@ class StackCard(QFrame):
         running = sum(1 for r in self.service_rows.values() if r.status == "running")
         starting = sum(1 for r in self.service_rows.values() if r.status == "starting")
 
-        if running == total and total > 0:
-            self.overall_status_badge.setText(f"● {running}/{total} Running")
-            self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 700; border: 1px solid #10b981; border-radius: 12px; padding: 3px 10px; background-color: #052e16; color: #34d399;")
-            self.main_btn.setText("⏹ Stop Stack")
-            self.main_btn.setStyleSheet("background-color: #271418; color: #f87171; font-weight: 700; font-size: 12px; border: 1px solid #7f1d1d; border-radius: 8px; padding: 7px 16px;")
-        elif running > 0 or starting > 0:
-            self.overall_status_badge.setText(f"⏳ {running}/{total} Running")
-            self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 700; border: 1px solid #d97706; border-radius: 12px; padding: 3px 10px; background-color: #451a03; color: #fbbf24;")
-            self.main_btn.setText("⏹ Stop Stack")
-            self.main_btn.setStyleSheet("background-color: #271418; color: #f87171; font-weight: 700; font-size: 12px; border: 1px solid #7f1d1d; border-radius: 8px; padding: 7px 16px;")
-        else:
-            self.overall_status_badge.setText("● Stopped")
-            self.overall_status_badge.setStyleSheet("font-size: 11px; font-weight: 600; border: 1px solid #374151; border-radius: 12px; padding: 3px 10px; background-color: #1f2937; color: #9ca3af;")
-            self.main_btn.setText(f"▶ Start Stack ({total})")
-            self.main_btn.setStyleSheet("background-color: #10b981; color: #ffffff; font-weight: 700; font-size: 12px; border: 1px solid #10b981; border-radius: 8px; padding: 7px 16px;")
+        self.setProperty("running", "true" if running == total and total > 0 else "false")
+        self.style().unpolish(self)
+        self.style().polish(self)
 
-        # Enable Open URLs button if any service has URL or port
-        has_any_url = any(bool(r.detected_url) or (r.status == "running" and bool(r.service.get("port"))) for r in self.service_rows.values())
+        if total == 0:
+            self.overall_status_badge.setText("Empty")
+        elif running == total:
+            self.overall_status_badge.setText(f"{running}/{total} running")
+        elif running > 0 or starting > 0:
+            self.overall_status_badge.setText(f"{running}/{total} running")
+        else:
+            self.overall_status_badge.setText("Stopped")
+
+        if running > 0 or starting > 0:
+            self.main_btn.setText(f"{ICO_STOP} Stop Stack")
+            self.main_btn.setObjectName("StopBtn")
+        else:
+            self.main_btn.setText(f"{ICO_START} Start Stack ({total})")
+            self.main_btn.setObjectName("StartBtn")
+        self.main_btn.style().unpolish(self.main_btn)
+        self.main_btn.style().polish(self.main_btn)
+
+        # Enable Open URLs button if any service has a URL or port to open
+        has_any_url = any(
+            bool(r.detected_url) or (r.status == "running" and bool(r.service.get("port")))
+            for r in self.service_rows.values()
+        )
         self.open_urls_btn.setEnabled(has_any_url)
 
     def _on_toggle_stack(self):

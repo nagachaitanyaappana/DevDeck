@@ -1,14 +1,16 @@
 """
 Project Add/Edit Dialog for DevDeck.
 Allows users to add any project manually or modify detected commands and ports.
+Styled with Figma theme (purple/violet color scheme).
 """
 
 import os
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-    QPushButton, QComboBox, QFileDialog, QTextEdit, QMessageBox
+    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
+    QPushButton, QComboBox, QFileDialog, QMessageBox
 )
 from PyQt6.QtCore import Qt
+
 
 class ProjectDialog(QDialog):
     def __init__(self, parent=None, project_data=None):
@@ -17,13 +19,6 @@ class ProjectDialog(QDialog):
         self.setWindowTitle("Edit Project" if project_data else "Add New Project")
         self.setFixedWidth(520)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #0b0f17;
-                border: 1px solid #1f2937;
-                border-radius: 14px;
-            }
-        """)
         self._init_ui()
 
     def _init_ui(self):
@@ -31,59 +26,42 @@ class ProjectDialog(QDialog):
         layout.setContentsMargins(24, 22, 24, 22)
         layout.setSpacing(14)
 
-        header = QLabel("⚙ Edit Project" if self.project_data else "➕ Add New Project")
-        header.setObjectName("DialogHeader")
-        header.setStyleSheet("font-size: 20px; font-weight: 800; color: #f9fafb; background: transparent;")
+        header = QLabel("Edit Project" if self.project_data else "Add New Project")
+        header.setObjectName("DialogTitle")
         layout.addWidget(header)
 
         # Name
         lbl_name = QLabel("Project Name:")
-        lbl_name.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; background: transparent;")
+        lbl_name.setObjectName("DialogFieldLabel")
         layout.addWidget(lbl_name)
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("e.g. My Awesome Web App")
         self.name_input.setText(self.project_data.get("name", ""))
-        self.name_input.setStyleSheet("color: #f9fafb; background-color: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 10px; font-weight: 600;")
         layout.addWidget(self.name_input)
 
         # Directory Path
         lbl_path = QLabel("Directory Path:")
-        lbl_path.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; background: transparent;")
+        lbl_path.setObjectName("DialogFieldLabel")
         layout.addWidget(lbl_path)
         path_layout = QHBoxLayout()
         self.path_input = QLineEdit()
         self.path_input.setPlaceholderText("/home/naga/Projects/...")
         self.path_input.setText(self.project_data.get("path", ""))
-        self.path_input.setStyleSheet("color: #f9fafb; background-color: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 10px; font-weight: 500;")
         path_layout.addWidget(self.path_input)
 
-        browse_btn = QPushButton("📁 Browse...")
-        browse_btn.setStyleSheet("""
-            QPushButton {
-                color: #f9fafb;
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 8px;
-                padding: 7px 14px;
-                font-weight: 700;
-            }
-            QPushButton:hover {
-                background-color: #1f2937;
-                border-color: #374151;
-            }
-        """)
+        browse_btn = QPushButton("Browse…")
+        browse_btn.setObjectName("IconBtn")
         browse_btn.clicked.connect(self._browse_dir)
         path_layout.addWidget(browse_btn)
         layout.addLayout(path_layout)
 
         # Launch Command
         lbl_cmd = QLabel("Launch Command:")
-        lbl_cmd.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; background: transparent;")
+        lbl_cmd.setObjectName("DialogFieldLabel")
         layout.addWidget(lbl_cmd)
         self.cmd_input = QLineEdit()
         self.cmd_input.setPlaceholderText("e.g. npm run dev, gradle bootRun, python3 main.py")
         self.cmd_input.setText(self.project_data.get("command", ""))
-        self.cmd_input.setStyleSheet("color: #f9fafb; background-color: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 10px; font-family: monospace; font-weight: 600;")
         layout.addWidget(self.cmd_input)
 
         # Stack / Type & Port in a row
@@ -93,51 +71,34 @@ class ProjectDialog(QDialog):
         # Stack Type
         stack_layout = QVBoxLayout()
         lbl_type = QLabel("Stack / Type:")
-        lbl_type.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; background: transparent;")
+        lbl_type.setObjectName("DialogFieldLabel")
         stack_layout.addWidget(lbl_type)
         self.type_combo = QComboBox()
         self.type_combo.addItems([
-            "Node / Vite / React", 
-            "Next.js", 
-            "Spring Boot (Gradle)", 
-            "Spring Boot (Maven)", 
-            "Python App / CLI", 
-            "Docker Compose", 
+            "Node / Vite / React",
+            "Next.js",
+            "Spring Boot (Gradle)",
+            "Spring Boot (Maven)",
+            "Python App / CLI",
+            "Docker Compose",
             "Custom"
         ])
         current_stack = self.project_data.get("stack", "Custom")
         idx = self.type_combo.findText(current_stack, Qt.MatchFlag.MatchContains)
         if idx >= 0:
             self.type_combo.setCurrentIndex(idx)
-        self.type_combo.setStyleSheet("""
-            QComboBox {
-                color: #f9fafb;
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 8px;
-                padding: 7px 10px;
-                font-weight: 700;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #0b0f17;
-                color: #f9fafb;
-                selection-background-color: #1f2937;
-                selection-color: #34d399;
-            }
-        """)
         stack_layout.addWidget(self.type_combo)
         row_layout.addLayout(stack_layout, 2)
 
         # Port
         port_layout = QVBoxLayout()
         lbl_port = QLabel("Port (optional):")
-        lbl_port.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; background: transparent;")
+        lbl_port.setObjectName("DialogFieldLabel")
         port_layout.addWidget(lbl_port)
         self.port_input = QLineEdit()
         self.port_input.setPlaceholderText("e.g. 5173, 8080")
         if self.project_data.get("port"):
             self.port_input.setText(str(self.project_data["port"]))
-        self.port_input.setStyleSheet("color: #f9fafb; background-color: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 10px; font-weight: 600;")
         port_layout.addWidget(self.port_input)
         row_layout.addLayout(port_layout, 1)
 
@@ -145,12 +106,11 @@ class ProjectDialog(QDialog):
 
         # Target URL
         lbl_url = QLabel("Web URL (optional):")
-        lbl_url.setStyleSheet("font-size: 11px; font-weight: 800; color: #9ca3af; background: transparent;")
+        lbl_url.setObjectName("DialogFieldLabel")
         layout.addWidget(lbl_url)
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("e.g. http://localhost:5173")
         self.url_input.setText(self.project_data.get("url", ""))
-        self.url_input.setStyleSheet("color: #f9fafb; background-color: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 7px 10px; font-weight: 500;")
         layout.addWidget(self.url_input)
 
         # Buttons
@@ -158,39 +118,12 @@ class ProjectDialog(QDialog):
         btn_layout.addStretch()
 
         cancel_btn = QPushButton("Cancel")
-        cancel_btn.setStyleSheet("""
-            QPushButton {
-                color: #9ca3af;
-                background-color: #111827;
-                border: 1px solid #1f2937;
-                border-radius: 8px;
-                padding: 8px 20px;
-                font-weight: 700;
-            }
-            QPushButton:hover {
-                background-color: #1f2937;
-                border-color: #374151;
-                color: #f9fafb;
-            }
-        """)
+        cancel_btn.setObjectName("IconBtn")
         cancel_btn.clicked.connect(self.reject)
         btn_layout.addWidget(cancel_btn)
 
-        save_btn = QPushButton("💾 Save Project")
-        save_btn.setStyleSheet("""
-            QPushButton {
-                color: #ffffff;
-                background-color: #10b981;
-                border: 1px solid #10b981;
-                border-radius: 8px;
-                padding: 8px 22px;
-                font-weight: 700;
-            }
-            QPushButton:hover {
-                background-color: #059669;
-                border-color: #059669;
-            }
-        """)
+        save_btn = QPushButton("Save Project")
+        save_btn.setObjectName("PrimaryBtn")
         save_btn.clicked.connect(self._save)
         btn_layout.addWidget(save_btn)
 

@@ -14,7 +14,7 @@ CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 DEFAULT_CONFIG: Dict[str, Any] = {
     "scan_dirs": [os.path.expanduser("~/Projects")],
     "scan_depth": 3,
-    "theme": "dark",
+    "theme": "light",
     "terminal_emulator": "xfce4-terminal",
     "editor_command": "code",
     "projects": {},
@@ -46,12 +46,12 @@ class ConfigManager:
             self.data = dict(DEFAULT_CONFIG)
             self.save()
 
-        # Ensure all default keys exist and enforce dark theme
+        # Ensure all default keys exist and validate the stored theme.
         for k, v in DEFAULT_CONFIG.items():
             if k not in self.data:
                 self.data[k] = v
-        if self.data.get("theme") != "dark":
-            self.data["theme"] = "dark"
+        if self.data.get("theme") not in ("light", "dark"):
+            self.data["theme"] = DEFAULT_CONFIG["theme"]
             self.save()
 
     def save(self) -> None:

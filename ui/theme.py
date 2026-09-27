@@ -1,1076 +1,587 @@
 """
-Figma-Inspired Theme for DevDeck.
+DevDeck Theme — Qt stylesheet generation for light and dark mode.
 
-Design language from reference:
-- Bright warm yellow/amber background (#FFC107 / #FFCC00)
-- Pure white floating cards with generous border-radius (16-20px) and soft box shadows
-- Very bold black typography (900 weight)
-- Soft pastel yellow circular icon containers behind emoji
-- Solid black pill buttons, grey outline buttons
-- Grey ✕ close icons top-right on cards
-- Toast-style notification bars
+Why this file was rewritten
+---------------------------
+The previous stylesheet was hand-written and, in many places, invalid Qt QSS:
+declarations such as ``color: #a159ff.`` (missing semicolon) and unterminated
+rule blocks. Qt's QSS parser drops the remainder of a rule as soon as it hits a
+malformed declaration, so large parts of the UI rendered unstyled, and dark
+mode (which relied on ``[theme="dark"]`` property selectors) failed almost
+entirely.
+
+The sheet is now generated from two token dicts, so light and dark can never
+drift apart and every emitted declaration is valid.
 """
 
-FIGMA_THEME_QSS = """
-/* ─── Global ─── */
-QWidget {
-    background-color: #FFC107;
-    color: #111111;
-    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif;
-    font-size: 13px;
-    outline: none;
-}
-
-QLabel {
-    background-color: transparent;
-}
-
-/* ─── App Shell (Rounded floating container) ─── */
-QFrame#AppShell {
-    background-color: #FFC107;
-    border-radius: 22px;
-    border: none;
-}
-
-/* ─── Window Control Buttons ─── */
-QPushButton#WinCtrlBtn {
-    background-color: rgba(0, 0, 0, 0.08);
-    border: none;
-    border-radius: 8px;
-    color: #555555;
-    font-weight: 800;
-    font-size: 13px;
-    padding: 2px;
-}
-QPushButton#WinCtrlBtn:hover {
-    background-color: rgba(0, 0, 0, 0.15);
-    color: #111111;
-}
-QPushButton#WinCloseBtn {
-    background-color: rgba(0, 0, 0, 0.08);
-    border: none;
-    border-radius: 8px;
-    color: #555555;
-    font-weight: 800;
-    font-size: 13px;
-    padding: 2px;
-}
-QPushButton#WinCloseBtn:hover {
-    background-color: #D32F2F;
-    color: #FFFFFF;
-}
-
-/* ─── Scrollbars ─── */
-QScrollBar:vertical {
-    border: none;
-    background: transparent;
-    width: 8px;
-}
-QScrollBar::handle:vertical {
-    background: rgba(0, 0, 0, 0.15);
-    min-height: 30px;
-    border-radius: 4px;
-}
-QScrollBar::handle:vertical:hover {
-    background: rgba(0, 0, 0, 0.3);
-}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
-}
-QScrollBar:horizontal {
-    border: none;
-    background: transparent;
-    height: 8px;
-}
-QScrollBar::handle:horizontal {
-    background: rgba(0, 0, 0, 0.15);
-    min-width: 30px;
-    border-radius: 4px;
-}
-
-/* ─── Hero Left Sidebar (Figma Reference Style) ─── */
-QFrame#HeroPanel {
-    background: transparent;
-    border: none;
-}
-
-QLabel#HeroTitle {
-    font-size: 32px;
-    font-weight: 900;
-    color: #111111;
-    letter-spacing: -1.2px;
-}
-
-QLabel#HeroSubtitle {
-    font-size: 13px;
-    font-weight: 700;
-    color: #444444;
-}
-
-/* ─── Header Bar: Floating white card on yellow canvas ─── */
-QFrame#HeaderBar {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 20px;
-    padding: 14px 24px;
-}
-
-QLabel#AppTitle {
-    font-size: 22px;
-    font-weight: 900;
-    color: #111111;
-    letter-spacing: -0.5px;
-}
-
-QLabel#AppSubtitle {
-    font-size: 11px;
-    color: #888888;
-    font-weight: 600;
-}
-
-/* ─── Filter Bar ─── */
-QFrame#FilterBar {
-    background-color: transparent;
-    border: none;
-    padding: 4px 4px;
-}
-
-/* ─── Search ─── */
-QLineEdit#SearchBar {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 14px;
-    padding: 9px 16px;
-    color: #111111;
-    font-size: 13px;
-    font-weight: 600;
-    min-width: 250px;
-}
-QLineEdit#SearchBar:focus {
-    border: 2.5px solid #000000;
-}
-
-/* ─── Filter Pills ─── */
-QPushButton#FilterPill {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 14px;
-    padding: 6px 12px;
-    color: #111111;
-    font-weight: 800;
-    font-size: 11px;
-}
-QPushButton#FilterPill:hover {
-    background-color: #FFF9C4;
-}
-QPushButton#FilterPill[checked="true"] {
-    background-color: #111111;
-    color: #FFFFFF;
-    border: 2px solid #111111;
-}
-
-/* ─── Buttons (default) ─── */
-QPushButton {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 12px;
-    padding: 7px 16px;
-    color: #111111;
-    font-weight: 800;
-    font-size: 12px;
-}
-QPushButton:hover {
-    background-color: #FFF9C4;
-}
-QPushButton:pressed {
-    background-color: #EEEEEE;
-}
-
-/* Solid Black Primary ("Thanks!" style) */
-QPushButton#PrimaryBtn {
-    background-color: #111111;
-    border: 2px solid #111111;
-    color: #FFFFFF;
-    border-radius: 14px;
-    padding: 8px 18px;
-    font-weight: 900;
-    font-size: 13px;
-}
-QPushButton#PrimaryBtn:hover {
-    background-color: #333333;
-}
-
-/* Start = Solid Black */
-QPushButton#StartBtn {
-    background-color: #111111;
-    border: 2px solid #111111;
-    color: #FFFFFF;
-    font-weight: 900;
-    border-radius: 12px;
-    padding: 7px 16px;
-    font-size: 12px;
-}
-QPushButton#StartBtn:hover {
-    background-color: #16A34A;
-    border-color: #16A34A;
-}
-
-/* Stop = Red */
-QPushButton#StopBtn {
-    background-color: #DC2626;
-    border: 2px solid #111111;
-    color: #FFFFFF;
-    font-weight: 900;
-    border-radius: 12px;
-    padding: 7px 16px;
-    font-size: 12px;
-}
-QPushButton#StopBtn:hover {
-    background-color: #B91C1C;
-}
-
-/* Browser = Outline ("Undo" style) */
-QPushButton#BrowserBtn {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    color: #111111;
-    font-weight: 800;
-    border-radius: 12px;
-    padding: 7px 14px;
-    font-size: 12px;
-}
-QPushButton#BrowserBtn:hover {
-    background-color: #FFF9C4;
-}
-QPushButton#BrowserBtn:disabled {
-    background-color: #F3F4F6;
-    border-color: #9CA3AF;
-    color: #9CA3AF;
-}
-
-/* Soft grey icon buttons */
-QPushButton#IconBtn {
-    background-color: #FFFFFF;
-    border: 1.5px solid #111111;
-    border-radius: 12px;
-    padding: 7px 12px;
-    font-size: 13px;
-    color: #111111;
-    font-weight: 800;
-}
-QPushButton#IconBtn:hover {
-    background-color: #FFF9C4;
-    border-color: #000000;
-}
-
-/* ─── Project Card (White floating modal with crisp black border) ─── */
-QFrame#ProjectCard {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 18px;
-    padding: 14px;
-}
-QFrame#ProjectCard:hover {
-    background-color: #FFFFFF;
-    border: 2.5px solid #000000;
-}
-QFrame#ProjectCard[running="true"] {
-    border: 3px solid #16A34A;
-    background-color: #FFFFFF;
-}
-
-QLabel#CardTitle {
-    font-size: 15px;
-    font-weight: 900;
-    color: #111111;
-    letter-spacing: -0.3px;
-}
-
-QLabel#CardPath {
-    font-size: 11px;
-    color: #666666;
-    font-weight: 600;
-}
-
-QLabel#CardCmd {
-    font-size: 11px;
-    color: #111111;
-    background-color: #F9FAFB;
-    border: 1.5px solid #111111;
-    border-radius: 8px;
-    padding: 4px 8px;
-    font-family: monospace;
-    font-weight: 700;
-}
-
-/* Icon Squircle (soft pastel yellow circle with black border) */
-QFrame#IconSquircle {
-    background-color: #FFF3CD;
-    border: 2px solid #111111;
-    border-radius: 20px;
-    min-width: 40px;
-    max-width: 40px;
-    min-height: 40px;
-    max-height: 40px;
-}
-QLabel#SquircleIcon {
-    font-size: 20px;
-    background: transparent;
-}
-
-/* Badges */
-QLabel#StackBadge {
-    background-color: #FFFFFF;
-    border: 1.5px solid #111111;
-    border-radius: 8px;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: 800;
-    color: #111111;
-}
-
-QLabel#StatusBadge {
-    border-radius: 10px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 800;
-    border: 1.5px solid #111111;
-}
-QLabel#StatusBadge[status="running"] {
-    background-color: #DCFCE7;
-    color: #15803D;
-    border: 1.5px solid #16A34A;
-}
-QLabel#StatusBadge[status="starting"] {
-    background-color: #FEF3C7;
-    color: #B45309;
-    border: 1.5px solid #D97706;
-}
-QLabel#StatusBadge[status="stopped"] {
-    background-color: #F3F4F6;
-    color: #4B5563;
-    border: 1.5px solid #111111;
-}
-QLabel#StatusBadge[status="error"] {
-    background-color: #FEE2E2;
-    color: #B91C1C;
-    border: 1.5px solid #DC2626;
-}
-
-QLabel#MetricsLabel {
-    font-size: 11px;
-    color: #0284C7;
-    font-family: monospace;
-    font-weight: 700;
-}
-
-/* ─── Log Console (Dark terminal feel with clean black border) ─── */
-QFrame#LogDrawer {
-    background-color: #0A0A0A;
-    border: 2px solid #111111;
-    border-radius: 16px;
-}
-QTextEdit#LogViewer {
-    background-color: #000000;
-    border: 1px solid #222222;
-    border-radius: 10px;
-    color: #E5E7EB;
-    font-family: "JetBrains Mono", "Fira Code", "DejaVu Sans Mono", monospace;
-    font-size: 12px;
-    padding: 10px;
-}
-
-/* ─── Dialogs ─── */
-QDialog {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 18px;
-}
-QLabel#DialogHeader {
-    font-size: 20px;
-    font-weight: 900;
-    color: #111111;
-}
-QLineEdit {
-    background-color: #F9FAFB;
-    border: 2px solid #111111;
-    border-radius: 10px;
-    padding: 8px 12px;
-    color: #111111;
-    font-size: 13px;
-    font-weight: 600;
-}
-QLineEdit:focus {
-    border: 2px solid #000000;
-    background-color: #FFFFFF;
-}
-
-/* ─── Combo Boxes & Dropdown Menus (High-Contrast Fix) ─── */
-QComboBox {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 10px;
-    padding: 7px 12px;
-    color: #111111;
-    font-size: 12px;
-    font-weight: 700;
-}
-QComboBox:hover {
-    background-color: #FFFDE7;
-    border-color: #000000;
-}
-QComboBox:focus {
-    border: 2px solid #111111;
-}
-QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 26px;
-    border-left: 1.5px solid #111111;
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
-    background-color: #F3F4F6;
-}
-QComboBox::down-arrow {
-    image: none;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid #111111;
-    width: 0;
-    height: 0;
-}
-QComboBox QAbstractItemView {
-    background-color: #FFFFFF;
-    color: #111111;
-    border: 2px solid #111111;
-    border-radius: 10px;
-    padding: 4px;
-    outline: none;
-    selection-background-color: #FFC107;
-    selection-color: #111111;
-}
-QComboBox QAbstractItemView::item {
-    color: #111111;
-    background-color: #FFFFFF;
-    padding: 8px 12px;
-    min-height: 24px;
-    border-radius: 6px;
-}
-QComboBox QAbstractItemView::item:hover {
-    background-color: #FFF3C4;
-    color: #111111;
-}
-QComboBox QAbstractItemView::item:selected {
-    background-color: #FFC107;
-    color: #111111;
-    font-weight: 800;
-}
-
-/* ─── Context Menus (High-Contrast Fix) ─── */
-QMenu {
-    background-color: #111111;
-    border: 2px solid #333333;
-    border-radius: 10px;
-    padding: 6px;
-    color: #FFFFFF;
-}
-QMenu::item {
-    padding: 8px 20px;
-    border-radius: 6px;
-    color: #FFFFFF;
-    background-color: transparent;
-    font-weight: 600;
-    font-size: 12px;
-}
-QMenu::item:hover, QMenu::item:selected {
-    background-color: #FFC107;
-    color: #111111;
-    font-weight: 800;
-}
-QMenu::item:disabled {
-    color: #666666;
-    background-color: transparent;
-}
-QMenu::separator {
-    height: 1px;
-    background-color: #2E2E2E;
-    margin: 4px 8px;
-}
-
-/* ─── Message Boxes & Input Dialogs ─── */
-QMessageBox, QInputDialog {
-    background-color: #FFFFFF;
-    color: #111111;
-    border: 2px solid #111111;
-    border-radius: 16px;
-}
-QMessageBox QLabel, QInputDialog QLabel {
-    color: #111111;
-    font-size: 13px;
-    font-weight: 700;
-    background: transparent;
-}
-QMessageBox QPushButton, QInputDialog QPushButton {
-    background-color: #FFFFFF;
-    color: #111111;
-    border: 2px solid #111111;
-    border-radius: 10px;
-    padding: 6px 18px;
-    font-weight: 800;
-    font-size: 12px;
-    min-width: 70px;
-}
-QMessageBox QPushButton:hover, QInputDialog QPushButton:hover {
-    background-color: #FFF9C4;
-}
-
-QSpinBox {
-    background-color: #FFFFFF;
-    border: 2px solid #111111;
-    border-radius: 10px;
-    padding: 6px 10px;
-    color: #111111;
-    font-weight: 700;
-    font-size: 13px;
-}
-QSpinBox:focus {
-    border: 2px solid #000000;
-}
-
-QToolTip {
-    background-color: #111111;
-    color: #FFFFFF;
-    border: 1px solid #333333;
-    border-radius: 6px;
-    padding: 5px 8px;
-    font-size: 11px;
-    font-weight: 600;
-}
-"""
-
-DARK_THEME_QSS = """
-/* ─── Global ─── */
-QWidget {
-    background-color: #030712;
-    color: #f9fafb;
-    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif;
-    font-size: 13px;
-    outline: none;
-}
-
-QLabel {
-    background-color: transparent;
-}
-
-QFrame#AppShell {
-    background-color: #030712;
-    border-radius: 16px;
-    border: 1px solid #1f2937;
-}
-
-QPushButton#WinCtrlBtn {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 6px;
-    color: #9ca3af;
-    font-weight: 700;
-    font-size: 12px;
-    padding: 2px;
-}
-QPushButton#WinCtrlBtn:hover {
-    background-color: #1f2937;
-    color: #ffffff;
-}
-QPushButton#WinCloseBtn {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 6px;
-    color: #9ca3af;
-    font-weight: 700;
-    font-size: 12px;
-    padding: 2px;
-}
-QPushButton#WinCloseBtn:hover {
-    background-color: #dc2626;
-    border-color: #dc2626;
-    color: #ffffff;
-}
-
-/* ─── Modern Minimal Scrollbars ─── */
-QScrollBar:vertical {
-    border: none;
-    background: transparent;
-    width: 6px;
-    margin: 0;
-}
-QScrollBar::handle:vertical {
-    background: #1f2937;
-    min-height: 28px;
-    border-radius: 3px;
-}
-QScrollBar::handle:vertical:hover {
-    background: #374151;
-}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
-}
-QScrollBar:horizontal {
-    border: none;
-    background: transparent;
-    height: 6px;
-    margin: 0;
-}
-QScrollBar::handle:horizontal {
-    background: #1f2937;
-    min-width: 28px;
-    border-radius: 3px;
-}
-QScrollBar::handle:horizontal:hover {
-    background: #374151;
-}
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
-    width: 0px;
-}
-
-/* ─── Splitter ─── */
-QSplitter::handle {
-    background: #1f2937;
-    image: none;
-    border: none;
-}
-QSplitter::handle:vertical {
-    height: 3px;
-    background: #1f2937;
-    margin: 2px 0;
-    image: none;
-    border: none;
-}
-QSplitter::handle:vertical:hover {
-    background: #10b981;
-    image: none;
-}
-
-/* ─── Hero Left Sidebar ─── */
-QFrame#HeroPanel {
-    background-color: #0b0f17;
-    border: 1px solid #1f2937;
-    border-radius: 14px;
-    padding: 16px;
-}
-
-QLabel#HeroTitle {
-    font-size: 18px;
-    font-weight: 800;
-    color: #f9fafb;
-    letter-spacing: -0.3px;
-}
-
-QLabel#HeroSubtitle {
-    font-size: 11px;
-    font-weight: 500;
-    color: #9ca3af;
-}
-
-/* ─── Search ─── */
-QLineEdit#SearchBar {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: #f9fafb;
-    font-size: 12px;
-}
-QLineEdit#SearchBar:focus {
-    border: 1px solid #10b981;
-    background-color: #111827;
-}
-
-/* ─── Buttons ─── */
-QPushButton {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 7px 14px;
-    color: #f9fafb;
-    font-weight: 600;
-    font-size: 12px;
-}
-QPushButton:hover {
-    background-color: #1f2937;
-    border-color: #374151;
-    color: #ffffff;
-}
-QPushButton:pressed {
-    background-color: #0b0f17;
-}
-
-QPushButton#PrimaryBtn {
-    background-color: #10b981;
-    border: 1px solid #10b981;
-    color: #ffffff;
-    font-weight: 700;
-}
-QPushButton#PrimaryBtn:hover {
-    background-color: #059669;
-    border-color: #059669;
-}
-
-QPushButton#StartBtn {
-    background-color: #10b981;
-    border: 1px solid #10b981;
-    color: #ffffff;
-    font-weight: 700;
-}
-QPushButton#StartBtn:hover {
-    background-color: #059669;
-    border-color: #059669;
-}
-
-QPushButton#StopBtn {
-    background-color: #271418;
-    border: 1px solid #7f1d1d;
-    color: #f87171;
-    font-weight: 700;
-}
-QPushButton#StopBtn:hover {
-    background-color: #3b1419;
-    border-color: #ef4444;
-}
-
-QPushButton#BrowserBtn {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    color: #38bdf8;
-    font-weight: 600;
-}
-QPushButton#BrowserBtn:hover {
-    background-color: #1f2937;
-    border-color: #0284c7;
-}
-QPushButton#BrowserBtn:disabled {
-    background-color: #0b0f17;
-    border-color: #1f2937;
-    color: #6b7280;
-}
-
-QPushButton#IconBtn {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 12px;
-    color: #9ca3af;
-    font-weight: 700;
-}
-QPushButton#IconBtn:hover {
-    background-color: #1f2937;
-    border-color: #374151;
-    color: #f9fafb;
-}
-
-/* ─── Navigation Item (Linear / Modern Dashboard style) ─── */
-QPushButton#NavItem {
-    background-color: transparent;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    padding: 7px 10px;
-    color: #9ca3af;
-    font-weight: 600;
-    font-size: 12px;
-    text-align: left;
-}
-QPushButton#NavItem:hover {
-    background-color: #111827;
-    color: #f9fafb;
-}
-QPushButton#NavItem[checked="true"] {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-left: 3px solid #10b981;
-    color: #34d399;
-    font-weight: 700;
-}
-
-/* ─── Project & Stack Cards ─── */
-QFrame#ProjectCard, QFrame#StackCard {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 16px;
-    padding: 14px;
-}
-QFrame#ProjectCard:hover, QFrame#StackCard:hover {
-    border-color: #374151;
-}
-QFrame#ProjectCard[running="true"], QFrame#StackCard[running="true"] {
-    border: 1.5px solid #10b981;
-}
-
-QLabel#SectionHeader {
-    background-color: #1f2937;
-    color: #e5e7eb;
-    border: 1px solid #374151;
-    border-radius: 12px;
-    padding: 4px 14px;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-QLabel#CardTitle {
-    font-size: 14px;
-    font-weight: 700;
-    color: #f9fafb;
-}
-QLabel#CardPath {
-    font-size: 11px;
-    color: #9ca3af;
-    font-family: monospace;
-}
-QLabel#CardCmd {
-    font-size: 11px;
-    color: #9ca3af;
-    background-color: #030712;
-    border: 1px solid #1f2937;
-    border-radius: 6px;
-    padding: 3px 8px;
-    font-family: monospace;
-}
-
-QFrame#IconSquircle {
-    background-color: #1f2937;
-    border: 1px solid #374151;
-    border-radius: 10px;
-    min-width: 36px;
-    max-width: 36px;
-    min-height: 36px;
-    max-height: 36px;
-}
-QLabel#SquircleIcon {
-    font-size: 18px;
-    background: transparent;
-}
-
-QLabel#StackBadge {
-    background-color: #1f2937;
-    border: 1px solid #374151;
-    border-radius: 10px;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #e5e7eb;
-}
-
-QLabel#StatusBadge {
-    border-radius: 12px;
-    padding: 3px 10px;
-    font-size: 11px;
-    font-weight: 700;
-}
-QLabel#StatusBadge[status="running"] {
-    background-color: #052e16;
-    border: 1px solid #10b981;
-    color: #34d399;
-}
-QLabel#StatusBadge[status="starting"] {
-    background-color: #451a03;
-    border: 1px solid #d97706;
-    color: #fbbf24;
-}
-QLabel#StatusBadge[status="stopped"] {
-    background-color: #1f2937;
-    border: 1px solid #374151;
-    color: #9ca3af;
-}
-QLabel#StatusBadge[status="error"] {
-    background-color: #450a0a;
-    border: 1px solid #dc2626;
-    color: #f87171;
-}
-
-QLabel#MetricsLabel {
-    font-size: 11px;
-    color: #38bdf8;
-    font-family: monospace;
-    font-weight: 600;
-}
-
-/* ─── Log Drawer ─── */
-QFrame#LogDrawer {
-    background-color: #0b0f17;
-    border-top: 1px solid #1f2937;
-    border-radius: 12px;
-}
-QTextEdit#LogViewer {
-    background-color: #030712;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    color: #e5e7eb;
-    font-family: "JetBrains Mono", "Fira Code", monospace;
-    font-size: 12px;
-    padding: 10px;
-}
-
-/* ─── Dialogs ─── */
-QDialog {
-    background-color: #0b0f17;
-    border: 1px solid #1f2937;
-    border-radius: 14px;
-}
-QLabel#DialogHeader {
-    font-size: 18px;
-    font-weight: 800;
-    color: #f9fafb;
-}
-
-QLineEdit {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: #f9fafb;
-}
-QLineEdit:focus {
-    border: 1px solid #10b981;
-    background-color: #111827;
-}
-
-QComboBox {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 7px 12px;
-    color: #f9fafb;
-    font-weight: 600;
-}
-QComboBox:hover {
-    border-color: #10b981;
-}
-QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 24px;
-    border-left: 1px solid #1f2937;
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
-    background-color: #111827;
-}
-QComboBox::down-arrow {
-    image: none;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid #9ca3af;
-    width: 0;
-    height: 0;
-}
-QComboBox QAbstractItemView {
-    background-color: #0b0f17;
-    color: #f9fafb;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 4px;
-    outline: none;
-    selection-background-color: #1f2937;
-    selection-color: #34d399;
-}
-QComboBox QAbstractItemView::item {
-    color: #f9fafb;
-    background-color: #0b0f17;
-    padding: 6px 10px;
-    min-height: 22px;
-    border-radius: 4px;
-}
-QComboBox QAbstractItemView::item:hover {
-    background-color: #1f2937;
-    color: #ffffff;
-}
-QComboBox QAbstractItemView::item:selected {
-    background-color: #1f2937;
-    color: #34d399;
-    font-weight: bold;
-}
-
-QMenu {
-    background-color: #0b0f17;
-    border: 1px solid #1f2937;
-    border-radius: 10px;
-    padding: 6px;
-    color: #f9fafb;
-}
-QMenu::item {
-    padding: 8px 18px;
-    border-radius: 6px;
-    color: #f9fafb;
-    background-color: transparent;
-    font-weight: 600;
-    font-size: 12px;
-}
-QMenu::item:hover, QMenu::item:selected {
-    background-color: #1f2937;
-    color: #34d399;
-    font-weight: 700;
-}
-QMenu::item:disabled {
-    color: #6b7280;
-    background-color: transparent;
-}
-QMenu::separator {
-    height: 1px;
-    background-color: #1f2937;
-    margin: 4px 6px;
-}
-
-QMessageBox, QInputDialog {
-    background-color: #0b0f17;
-    color: #f9fafb;
-    border: 1px solid #1f2937;
-    border-radius: 14px;
-}
-QMessageBox QLabel, QInputDialog QLabel {
-    color: #f9fafb;
-    font-size: 13px;
-    font-weight: 600;
-    background: transparent;
-}
-QMessageBox QPushButton, QInputDialog QPushButton {
-    background-color: #111827;
-    color: #f9fafb;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 7px 16px;
-    font-weight: 600;
-    min-width: 60px;
-}
-QMessageBox QPushButton:hover, QInputDialog QPushButton:hover {
-    background-color: #1f2937;
-    border-color: #10b981;
-    color: #ffffff;
-}
-
-QSpinBox {
-    background-color: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 6px 10px;
-    color: #f9fafb;
-    font-weight: 700;
-    font-size: 13px;
-}
-QSpinBox:focus {
-    border: 1px solid #10b981;
-}
-
-QToolTip {
-    background-color: #0b0f17;
-    color: #f9fafb;
-    border: 1px solid #1f2937;
-    border-radius: 6px;
-    padding: 5px 8px;
-    font-size: 11px;
-    font-weight: 600;
-}
-"""
-
-# Universal dark theme
-FIGMA_THEME_QSS = DARK_THEME_QSS
-
-
-
+# ── Design tokens ────────────────────────────────────────────────────────────
+LIGHT = {
+    "bg_app":        "#f5f3fa",
+    "bg_panel":      "#ffffff",
+    "bg_sidebar":    "#fbfaff",
+    "bg_inset":      "#f3effb",
+    "bg_hover":      "#f0e8fd",
+    "bg_active":     "#e7dbff",
+    "bg_running":    "#f1fdf4",
+    "border":        "#e4daf5",
+    "border_strong": "#c4a8ee",
+    "primary":       "#6d28d9",
+    "primary_hover": "#5b21b6",
+    "primary_soft":  "#ece3ff",
+    "on_primary":    "#ffffff",
+    "text":          "#1b1230",
+    "text_dim":      "#4f4266",
+    "text_faint":    "#6b5c85",
+    "green":         "#15803d",
+    "green_soft":    "#dcfce7",
+    "red":           "#b91c1c",
+    "red_soft":      "#fee2e2",
+    "amber":         "#92610a",
+    "amber_soft":    "#fef3c7",
+    "star":          "#ca8a04",
+    "log_bg":        "#100b1a",
+    "log_border":    "#2b1f45",
+    "log_text":      "#e8ddf9",
+    "log_muted":     "#a894d0",
+}
+
+DARK = {
+    "bg_app":        "#0d0a13",
+    "bg_panel":      "#1a1524",
+    "bg_sidebar":    "#141020",
+    "bg_inset":      "#221b30",
+    "bg_hover":      "#2a2140",
+    "bg_active":     "#352a52",
+    "bg_running":    "#12291b",
+    "border":        "#2e2543",
+    "border_strong": "#4c3b70",
+    "primary":       "#a78bfa",
+    "primary_hover": "#c4b5fd",
+    "primary_soft":  "#2b2143",
+    "on_primary":    "#180d2b",
+    "text":          "#f2edfa",
+    "text_dim":      "#bcaed4",
+    "text_faint":    "#9c8eb8",
+    "green":         "#4ade80",
+    "green_soft":    "#16321f",
+    "red":           "#f87171",
+    "red_soft":      "#3b1c1c",
+    "amber":         "#fbbf24",
+    "amber_soft":    "#3a2d10",
+    "star":          "#fde047",
+    "log_bg":        "#080510",
+    "log_border":    "#241a38",
+    "log_text":      "#e2d6f5",
+    "log_muted":     "#8f7bb8",
+}
+
+
+def _rule(selector, **decls) -> str:
+    body = "\n".join(f"    {k.replace('_', '-')}: {v};" for k, v in decls.items())
+    return f"{selector} {{\n{body}\n}}"
+
+
+def _build(t: dict) -> str:
+    out = []
+    a = out.append
+
+    # ── Base ────────────────────────────────────────────────────────────────
+    a(_rule("QWidget",
+            background_color=t["bg_app"],
+            color=t["text"],
+            font_family='"Inter", "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+            font_size="13px"))
+    a("QLabel { background: transparent; }")
+    a(_rule("QToolTip",
+            background_color=t["bg_panel"],
+            color=t["text"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="6px",
+            padding="5px 8px"))
+    a(_rule("QWidget:disabled", color=t["text_faint"]))
+
+    # ── Shell & containers ─────────────────────────────────────────────────
+    a(_rule("QMainWindow", background_color=t["bg_app"]))
+    a(_rule("QWidget#CentralRoot", background_color=t["bg_app"]))
+    a(_rule("QFrame#HeroPanel",
+            background_color=t["bg_sidebar"],
+            border="none",
+            border_radius="14px"))
+    a(_rule("QWidget#RightContainer", background="transparent"))
+    a(_rule("QWidget#NavContainer", background="transparent"))
+    a(_rule("QWidget#EmptyBtns", background="transparent"))
+    a(_rule("QScrollArea#NavScroll", background="transparent", border="none"))
+    a(_rule("QScrollArea#CardsScroll", background="transparent", border="none"))
+    a(_rule("QWidget#CardsContainer", background="transparent"))
+
+    # ── Brand ──────────────────────────────────────────────────────────────
+    a(_rule("QLabel#HeroTitle", font_size="19px", font_weight="800", color=t["primary"]))
+    a(_rule("QLabel#HeroSubtitle", font_size="11px", font_weight="500", color=t["text_faint"]))
+
+    # ── Stats card ─────────────────────────────────────────────────────────
+    a(_rule("QFrame#StatsCard",
+            background_color=t["bg_inset"],
+            border="none",
+            border_radius="10px"))
+    a(_rule("QFrame#StatBadge", background="transparent", border="none"))
+    a(_rule("QLabel#StatValue", font_size="18px", font_weight="800", color=t["text"]))
+    a(_rule("QLabel#StatLabel", font_size="9px", font_weight="700", color=t["text_faint"]))
+    a('QLabel#StatValue[statKind="TOTAL"] { color: %s; }' % t["text"])
+    a('QLabel#StatValue[statKind="ACTIVE"] { color: %s; }' % t["green"])
+    a('QLabel#StatValue[statKind="PORTS"] { color: %s; }' % t["primary"])
+    a(_rule("QFrame#VDivider",
+            background_color=t["border"],
+            max_width="1px", min_width="1px"))
+
+    # ── Search ─────────────────────────────────────────────────────────────
+    a(_rule("QFrame#FilterBar", background="transparent", border="none"))
+    a(_rule("QLineEdit#SearchBar",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="9px",
+            padding="8px 12px",
+            color=t["text"],
+            font_size="12px",
+            font_weight="500",
+            selection_background_color=t["primary"],
+            selection_color=t["on_primary"]))
+    a("QLineEdit#SearchBar:focus { border: 1px solid %s; }" % t["primary"])
+    a("QLineEdit#SearchBar::placeholder { color: %s; }" % t["text_faint"])
+    a(_rule("QLabel#SearchIcon",
+            font_size="12px", color=t["text_faint"], background="transparent"))
+    a(_rule("QLabel#ShortcutPill",
+            background_color=t["bg_inset"],
+            border=f"1px solid {t['border']}",
+            border_radius="5px",
+            padding="1px 6px",
+            font_size="9px",
+            font_weight="700",
+            color=t["text_dim"]))
+
+    # ── Sidebar navigation ─────────────────────────────────────────────────
+    a(_rule("QLabel#SectionHeader",
+            background="transparent",
+            color=t["text_faint"],
+            font_size="10px",
+            font_weight="800"))
+    a(_rule("QPushButton#NavItem",
+            background_color="transparent",
+            border="1px solid transparent",
+            border_radius="9px",
+            padding="7px 10px",
+            color=t["text_dim"],
+            font_weight="600",
+            font_size="12px",
+            text_align="left"))
+    a(_rule("QPushButton#NavItem:hover", background_color=t["bg_hover"], color=t["text"]))
+    a(_rule('QPushButton#NavItem[checked="true"]',
+            background_color=t["bg_active"],
+            border="1px solid transparent",
+            border_left=f"3px solid {t['primary']}",
+            color=t["primary"],
+            font_weight="700"))
+    a(_rule("QLabel#NavIcon", font_size="13px", color=t["text_faint"]))
+    a(_rule("QLabel#NavTitle", font_size="12px", color=t["text_dim"]))
+    a(_rule('QPushButton#NavItem[checked="true"] QLabel#NavTitle',
+            color=t["primary"], font_weight="700"))
+    a(_rule('QPushButton#NavItem[checked="true"] QLabel#NavIcon', color=t["primary"]))
+    a(_rule("QLabel#NavBadge",
+            background_color=t["bg_inset"],
+            border=f"1px solid {t['border']}",
+            border_radius="7px",
+            padding="0 6px",
+            min_width="18px",
+            font_size="10px",
+            font_weight="700",
+            color=t["text_faint"]))
+    a(_rule('QPushButton#NavItem[checked="true"] QLabel#NavBadge',
+            background_color=t["bg_panel"], border_color=t["primary"], color=t["primary"]))
+
+    # ── Buttons ────────────────────────────────────────────────────────────
+    a(_rule("QPushButton",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="9px",
+            padding="7px 13px",
+            color=t["text"],
+            font_weight="600",
+            font_size="12px"))
+    a(_rule("QPushButton:hover",
+            background_color=t["bg_hover"], border_color=t["primary"], color=t["text"]))
+    a(_rule("QPushButton:pressed", background_color=t["bg_active"]))
+    a(_rule("QPushButton:disabled",
+            background_color=t["bg_inset"], border_color=t["border"], color=t["text_faint"]))
+
+    a(_rule("QPushButton#PrimaryBtn",
+            background_color=t["primary"],
+            border=f"1px solid {t['primary']}",
+            color=t["on_primary"],
+            font_weight="700"))
+    a(_rule("QPushButton#PrimaryBtn:hover",
+            background_color=t["primary_hover"], border_color=t["primary_hover"]))
+    a(_rule("QPushButton#PrimaryBtn:disabled",
+            background_color=t["bg_inset"], border_color=t["border"], color=t["text_faint"]))
+
+    a(_rule("QPushButton#StartBtn",
+            background_color=t["green_soft"],
+            border=f"1px solid {t['green']}",
+            color=t["green"],
+            font_weight="700"))
+    a(_rule("QPushButton#StartBtn:hover", background_color=t["green"], color=t["on_primary"]))
+    a(_rule("QPushButton#StartBtn:disabled",
+            background_color=t["bg_inset"],
+            border_color=t["border"],
+            color=t["text_faint"]))
+
+    a(_rule("QPushButton#StopBtn",
+            background_color=t["red_soft"],
+            border=f"1px solid {t['red']}",
+            color=t["red"],
+            font_weight="700"))
+    a(_rule("QPushButton#StopBtn:hover",
+            background_color=t["red"], color=t["on_primary"]))
+    # The objectName rules are more specific than the generic disabled rule,
+    # so the muted state has to be restated per-button.
+    a(_rule("QPushButton#StopBtn:disabled",
+            background_color=t["bg_inset"],
+            border_color=t["border"],
+            color=t["text_faint"]))
+
+    a(_rule("QPushButton#BrowserBtn",
+            background_color=t["bg_inset"],
+            border=f"1px solid {t['border_strong']}",
+            color=t["text_dim"],
+            font_weight="600"))
+    a(_rule("QPushButton#BrowserBtn:hover",
+            background_color=t["bg_hover"], border_color=t["primary"], color=t["primary"]))
+    a(_rule("QPushButton#BrowserBtn:disabled",
+            background_color=t["bg_inset"], border_color=t["border"], color=t["text_faint"]))
+
+    a(_rule("QPushButton#IconBtn",
+            background_color="transparent",
+            border="1px solid transparent",
+            border_radius="8px",
+            padding="4px",
+            color=t["text_dim"],
+            font_size="13px"))
+    a(_rule("QPushButton#IconBtn:hover",
+            background_color=t["bg_hover"],
+            border_color=t["border_strong"],
+            color=t["primary"]))
+    a(_rule("QPushButton#IconBtn:disabled",
+            background="transparent", border="none", color=t["text_faint"]))
+    a(_rule('QPushButton#IconBtn[fav="on"]', color=t["star"]))
+
+    # The port is a number, so it gets plain monospace text rather than a
+    # button that implies an action it is not.
+    a(_rule("QPushButton#PortTag",
+            background_color="transparent",
+            border="none",
+            border_radius="5px",
+            padding="2px 6px",
+            color=t["text_faint"],
+            font_size="10px",
+            font_weight="700",
+            font_family='"JetBrains Mono", "DejaVu Sans Mono", monospace'))
+    a(_rule("QPushButton#PortTag:hover",
+            background_color=t["bg_hover"], color=t["primary"]))
+
+    a(_rule("QPushButton#ThemeToggle",
+            background_color="transparent",
+            border=f"1px solid {t['border']}",
+            border_radius="9px",
+            padding="7px 10px",
+            color=t["text_dim"],
+            font_size="12px",
+            font_weight="600"))
+    a(_rule("QPushButton#ThemeToggle:hover",
+            background_color=t["bg_hover"], border_color=t["primary"], color=t["primary"]))
+
+    # ── Content section headers ────────────────────────────────────────────
+    a(_rule("QLabel#CardSectionTitle",
+            background="transparent", color=t["text"], font_size="13px", font_weight="700"))
+    a(_rule("QLabel#CardSectionCount",
+            background_color=t["bg_inset"],
+            border=f"1px solid {t['border']}",
+            border_radius="6px",
+            padding="1px 7px",
+            color=t["text_dim"],
+            font_size="10px",
+            font_weight="700"))
+
+    # ── Empty state ────────────────────────────────────────────────────────
+    a(_rule("QFrame#EmptyStateFrame",
+            background_color=t["bg_panel"],
+            border="none",
+            border_radius="14px"))
+    a(_rule("QLabel#EmptyIcon", font_size="34px", background="transparent"))
+    a(_rule("QLabel#EmptyTitle", font_size="16px", font_weight="700", color=t["text"]))
+    a(_rule("QLabel#EmptySubtitle", font_size="12px", font_weight="500", color=t["text_faint"]))
+
+    # ── Cards ──────────────────────────────────────────────────────────────
+    for card in ("QFrame#ProjectCard", "QFrame#StackCard"):
+        a(_rule(card,
+                background_color=t["bg_panel"],
+                border=f"1px solid {t['border']}",
+                border_radius="13px"))
+        a(_rule(f"{card}:hover", border_color=t["border_strong"]))
+        a(_rule(f'{card}[running="true"]',
+                border=f"1px solid {t['green']}", background_color=t["bg_running"]))
+
+    a(_rule("QLabel#CardTitle", font_size="14px", font_weight="700", color=t["text"]))
+    a(_rule("QLabel#CardPath", font_size="11px", font_weight="500", color=t["text_faint"]))
+    a(_rule("QLabel#CardCmd",
+            font_size="11px",
+            color=t["text_dim"],
+            background_color=t["bg_inset"],
+            border="none",
+            border_radius="6px",
+            padding="3px 7px",
+            font_family='"JetBrains Mono", "DejaVu Sans Mono", monospace'))
+    a(_rule("QLabel#StackBadge",
+            background_color=t["primary_soft"],
+            border="none",
+            border_radius="6px",
+            padding="2px 7px",
+            font_size="10px",
+            font_weight="700",
+            color=t["primary"]))
+    a(_rule("QLabel#MetricsLabel",
+            font_size="10px",
+            color=t["text_faint"],
+            font_family='"JetBrains Mono", "DejaVu Sans Mono", monospace'))
+    a(_rule("QLabel#ElidedLabel", font_size="14px", font_weight="700", color=t["text"]))
+    a(_rule("QLabel#ElidedTitleLabel", font_size="14px", font_weight="700", color=t["text"]))
+
+    a(_rule("QFrame#IconSquircle",
+            background_color=t["primary_soft"],
+            border="none",
+            border_radius="9px",
+            min_width="34px", max_width="34px",
+            min_height="34px", max_height="34px"))
+    a(_rule("QLabel#SquircleIcon", font_size="16px", background="transparent"))
+    a(_rule("QFrame#StackCardIconBox",
+            background_color=t["primary_soft"],
+            border="none",
+            border_radius="8px",
+            min_width="32px", max_width="32px",
+            min_height="32px", max_height="32px"))
+    a(_rule("QLabel#StackCardIcon", font_size="16px", color=t["primary"]))
+
+    a(_rule("QLabel#StatusBadge",
+            border_radius="7px", padding="3px 8px",
+            font_size="10px", font_weight="700", border="1px solid transparent"))
+    a(_rule('QLabel#StatusBadge[status="running"]',
+            background_color=t["green_soft"], color=t["green"], border_color=t["green"]))
+    a(_rule('QLabel#StatusBadge[status="starting"]',
+            background_color=t["amber_soft"], color=t["amber"], border_color=t["amber"]))
+    a(_rule('QLabel#StatusBadge[status="stopped"]',
+            background_color=t["bg_inset"], color=t["text_faint"], border_color=t["border"]))
+    a(_rule('QLabel#StatusBadge[status="error"]',
+            background_color=t["red_soft"], color=t["red"], border_color=t["red"]))
+
+    # ── Stack card internals ───────────────────────────────────────────────
+    # Density note: service rows carry no border. They are nested inside a
+    # card that already has one, so a second outline reads as noise. The
+    # subtle background tint plus row spacing does the separating instead.
+    a(_rule("QLabel#StackCardTitle", font_size="14px", font_weight="700", color=t["text"]))
+    a(_rule("QLabel#StackCardSub", font_size="10px", font_weight="600", color=t["text_faint"]))
+    a(_rule("QFrame#ServiceMiniRow",
+            background_color=t["bg_inset"],
+            border="none",
+            border_radius="8px"))
+    a(_rule("QFrame#ServiceMiniRow:hover", background_color=t["bg_hover"]))
+    a(_rule("QLabel#ServiceIcon", font_size="12px", color=t["text_faint"]))
+    a(_rule("QLabel#ServiceName", font_size="12px", font_weight="600", color=t["text"]))
+    a(_rule("QLabel#ServiceCmd",
+            font_size="10px",
+            color=t["text_faint"],
+            font_family='"JetBrains Mono", "DejaVu Sans Mono", monospace'))
+
+    # ── Dialogs ────────────────────────────────────────────────────────────
+    a(_rule("QDialog", background_color=t["bg_app"]))
+    for dlg in ("QDialog#StackDialog", "QDialog#ProjectDialog"):
+        a(_rule(dlg, background_color=t["bg_app"], border=f"1px solid {t['border_strong']}"))
+    a(_rule("QLabel#DialogTitle", font_size="18px", font_weight="800", color=t["text"]))
+    a(_rule("QLabel#DialogSubtitle", font_size="11px", font_weight="500", color=t["text_faint"]))
+    a(_rule("QLabel#DialogFieldLabel", font_size="11px", font_weight="700", color=t["text_dim"]))
+    a(_rule("QLabel#FieldHint", font_size="10px", font_weight="500", color=t["text_faint"]))
+    a(_rule("QScrollArea#StackDialogScroll", background="transparent", border="none"))
+    a(_rule("QWidget#StackDialogContainer", background="transparent"))
+    a(_rule("QFrame#ServiceRow",
+            background_color=t["bg_inset"],
+            border="none",
+            border_radius="8px"))
+    a(_rule("QFrame#ServiceRow:hover", background_color=t["bg_hover"]))
+    a(_rule("QLabel#ServiceRowBadge",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="6px",
+            padding="2px 7px",
+            font_size="10px",
+            font_weight="700",
+            color=t["text_dim"]))
+
+    # ── Inputs ─────────────────────────────────────────────────────────────
+    a(_rule("QLineEdit",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="8px",
+            padding="8px 11px",
+            color=t["text"],
+            font_size="12px",
+            font_weight="500",
+            selection_background_color=t["primary"],
+            selection_color=t["on_primary"]))
+    a("QLineEdit:focus { border: 1px solid %s; }" % t["primary"])
+    a("QLineEdit::placeholder { color: %s; }" % t["text_faint"])
+    a(_rule("QLineEdit:disabled",
+            background_color=t["bg_inset"], color=t["text_faint"], border_color=t["border"]))
+
+    a(_rule("QComboBox",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="8px",
+            padding="7px 11px",
+            color=t["text"], font_size="12px", font_weight="500"))
+    a("QComboBox:focus { border: 1px solid %s; }" % t["primary"])
+    a(_rule("QComboBox:disabled",
+            background_color=t["bg_inset"], color=t["text_faint"], border_color=t["border"]))
+    a(_rule("QComboBox::drop-down",
+            border="none", width="22px",
+            subcontrol_origin="padding", subcontrol_position="center right"))
+    a(_rule("QComboBox::down-arrow",
+            image="none",
+            border_left="4px solid transparent",
+            border_right="4px solid transparent",
+            border_top=f"5px solid {t['text_dim']}",
+            margin_right="8px"))
+    a(_rule("QComboBox QAbstractItemView",
+            background_color=t["bg_panel"],
+            color=t["text"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="8px",
+            selection_background_color=t["bg_active"],
+            selection_color=t["primary"],
+            outline="none"))
+
+    a(_rule("QSpinBox",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="8px",
+            padding="7px 11px",
+            color=t["text"], font_size="12px"))
+    a(_rule("QSpinBox:focus", border=f"1px solid {t['primary']}"))
+
+    a(_rule("QCheckBox", color=t["text_dim"], font_size="12px", spacing="8px"))
+    a(_rule("QCheckBox::indicator",
+            width="15px", height="15px",
+            border=f"1px solid {t['border_strong']}",
+            border_radius="4px",
+            background_color=t["bg_panel"]))
+    a(_rule("QCheckBox::indicator:checked",
+            background_color=t["primary"], border_color=t["primary"]))
+
+    # ── Log drawer ─────────────────────────────────────────────────────────
+    a(_rule("QFrame#LogDrawer",
+            background_color=t["log_bg"],
+            border=f"1px solid {t['log_border']}",
+            border_radius="12px"))
+    a(_rule("QTextEdit#LogViewer",
+            background_color=t["log_bg"],
+            border="none",
+            color=t["log_text"],
+            font_family='"JetBrains Mono", "DejaVu Sans Mono", monospace',
+            font_size="12px",
+            padding="8px 10px",
+            selection_background_color=t["primary"],
+            selection_color=t["on_primary"]))
+    a(_rule("QLabel#LogTitle", font_size="12px", font_weight="700", color=t["log_text"]))
+    a(_rule("QLabel#LogMeta", font_size="10px", font_weight="600", color=t["log_muted"]))
+    a(_rule("QLineEdit#LogSearch",
+            background_color=t["log_bg"],
+            border=f"1px solid {t['log_border']}",
+            border_radius="7px",
+            padding="5px 9px",
+            color=t["log_text"], font_size="11px",
+            selection_background_color=t["primary"]))
+    a("QLineEdit#LogSearch:focus { border: 1px solid %s; }" % t["primary"])
+    a(_rule("QCheckBox#LogAutoScroll", color=t["log_muted"], font_size="11px", spacing="6px"))
+    a(_rule("QCheckBox#LogAutoScroll::indicator",
+            width="14px", height="14px",
+            border=f"1px solid {t['log_border']}",
+            border_radius="4px",
+            background_color=t["log_bg"]))
+    a(_rule("QCheckBox#LogAutoScroll::indicator:checked",
+            background_color=t["primary"], border_color=t["primary"]))
+    a(_rule("QPushButton#LogBtn",
+            background_color="transparent",
+            border=f"1px solid {t['log_border']}",
+            border_radius="7px",
+            padding="4px 10px",
+            color=t["log_muted"], font_size="11px", font_weight="600"))
+    a(_rule("QPushButton#LogBtn:hover",
+            background_color=t["bg_hover"], border_color=t["primary"], color=t["primary"]))
+    a(_rule("QPushButton#LogBtn:pressed", background_color=t["bg_active"]))
+    a(_rule("QPushButton#LogBtn:disabled", color=t["log_muted"]))
+
+    # ── Splitter ───────────────────────────────────────────────────────────
+    a(_rule("QSplitter::handle", background_color="transparent"))
+    a(_rule("QSplitter::handle:vertical", background_color="transparent", height="6px"))
+    a(_rule("QSplitter::handle:hover", background_color=t["border_strong"]))
+
+    # ── Scrollbars ─────────────────────────────────────────────────────────
+    a(_rule("QScrollBar:vertical",
+            background="transparent", width="10px", border="none", margin="2px"))
+    a(_rule("QScrollBar::handle:vertical",
+            background=t["border_strong"], min_height="30px", border_radius="4px"))
+    a("QScrollBar::handle:vertical:hover { background: %s; }" % t["text_faint"])
+    a(_rule("QScrollBar:horizontal",
+            background="transparent", height="10px", border="none", margin="2px"))
+    a(_rule("QScrollBar::handle:horizontal",
+            background=t["border_strong"], min_width="30px", border_radius="4px"))
+    a("QScrollBar::handle:horizontal:hover { background: %s; }" % t["text_faint"])
+    a(_rule("QScrollBar::add-line, QScrollBar::sub-line", height="0px", width="0px"))
+    a(_rule("QScrollBar::add-page, QScrollBar::sub-page", background="transparent"))
+
+    # ── Menus & message boxes ──────────────────────────────────────────────
+    a(_rule("QMenu",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="9px",
+            padding="5px"))
+    a(_rule("QMenu::item",
+            padding="6px 24px 6px 12px", border_radius="6px",
+            color=t["text"], font_size="12px"))
+    a(_rule("QMenu::item:selected", background_color=t["bg_active"], color=t["primary"]))
+    a(_rule("QMenu::separator", height="1px", background=t["border"], margin="4px 8px"))
+    a(_rule("QMessageBox", background_color=t["bg_app"]))
+    a(_rule("QMessageBox QLabel", color=t["text"], font_size="12px"))
+
+    return "\n".join(out)
+
+
+LIGHT_QSS = _build(LIGHT)
+DARK_QSS = _build(DARK)
+
+# Backwards-compatible export used elsewhere.
+FIGMA_THEME_QSS = LIGHT_QSS
+
+THEMES = {"light": LIGHT_QSS, "dark": DARK_QSS}
+
+
+def stylesheet_for(theme: str) -> str:
+    """Return the stylesheet for ``'light'`` or ``'dark'``."""
+    return THEMES.get(theme, LIGHT_QSS)
+
+
+def apply_theme(app, theme: str) -> None:
+    """Apply a theme to a QApplication instance."""
+    if app is not None:
+        app.setStyleSheet(stylesheet_for(theme))
+
+
+def get_color(key: str, theme: str = "light") -> str:
+    """Look up a palette token by name (kept for API compatibility)."""
+    tokens = DARK if theme == "dark" else LIGHT
+    return tokens.get(key, tokens["primary"])

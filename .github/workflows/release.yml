@@ -100,13 +100,47 @@ jobs:
             echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Verify Tag Matches version.py
+        run: |
+          # A release must not ship a version string that disagrees with the
+          # source of truth, so fail the build rather than publish a mismatch.
+          FILE_VERSION=$(python3 -c "import version; print(version.__version__)")
+          TAG_VERSION="${{ steps.vars.outputs.tag }}" | sed 's/^v//'
+          echo "version.py = $FILE_VERSION"
+          echo "tag        = $TAG_VERSION"
+          if [ "$FILE_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag $TAG_VERSION does not match version.py ($FILE_VERSION)."
+            exit 1
+          fi
+
+      - name: Extract Changelog for Tag
+        id: notes
+        run: |
+          # Prefer the hand-written CHANGELOG entry for this tag. Fall back to
+          # GitHub's generated notes if the changelog has no section for it.
+          VERSION="${{ steps.vars.outputs.tag }}" | sed 's/^v//'
+          if [ -f CHANGELOG.md ]; then
+            NOTES=$(awk -v ver="$VERSION" '
+              $0 ~ "^## \\["ver"\\]" { found=1; next }
+              found && /^## \\[/ { exit }
+              found { print }
+            ' CHANGELOG.md | sed '/./,$!d')
+          fi
+          if [ -n "${NOTES:-}" ]; then
+            printf '%s\n' "$NOTES" > release_notes.md
+            echo "using=changelog" >> $GITHUB_OUTPUT
+          else
+            echo "using=generated" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
           name: DevDeck ${{ steps.vars.outputs.tag }}
+          body_path: ${{ steps.notes.outputs.using == 'changelog' && 'release_notes.md' || '' }}
           files: release_assets/*
-          generate_release_notes: true
+          generate_release_notes: ${{ steps.notes.outputs.using == 'generated' }}
           draft: false
           prerelease: false
         env:

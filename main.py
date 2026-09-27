@@ -17,7 +17,7 @@ from PyQt6.QtCore import Qt
 
 from core.config_manager import ConfigManager
 from core.process_manager import ProcessManager
-from ui.theme import FIGMA_THEME_QSS, DARK_THEME_QSS
+from ui.theme import apply_theme
 from ui.main_window import MainWindow
 
 def get_resource_path(relative_path: str) -> str:
@@ -51,8 +51,9 @@ def main():
     config_mgr = ConfigManager()
     process_mgr = ProcessManager()
 
-    # Apply Modern Blue-Black Dark Theme
-    app.setStyleSheet(DARK_THEME_QSS)
+    # Apply the saved theme (MainWindow also applies it once built, so that
+    # widgets created later pick it up too)
+    apply_theme(app, config_mgr.data.get("theme", "light"))
 
     # Clean shutdown of all running child servers on app exit
     app.aboutToQuit.connect(process_mgr.stop_all)
