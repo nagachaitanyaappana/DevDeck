@@ -105,7 +105,9 @@ jobs:
           # A release must not ship a version string that disagrees with the
           # source of truth, so fail the build rather than publish a mismatch.
           FILE_VERSION=$(python3 -c "import version; print(version.__version__)")
-          TAG_VERSION="${{ steps.vars.outputs.tag }}" | sed 's/^v//'
+          # Command substitution is required: `VAR=x | sed ...` is a plain
+          # assignment with no consumer, which silently leaves VAR empty.
+          TAG_VERSION=$(echo "${{ steps.vars.outputs.tag }}" | sed 's/^v//')
           echo "version.py = $FILE_VERSION"
           echo "tag        = $TAG_VERSION"
           if [ "$FILE_VERSION" != "$TAG_VERSION" ]; then
@@ -118,7 +120,7 @@ jobs:
         run: |
           # Prefer the hand-written CHANGELOG entry for this tag. Fall back to
           # GitHub's generated notes if the changelog has no section for it.
-          VERSION="${{ steps.vars.outputs.tag }}" | sed 's/^v//'
+          VERSION=$(echo "${{ steps.vars.outputs.tag }}" | sed 's/^v//')
           if [ -f CHANGELOG.md ]; then
             NOTES=$(awk -v ver="$VERSION" '
               $0 ~ "^## \\["ver"\\]" { found=1; next }
