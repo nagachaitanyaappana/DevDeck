@@ -169,7 +169,7 @@ class MainWindow(QMainWindow):
         sidebar = QFrame()
         sidebar.setObjectName("HeroPanel")
         sidebar.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        sidebar.setFixedWidth(238)
+        sidebar.setFixedWidth(250)
         side = QVBoxLayout(sidebar)
         side.setContentsMargins(16, 18, 16, 16)
         side.setSpacing(14)
@@ -210,22 +210,22 @@ class MainWindow(QMainWindow):
         nav_container.setObjectName("NavContainer")
         nav_layout = QVBoxLayout(nav_container)
         nav_layout.setContentsMargins(0, 4, 0, 4)
-        nav_layout.setSpacing(4)
+        nav_layout.setSpacing(5)
 
-        workspace_label = QLabel("LIBRARY")
+        workspace_label = QLabel("WORKSPACE")
         workspace_label.setObjectName("SectionHeader")
         nav_layout.addWidget(workspace_label)
 
         self.filter_buttons: Dict[str, NavItem] = {}
         workspace_items = [
             ("All", "All projects", ""),
-            ("⚡ Stacks", "Stacks", ""),
+            ("Stacks", "Stacks", ""),
             ("Running", "Running", ""),
             ("Favorites", "Favorites", ""),
         ]
         for filter_id, label, icon in workspace_items:
             item = NavItem(filter_id, label, icon)
-            item.setFixedHeight(38)
+            item.setFixedHeight(40)
             if filter_id == "All":
                 item.setChecked(True)
                 item.setProperty("checked", "true")
@@ -234,7 +234,7 @@ class MainWindow(QMainWindow):
             self.filter_buttons[filter_id] = item
 
         nav_layout.addSpacing(18)
-        eco_label = QLabel("TECHNOLOGY")
+        eco_label = QLabel("BY TECHNOLOGY")
         eco_label.setObjectName("SectionHeader")
         nav_layout.addWidget(eco_label)
         for filter_id, label in [
@@ -243,7 +243,7 @@ class MainWindow(QMainWindow):
             ("Python", "Python"),
         ]:
             item = NavItem(filter_id, label, "")
-            item.setFixedHeight(36)
+            item.setFixedHeight(40)
             item.clicked.connect(lambda _checked, name=filter_id: self._set_filter(name))
             nav_layout.addWidget(item)
             self.filter_buttons[filter_id] = item
@@ -980,7 +980,7 @@ class MainWindow(QMainWindow):
         while self.cards_layout.count():
             self.cards_layout.takeAt(0)
 
-        stacks_only = self.active_filter == "⚡ Stacks"
+        stacks_only = self.active_filter == "Stacks"
 
         # 1. Stacks
         visible_stacks = []
@@ -1117,7 +1117,7 @@ class MainWindow(QMainWindow):
             self.es_sub.setText("Click the star icon on any project card to bookmark it here.")
             if hasattr(self, "es_btns_widget"):
                 self.es_btns_widget.setVisible(False)
-        elif filter_name == "⚡ Stacks":
+        elif filter_name == "Stacks":
             self.es_icon.setText("▦")
             self.es_title.setText("No Multi-Project Stacks Yet")
             self.es_sub.setText("Create a stack to launch frontend, backend, and services together.")
@@ -1228,7 +1228,7 @@ class MainWindow(QMainWindow):
 
         cat_counts = {
             "All": total,
-            "⚡ Stacks": len(self.stack_cards),
+            "Stacks": len(self.stack_cards),
             "Running": sum(
                 1 for c in self.cards.values() if c.status == "running"
             ) + sum(
