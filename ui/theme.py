@@ -16,27 +16,29 @@ drift apart and every emitted declaration is valid.
 
 # ── Design tokens ────────────────────────────────────────────────────────────
 LIGHT = {
-    "bg_app": "#f5f6f8", "bg_panel": "#ffffff", "bg_sidebar": "#f0f2f5",
-    "bg_inset": "#f3f5f7", "bg_hover": "#e9edf2", "bg_active": "#e4ebf4",
-    "bg_running": "#edf7f0", "border": "#e1e5ea", "border_strong": "#cbd3dc",
-    "primary": "#356da8", "primary_hover": "#285987", "primary_soft": "#eaf1f8",
-    "on_primary": "#ffffff", "text": "#202833", "text_dim": "#536171",
-    "text_faint": "#7b8794", "green": "#268653", "green_soft": "#e7f4eb",
-    "red": "#b84b4b", "red_soft": "#faeaea", "amber": "#94691f",
-    "amber_soft": "#f8f0df", "star": "#a87920", "log_bg": "#171d25",
-    "log_border": "#303a46", "log_text": "#e5eaf0", "log_muted": "#a6b1bd",
+    # Cool, quiet neutrals with one consistent blue accent.
+    "bg_app": "#F4F6F8", "bg_panel": "#FFFFFF", "bg_sidebar": "#EEF2F6",
+    "bg_inset": "#F1F4F7", "bg_hover": "#E8EDF3", "bg_active": "#E4EDF7",
+    "bg_running": "#EAF5EE", "border": "#DFE5EC", "border_strong": "#C8D2DE",
+    "primary": "#356B9A", "primary_hover": "#28577F", "primary_soft": "#E7F0F8",
+    "on_primary": "#FFFFFF", "text": "#1D2935", "text_dim": "#536273",
+    "text_faint": "#7D8996", "green": "#278456", "green_soft": "#E6F3EB",
+    "red": "#B94F52", "red_soft": "#F9E9E9", "amber": "#966B27",
+    "amber_soft": "#F7F0E2", "star": "#A87928", "log_bg": "#111820",
+    "log_border": "#2C3945", "log_text": "#E7EDF3", "log_muted": "#A6B2BE",
 }
 
 DARK = {
-    "bg_app": "#171b21", "bg_panel": "#20262e", "bg_sidebar": "#1c222a",
-    "bg_inset": "#252d37", "bg_hover": "#2c3642", "bg_active": "#304154",
-    "bg_running": "#1d3329", "border": "#303944", "border_strong": "#465362",
-    "primary": "#83add6", "primary_hover": "#a4c5e5", "primary_soft": "#293b4d",
-    "on_primary": "#111923", "text": "#edf1f5", "text_dim": "#c0cad4",
-    "text_faint": "#8f9ba8", "green": "#71c995", "green_soft": "#203d2e",
-    "red": "#e28c8c", "red_soft": "#432b2b", "amber": "#e2bd72",
-    "amber_soft": "#403722", "star": "#e2c477", "log_bg": "#11161c",
-    "log_border": "#2b3540", "log_text": "#e5eaf0", "log_muted": "#a3afbb",
+    # The same hue relationships as light mode, tuned for dark surfaces.
+    "bg_app": "#151A20", "bg_panel": "#1D252E", "bg_sidebar": "#19212A",
+    "bg_inset": "#232D37", "bg_hover": "#2A3642", "bg_active": "#263B4D",
+    "bg_running": "#20382C", "border": "#2C3945", "border_strong": "#405160",
+    "primary": "#83B5DE", "primary_hover": "#A0C9E9", "primary_soft": "#263B4D",
+    "on_primary": "#101820", "text": "#EAF0F5", "text_dim": "#BCC8D3",
+    "text_faint": "#8795A3", "green": "#78C99A", "green_soft": "#203B2D",
+    "red": "#E18D8F", "red_soft": "#432B2D", "amber": "#E0BC78",
+    "amber_soft": "#403723", "star": "#E4C47C", "log_bg": "#0F151B",
+    "log_border": "#2A3540", "log_text": "#E7EDF3", "log_muted": "#A6B2BE",
 }
 
 
@@ -143,20 +145,24 @@ def _build(t: dict) -> str:
             background="transparent",
             color=t["text_faint"],
             font_size="10px",
-            font_weight="800"))
+            font_weight="800",
+            padding="4px 8px"))
     a(_rule("QPushButton#NavItem",
             background_color="transparent",
             border="1px solid transparent",
-            border_radius="9px",
-            padding="7px 10px",
+            border_radius="8px",
+            padding="8px 12px",
             color=t["text_dim"],
             font_weight="600",
             font_size="12px",
             text_align="left"))
-    a(_rule("QPushButton#NavItem:hover", background_color=t["bg_hover"], color=t["text"]))
+    a(_rule("QPushButton#NavItem:hover",
+            background_color=t["bg_hover"],
+            color=t["text"],
+            border_color=t["border"]))
     a(_rule('QPushButton#NavItem[checked="true"]',
-            background_color=t["bg_active"],
-            border="1px solid transparent",
+            background_color=t["primary_soft"],
+            border=f"1px solid {t['primary_soft']}",
             border_left=f"3px solid {t['primary']}",
             color=t["primary"],
             font_weight="700"))
