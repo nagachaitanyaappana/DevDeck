@@ -356,6 +356,10 @@ def _build(t: dict) -> str:
         a(_rule(f"{card}:hover", border_color=t["border_strong"]))
         a(_rule(f'{card}[running="true"]',
                 border=f"1px solid {t['green']}", background_color=t["bg_running"]))
+        if card == "QFrame#ProjectCard":
+            a(_rule('QFrame#ProjectCard[selected="true"]',
+                    border=f"2px solid {t['green']}",
+                    background_color=t["bg_running"]))
 
     a(_rule("QLabel#CardTitle", font_size="14px", font_weight="700", color=t["text"]))
     a(_rule("QLabel#CardPath", font_size="11px", font_weight="500", color=t["text_faint"]))
