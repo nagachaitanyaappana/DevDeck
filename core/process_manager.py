@@ -34,7 +34,7 @@ def _prepare_command(command: str, cwd: str) -> str:
     if sys.platform != "win32":
         return command
 
-    match = re.match(r"^\\s*(?:\\./|\\.\\\\)?(mvnw|gradlew)(?=\\s|$)(.*)$", command, re.IGNORECASE)
+    match = re.match(r"^\s*(?:\./|\.\\)?(mvnw|gradlew)(?=\s|$)(.*)$", command, re.IGNORECASE)
     if not match:
         return command
 
