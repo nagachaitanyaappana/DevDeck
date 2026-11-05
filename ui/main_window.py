@@ -444,7 +444,7 @@ class MainWindow(QMainWindow):
         """Toggle the sidebar between its full workspace and compact rail layouts."""
         self._sidebar_compact = not getattr(self, "_sidebar_compact", False)
         compact = self._sidebar_compact
-        self.sidebar.setFixedWidth(76 if compact else 250)
+        self.sidebar.setFixedWidth(112 if compact else 250)
         self.sidebar_toggle.setText("›" if compact else "‹")
         self.sidebar_toggle.setToolTip("Expand navigation" if compact else "Collapse navigation")
         self.brand_title.setVisible(not compact)
