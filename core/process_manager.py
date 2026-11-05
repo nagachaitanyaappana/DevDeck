@@ -23,6 +23,31 @@ def is_port_open(port: int) -> bool:
     except Exception:
         return False
 
+def _prepare_command(command: str, cwd: str) -> str:
+    """Resolve Unix-style project wrapper commands to Windows batch files.
+
+    Saved project configurations may have been created on Linux, so fix
+    wrapper invocations at launch time as well as during project scanning.
+    """
+    import sys
+
+    if sys.platform != "win32":
+        return command
+
+    match = re.match(r"^\\s*(?:\\./|\\.\\\\)?(mvnw|gradlew)(?=\\s|$)(.*)$", command, re.IGNORECASE)
+    if not match:
+        return command
+
+    wrapper, arguments = match.groups()
+    batch_name = "mvnw.cmd" if wrapper.lower() == "mvnw" else "gradlew.bat"
+    batch_path = os.path.join(cwd, batch_name)
+    if not os.path.isfile(batch_path):
+        return command
+
+    # cmd.exe needs CALL when invoking another batch file from a command line.
+    return f'call "{batch_path}"{arguments}'
+
+
 URL_REGEX = re.compile(
     r'(https?://(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(?::\d+)?(?:/[^\s"\'\`\<\>)]*)?)',
     re.IGNORECASE
@@ -73,7 +98,8 @@ class ProjectProcess(QObject):
         # Use shell to execute commands properly across platforms
         import sys
         if sys.platform == "win32":
-            self.process.start("cmd.exe", ["/c", self.command])
+            command = _prepare_command(self.command, self.cwd)
+            self.process.start("cmd.exe", ["/d", "/c", command])
         else:
             shell = os.environ.get("SHELL", "/bin/bash")
             if not os.path.exists(shell):
