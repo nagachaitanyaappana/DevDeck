@@ -193,8 +193,6 @@ class ServiceMiniRow(QFrame):
         super().resizeEvent(event)
         compact = self.width() < 460
         self.cmd_lbl.setVisible(not compact)
-        for btn in (self.folder_btn, self.restart_btn):
-            btn.setVisible(not compact)
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
