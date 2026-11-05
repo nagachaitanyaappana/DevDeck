@@ -153,208 +153,188 @@ class MainWindow(QMainWindow):
         self.port_poll_timer.start()
 
     def _init_ui(self):
+        """Build the DevDeck workspace with a calm, editor-inspired hierarchy."""
         self.setObjectName("MainWindow")
         central = QWidget()
         central.setObjectName("CentralRoot")
         central.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setCentralWidget(central)
-        self.central = central
 
-        # Horizontal Split: Left Hero Panel + Right Cards & Logs
-        root_layout = QHBoxLayout(central)
-        root_layout.setContentsMargins(16, 16, 16, 16)
-        root_layout.setSpacing(16)
+        root = QHBoxLayout(central)
+        root.setContentsMargins(18, 18, 18, 18)
+        root.setSpacing(16)
 
-        # ─── LEFT: Modern Sidebar (Figma Style) ───
-        left_panel = QFrame()
-        left_panel.setObjectName("HeroPanel")
-        left_panel.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        left_panel.setFixedWidth(248)
-        left_layout = QVBoxLayout(left_panel)
-        left_layout.setContentsMargins(12, 14, 12, 12)
-        left_layout.setSpacing(10)
+        # Sidebar
+        sidebar = QFrame()
+        sidebar.setObjectName("HeroPanel")
+        sidebar.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        sidebar.setFixedWidth(238)
+        side = QVBoxLayout(sidebar)
+        side.setContentsMargins(16, 18, 16, 16)
+        side.setSpacing(14)
 
-        # 1. App Brand Header (Icon + Title + Version Badge + Subtitle)
-        brand_container = QWidget()
-        brand_layout = QHBoxLayout(brand_container)
-        brand_layout.setContentsMargins(2, 0, 2, 0)
-        brand_layout.setSpacing(10)
-
+        brand = QHBoxLayout()
+        brand.setSpacing(11)
         brand_icon = QLabel()
         if not self.app_icon.isNull():
-            brand_icon.setPixmap(self.app_icon.pixmap(32, 32))
-        brand_icon.setFixedSize(32, 32)
-        brand_layout.addWidget(brand_icon)
-
-        brand_text_box = QVBoxLayout()
-        brand_text_box.setSpacing(2)
-
-        title_row = QHBoxLayout()
-        title_row.setSpacing(6)
+            brand_icon.setPixmap(self.app_icon.pixmap(34, 34))
+        brand_icon.setFixedSize(34, 34)
+        brand.addWidget(brand_icon)
+        brand_copy = QVBoxLayout()
+        brand_copy.setSpacing(1)
         app_title = QLabel("DevDeck")
         app_title.setObjectName("HeroTitle")
-        title_row.addWidget(app_title)
-
-        version_badge = QLabel(f"v{__version__}")
-        version_badge.setObjectName("StackBadge")
-        version_badge.setToolTip(f"DevDeck {__version__}")
-        title_row.addWidget(version_badge)
-        title_row.addStretch()
-        brand_text_box.addLayout(title_row)
-
-        app_sub = QLabel("Developer Control Center")
+        app_sub = QLabel("PROJECT WORKSPACE")
         app_sub.setObjectName("HeroSubtitle")
-        brand_text_box.addWidget(app_sub)
+        brand_copy.addWidget(app_title)
+        brand_copy.addWidget(app_sub)
+        brand.addLayout(brand_copy, 1)
+        side.addLayout(brand)
 
-        brand_layout.addLayout(brand_text_box)
-        left_layout.addWidget(brand_container)
-
-        # 2. Telemetry Card (3-Column Minimal Stats: TOTAL, ACTIVE, PORTS)
-        stats_card = QFrame()
-        stats_card.setObjectName("StatsCard")
-        # Style handled by QSS theme
-        stats_layout = QHBoxLayout(stats_card)
-        stats_layout.setContentsMargins(4, 6, 4, 6)
-        stats_layout.setSpacing(2)
-
-        self.total_badge = self._create_mini_stat("0", "TOTAL", "TOTAL")
-        self.running_badge = self._create_mini_stat("0", "ACTIVE", "ACTIVE")
-        self.ports_badge = self._create_mini_stat("0", "PORTS", "PORTS")
-
-        stats_layout.addWidget(self.total_badge)
-        stats_layout.addWidget(self._create_vdivider())
-        stats_layout.addWidget(self.running_badge)
-        stats_layout.addWidget(self._create_vdivider())
-        stats_layout.addWidget(self.ports_badge)
-        left_layout.addWidget(stats_card)
-
-        # 3. Search Bar
-        search_box = QFrame()
-        search_box.setObjectName("FilterBar")
-        search_layout = QHBoxLayout(search_box)
-        search_layout.setContentsMargins(0, 0, 0, 0)
-        search_layout.setSpacing(0)
-
-        # No icon here: a magnifier glyph renders inconsistently across
-        # platforms and the placeholder already explains the field.
+        # Search stays close to navigation and is keyboard accessible.
         self.search_input = QLineEdit()
         self.search_input.setObjectName("SearchBar")
-        self.search_input.setPlaceholderText("Search projects or stacks…")
+        self.search_input.setPlaceholderText("Search projects…  Ctrl+F")
         self.search_input.setClearButtonEnabled(True)
         self.search_input.textChanged.connect(self._on_search_changed)
-        search_layout.addWidget(self.search_input, 1)
-        left_layout.addWidget(search_box)
+        side.addWidget(self.search_input)
 
-        # 4. Navigation Menu (Vertical List with Icons and Count Badges)
         nav_scroll = QScrollArea()
         nav_scroll.setWidgetResizable(True)
         nav_scroll.setFrameShape(QFrame.Shape.NoFrame)
         nav_scroll.setObjectName("NavScroll")
         nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        nav_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
+        nav_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         nav_container = QWidget()
         nav_container.setObjectName("NavContainer")
         nav_layout = QVBoxLayout(nav_container)
-        nav_layout.setContentsMargins(0, 0, 0, 0)
-        nav_layout.setSpacing(2)
+        nav_layout.setContentsMargins(0, 4, 0, 4)
+        nav_layout.setSpacing(4)
 
-        # Workspace section
-        ws_label = QLabel("WORKSPACE")
-        ws_label.setObjectName("SectionHeader")
-        nav_layout.addWidget(ws_label)
+        workspace_label = QLabel("LIBRARY")
+        workspace_label.setObjectName("SectionHeader")
+        nav_layout.addWidget(workspace_label)
 
         self.filter_buttons: Dict[str, NavItem] = {}
         workspace_items = [
-            ("All", "All Projects", "▤"),
-            ("⚡ Stacks", "Multi-Stacks", ICO_STACK),
-            ("Running", "Active Servers", "◉"),
-            ("Favorites", "Favorites", ICO_FAV_OFF),
+            ("All", "All projects", ""),
+            ("⚡ Stacks", "Stacks", ""),
+            ("Running", "Running", ""),
+            ("Favorites", "Favorites", ""),
         ]
-        for f_id, label, icon in workspace_items:
-            item = NavItem(f_id, label, icon)
-            if f_id == "All":
+        for filter_id, label, icon in workspace_items:
+            item = NavItem(filter_id, label, icon)
+            item.setFixedHeight(38)
+            if filter_id == "All":
                 item.setChecked(True)
                 item.setProperty("checked", "true")
-            item.clicked.connect(lambda _checked, name=f_id: self._set_filter(name))
+            item.clicked.connect(lambda _checked, name=filter_id: self._set_filter(name))
             nav_layout.addWidget(item)
-            self.filter_buttons[f_id] = item
+            self.filter_buttons[filter_id] = item
 
-        nav_layout.addSpacing(8)
-
-        # Ecosystem section
-        eco_label = QLabel("ECOSYSTEM")
+        nav_layout.addSpacing(18)
+        eco_label = QLabel("TECHNOLOGY")
         eco_label.setObjectName("SectionHeader")
         nav_layout.addWidget(eco_label)
-
-        eco_items = [
-            ("Node / Web", "Node & Web", "◈"),
-            ("Java / Spring", "Java & Spring", "J"),
-            ("Python", "Python", "P"),
-        ]
-        for f_id, label, icon in eco_items:
-            item = NavItem(f_id, label, icon)
-            item.clicked.connect(lambda _checked, name=f_id: self._set_filter(name))
+        for filter_id, label in [
+            ("Node / Web", "Node & Web"),
+            ("Java / Spring", "Java & Spring"),
+            ("Python", "Python"),
+        ]:
+            item = NavItem(filter_id, label, "")
+            item.setFixedHeight(36)
+            item.clicked.connect(lambda _checked, name=filter_id: self._set_filter(name))
             nav_layout.addWidget(item)
-            self.filter_buttons[f_id] = item
+            self.filter_buttons[filter_id] = item
 
-        nav_layout.addStretch()
+        nav_layout.addStretch(1)
         nav_scroll.setWidget(nav_container)
-        left_layout.addWidget(nav_scroll, 1)
+        side.addWidget(nav_scroll, 1)
 
-        # 5. Global Action Buttons
-        actions_box = QVBoxLayout()
-        actions_box.setSpacing(6)
+        # Small live overview, not a large decorative dashboard widget.
+        overview = QFrame()
+        overview.setObjectName("StatsCard")
+        overview_layout = QHBoxLayout(overview)
+        overview_layout.setContentsMargins(10, 10, 10, 10)
+        overview_layout.setSpacing(4)
+        self.total_badge = self._create_mini_stat("0", "PROJECTS", "TOTAL")
+        self.running_badge = self._create_mini_stat("0", "RUNNING", "ACTIVE")
+        self.ports_badge = self._create_mini_stat("0", "PORTS", "PORTS")
+        overview_layout.addWidget(self.total_badge)
+        overview_layout.addWidget(self._create_vdivider())
+        overview_layout.addWidget(self.running_badge)
+        overview_layout.addWidget(self._create_vdivider())
+        overview_layout.addWidget(self.ports_badge)
+        side.addWidget(overview)
 
-        add_row = QHBoxLayout()
-        add_row.setSpacing(6)
+        # Actions are grouped and labelled; no tiny mystery buttons.
+        add_project = QPushButton("Add project")
+        add_project.setObjectName("PrimaryBtn")
+        add_project.setMinimumHeight(40)
+        add_project.clicked.connect(self._open_add_dialog)
+        side.addWidget(add_project)
 
-        add_btn = QPushButton("+  Project")
-        add_btn.setObjectName("PrimaryBtn")
-        add_btn.setToolTip("Add a single project manually")
-        add_btn.clicked.connect(self._open_add_dialog)
-        add_row.addWidget(add_btn, 1)
+        new_stack = QPushButton("Create stack")
+        new_stack.setObjectName("SecondaryBtn")
+        new_stack.setMinimumHeight(38)
+        new_stack.clicked.connect(self._open_new_stack_dialog)
+        side.addWidget(new_stack)
 
-        stack_btn = QPushButton(ICO_STACK)
-        stack_btn.setObjectName("IconBtn")
-        stack_btn.setToolTip("Create a multi-project stack (e.g. Backend + Frontend)")
-        stack_btn.clicked.connect(self._open_new_stack_dialog)
-        add_row.addWidget(stack_btn)
-        actions_box.addLayout(add_row)
-
-        self.stop_all_btn = QPushButton(f"{ICO_STOP}  Stop All")
+        self.stop_all_btn = QPushButton("Stop all services")
         self.stop_all_btn.setObjectName("StopBtn")
+        self.stop_all_btn.setMinimumHeight(36)
         self.stop_all_btn.setToolTip("Stop every running server DevDeck manages")
         self.stop_all_btn.clicked.connect(self._stop_all)
-        actions_box.addWidget(self.stop_all_btn)
+        side.addWidget(self.stop_all_btn)
 
-        self.toggle_logs_btn = QPushButton(f"{ICO_LOGS}  Console")
-        self.toggle_logs_btn.setObjectName("IconBtn")
-        self.toggle_logs_btn.setToolTip("Toggle the console log drawer (Ctrl+L)")
+        utility_row = QHBoxLayout()
+        utility_row.setSpacing(8)
+        self.toggle_logs_btn = QPushButton("Console")
+        self.toggle_logs_btn.setObjectName("UtilityBtn")
+        self.toggle_logs_btn.setMinimumHeight(34)
+        self.toggle_logs_btn.setToolTip("Toggle console logs (Ctrl+L)")
         self.toggle_logs_btn.clicked.connect(self._toggle_logs)
-        actions_box.addWidget(self.toggle_logs_btn)
-
-        # Theme Toggle Button
-        self.theme_toggle_btn = QPushButton("Dark mode")
-        self.theme_toggle_btn.setObjectName("ThemeToggle")
-        self.theme_toggle_btn.setToolTip("Toggle light/dark theme")
+        utility_row.addWidget(self.toggle_logs_btn, 1)
+        self.theme_toggle_btn = QPushButton("Light theme" if self.theme == "dark" else "Dark theme")
+        self.theme_toggle_btn.setObjectName("UtilityBtn")
+        self.theme_toggle_btn.setMinimumHeight(34)
         self.theme_toggle_btn.clicked.connect(self._toggle_theme)
-        actions_box.addWidget(self.theme_toggle_btn)
+        utility_row.addWidget(self.theme_toggle_btn, 1)
+        side.addLayout(utility_row)
+        root.addWidget(side)
 
-        left_layout.addLayout(actions_box)
-        root_layout.addWidget(left_panel)
-
-        # ─── RIGHT: Content Splitter (Cards Grid + Collapsible Log Drawer) ───
-        right_container = QWidget()
-        right_container.setObjectName("RightContainer")
-        right_layout = QVBoxLayout(right_container)
+        # Main workspace
+        right = QWidget()
+        right.setObjectName("RightContainer")
+        right_layout = QVBoxLayout(right)
         right_layout.setContentsMargins(0, 0, 0, 0)
-        right_layout.setSpacing(10)
+        right_layout.setSpacing(14)
+
+        header = QFrame()
+        header.setObjectName("WorkspaceHeader")
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(4, 2, 4, 8)
+        header_layout.setSpacing(12)
+        heading_box = QVBoxLayout()
+        heading_box.setSpacing(3)
+        self.page_title = QLabel("Your workspace")
+        self.page_title.setObjectName("PageTitle")
+        page_subtitle = QLabel("Manage local projects and the services that power them.")
+        page_subtitle.setObjectName("PageSubtitle")
+        heading_box.addWidget(self.page_title)
+        heading_box.addWidget(page_subtitle)
+        header_layout.addLayout(heading_box, 1)
+
+        self.header_add_btn = QPushButton("＋  Add project")
+        self.header_add_btn.setObjectName("PrimaryBtn")
+        self.header_add_btn.setMinimumHeight(38)
+        self.header_add_btn.clicked.connect(self._open_add_dialog)
+        header_layout.addWidget(self.header_add_btn)
+        right_layout.addWidget(header)
 
         self.splitter = QSplitter(Qt.Orientation.Vertical)
-        self.splitter.setHandleWidth(4)
+        self.splitter.setHandleWidth(5)
 
-        # Scrollable Cards Container (2-Column Grid of floating cards)
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
@@ -364,79 +344,70 @@ class MainWindow(QMainWindow):
         self.cards_container = QWidget()
         self.cards_container.setObjectName("CardsContainer")
         self.cards_layout = QGridLayout(self.cards_container)
-        self.cards_layout.setContentsMargins(2, 2, 6, 2)
-        self.cards_layout.setSpacing(12)
+        self.cards_layout.setContentsMargins(0, 2, 8, 12)
+        self.cards_layout.setHorizontalSpacing(14)
+        self.cards_layout.setVerticalSpacing(14)
         self.cards_layout.setColumnStretch(0, 1)
         self.cards_layout.setColumnStretch(1, 1)
-        self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._grid_cols = 2
 
-        # Section headers for Stacks and Projects
-        self.stacks_header = SectionHeaderWidget(f"{ICO_STACK}  Multi-Project Stacks")
-        self.projects_header = SectionHeaderWidget("Individual Projects")
+        self.stacks_header = SectionHeaderWidget("Stacks")
+        self.projects_header = SectionHeaderWidget("Projects")
 
-        # Empty State Display when 0 cards match or exist
         self.empty_state_frame = QFrame(self.cards_container)
         self.empty_state_frame.setObjectName("EmptyStateFrame")
         self.empty_state_frame.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        es_layout = QVBoxLayout(self.empty_state_frame)
-        es_layout.setContentsMargins(24, 48, 24, 48)
-        es_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        es_layout.setSpacing(10)
-
-        self.es_icon = QLabel("▤")
+        empty_layout = QVBoxLayout(self.empty_state_frame)
+        empty_layout.setContentsMargins(32, 54, 32, 54)
+        empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_layout.setSpacing(12)
+        self.es_icon = QLabel("DEVDECK")
         self.es_icon.setObjectName("EmptyIcon")
         self.es_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        es_layout.addWidget(self.es_icon)
-
-        self.es_title = QLabel("No Projects or Stacks Yet")
+        empty_layout.addWidget(self.es_icon)
+        self.es_title = QLabel("Your workspace is ready")
         self.es_title.setObjectName("EmptyTitle")
         self.es_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        es_layout.addWidget(self.es_title)
-
-        self.es_sub = QLabel("DevDeck is ready. Add projects manually or create multi-service stacks.")
+        empty_layout.addWidget(self.es_title)
+        self.es_sub = QLabel("Add a project to start managing your development environment.")
         self.es_sub.setObjectName("EmptySubtitle")
         self.es_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        es_layout.addWidget(self.es_sub)
+        self.es_sub.setWordWrap(True)
+        empty_layout.addWidget(self.es_sub)
 
         self.es_btns_widget = QWidget()
         self.es_btns_widget.setObjectName("EmptyBtns")
-        es_btns = QHBoxLayout(self.es_btns_widget)
-        es_btns.setContentsMargins(0, 4, 0, 0)
-        es_btns.setSpacing(10)
-        es_btns.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        es_add_p = QPushButton("+  Add Project")
-        es_add_p.setObjectName("PrimaryBtn")
-        es_add_p.clicked.connect(self._open_add_dialog)
-        es_btns.addWidget(es_add_p)
-
-        es_add_s = QPushButton(f"{ICO_STACK}  New Stack")
-        es_add_s.setObjectName("IconBtn")
-        es_add_s.clicked.connect(self._open_new_stack_dialog)
-        es_btns.addWidget(es_add_s)
-        es_layout.addWidget(self.es_btns_widget)
+        empty_buttons = QHBoxLayout(self.es_btns_widget)
+        empty_buttons.setContentsMargins(0, 8, 0, 0)
+        empty_buttons.setSpacing(10)
+        empty_buttons.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        empty_add = QPushButton("Add your first project")
+        empty_add.setObjectName("PrimaryBtn")
+        empty_add.clicked.connect(self._open_add_dialog)
+        empty_buttons.addWidget(empty_add)
+        empty_stack = QPushButton("Create a stack")
+        empty_stack.setObjectName("SecondaryBtn")
+        empty_stack.clicked.connect(self._open_new_stack_dialog)
+        empty_buttons.addWidget(empty_stack)
+        empty_layout.addWidget(self.es_btns_widget)
         self.empty_state_frame.setVisible(False)
 
         self.scroll_area.setWidget(self.cards_container)
         self.splitter.addWidget(self.scroll_area)
 
-        # Log Viewer Drawer
         self.log_viewer = LogViewer()
         self.log_viewer.close_requested.connect(self._on_console_closed)
         self.log_viewer.fullscreen_toggled.connect(self._on_console_fullscreen_toggled)
         self.log_viewer.open_url_requested.connect(open_url)
         self.splitter.addWidget(self.log_viewer)
-
-        # Start with logs drawer collapsed by default so cards have full room
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
         self._prev_splitter_sizes = [720, 0]
         self.splitter.setSizes([720, 0])
         self._logs_open = False
-
-        right_layout.addWidget(self.splitter)
-        root_layout.addWidget(right_container, 1)
+        right_layout.addWidget(self.splitter, 1)
+        root.addWidget(right, 1)
 
     def _create_mini_stat(self, initial_val: str, label_text: str, stat_kind: str) -> QFrame:
         badge = QFrame()
