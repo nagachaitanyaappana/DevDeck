@@ -238,16 +238,17 @@ def _build(t: dict) -> str:
             background_color=t["bg_inset"], border_color=t["border"], color=t["text_faint"]))
 
     a(_rule("QPushButton#IconBtn",
-            background_color="transparent",
-            border="1px solid transparent",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border']}",
             border_radius="8px",
-            padding="4px",
+            padding="6px 10px",
             color=t["text_dim"],
-            font_size="13px"))
+            font_size="11px",
+            font_weight="600"))
     a(_rule("QPushButton#IconBtn:hover",
             background_color=t["bg_hover"],
             border_color=t["border_strong"],
-            color=t["primary"]))
+            color=t["text"]))
     a(_rule("QPushButton#IconBtn:disabled",
             background="transparent", border="none", color=t["text_faint"]))
     a(_rule('QPushButton#IconBtn[fav="on"]', color=t["star"]))
