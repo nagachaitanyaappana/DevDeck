@@ -44,8 +44,23 @@ def _prepare_command(command: str, cwd: str) -> str:
     if not os.path.isfile(batch_path):
         return command
 
-    # cmd.exe needs CALL when invoking another batch file from a command line.
-    return f'call "{batch_path}"{arguments}'
+    # QProcess applies Windows CRT escaping to arguments, but cmd.exe uses
+    # different quote rules. Passing embedded quotes here can leave literal
+    # backslashes in cmd.exe's command text (e.g. \\"C:\\path\\mvnw.cmd\\").
+    # Use a normalized unquoted path for ordinary paths; for paths containing
+    # spaces, resolve the short DOS path so cmd.exe can invoke it safely.
+    batch_path = os.path.normpath(os.path.abspath(batch_path))
+    if " " in batch_path:
+        import ctypes
+        get_short_path = ctypes.windll.kernel32.GetShortPathNameW
+        get_short_path.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint]
+        get_short_path.restype = ctypes.c_uint
+        buffer = ctypes.create_unicode_buffer(32768)
+        length = get_short_path(batch_path, buffer, len(buffer))
+        if length and length < len(buffer):
+            batch_path = buffer.value
+
+    return f"call {batch_path}{arguments}"
 
 
 URL_REGEX = re.compile(
