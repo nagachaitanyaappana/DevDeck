@@ -110,46 +110,46 @@ class ServiceMiniRow(QFrame):
         layout.addStretch()
 
         # Service Quick IDE / Terminal / Folder Shortcuts (sleek 24x24 buttons)
-        self.code_btn = QPushButton(ICO_CODE)
-        self.code_btn.setFixedSize(24, 24)
+        self.code_btn = QPushButton("Code")
+        self.code_btn.setVisible(False)
         self.code_btn.setToolTip(f"Open {name} in VS Code")
         self.code_btn.setObjectName("IconBtn")
         self.code_btn.clicked.connect(lambda: self.open_code_clicked.emit(self.service.get("path", "")))
         layout.addWidget(self.code_btn)
 
-        self.term_btn = QPushButton(ICO_TERMINAL)
-        self.term_btn.setFixedSize(24, 24)
+        self.term_btn = QPushButton("Terminal")
+        self.term_btn.setVisible(False)
         self.term_btn.setToolTip(f"Open {name} in Terminal")
         self.term_btn.setObjectName("IconBtn")
         self.term_btn.clicked.connect(lambda: self.open_terminal_clicked.emit(self.service.get("path", "")))
         layout.addWidget(self.term_btn)
 
-        self.folder_btn = QPushButton(ICO_FOLDER)
-        self.folder_btn.setFixedSize(24, 24)
+        self.folder_btn = QPushButton("Folder")
+        self.folder_btn.setVisible(False)
         self.folder_btn.setToolTip(f"Open {name} in File Manager")
         self.folder_btn.setObjectName("IconBtn")
         self.folder_btn.clicked.connect(lambda: self.open_folder_clicked.emit(self.service.get("path", "")))
         layout.addWidget(self.folder_btn)
 
         # Service Open URL button
-        self.url_btn = QPushButton(ICO_BROWSER)
-        self.url_btn.setFixedSize(24, 24)
+        self.url_btn = QPushButton("Open")
+        self.url_btn.setVisible(False)
         self.url_btn.setToolTip(f"Open {name} in Browser")
         self.url_btn.setObjectName("IconBtn")
         self.url_btn.clicked.connect(self._on_open_single_url)
         layout.addWidget(self.url_btn)
 
         # Service Logs button
-        self.logs_btn = QPushButton(ICO_LOGS)
-        self.logs_btn.setFixedSize(24, 24)
+        self.logs_btn = QPushButton("Logs")
+        self.logs_btn.setVisible(False)
         self.logs_btn.setToolTip(f"View logs for {name}")
         self.logs_btn.setObjectName("IconBtn")
         self.logs_btn.clicked.connect(lambda: self.logs_clicked.emit(self.service))
         layout.addWidget(self.logs_btn)
 
         # Service Restart button
-        self.restart_btn = QPushButton(ICO_RESTART)
-        self.restart_btn.setFixedSize(24, 24)
+        self.restart_btn = QPushButton("Restart")
+        self.restart_btn.setVisible(False)
         self.restart_btn.setToolTip(f"Restart {name}")
         self.restart_btn.setObjectName("IconBtn")
         self.restart_btn.clicked.connect(lambda: self.restart_clicked.emit(self.service))
@@ -316,16 +316,16 @@ class StackCard(QFrame):
         top_row.addWidget(self.overall_status_badge)
 
         # Edit button
-        self.edit_btn = QPushButton("⚙")
-        self.edit_btn.setFixedSize(24, 24)
+        self.edit_btn = QPushButton("Edit")
+        self.edit_btn.setMinimumHeight(28)
         self.edit_btn.setToolTip("Edit Stack Settings")
         self.edit_btn.setObjectName("IconBtn")
         self.edit_btn.clicked.connect(lambda: self.edit_stack_clicked.emit(self.stack))
         top_row.addWidget(self.edit_btn)
 
         # Delete button
-        self.close_btn = QPushButton(ICO_CLOSE)
-        self.close_btn.setFixedSize(24, 24)
+        self.close_btn = QPushButton("Remove")
+        self.close_btn.setMinimumHeight(28)
         self.close_btn.setToolTip("Remove Stack from Deck")
         self.close_btn.setObjectName("IconBtn")
         self.close_btn.clicked.connect(lambda: self.remove_stack_clicked.emit(self.stack["id"]))
@@ -365,14 +365,14 @@ class StackCard(QFrame):
         bot_row.addWidget(self.main_btn)
 
         # Restart Stack Button
-        self.restart_stack_btn = QPushButton(f"{ICO_RESTART} Restart")
+        self.restart_stack_btn = QPushButton("Restart")
         self.restart_stack_btn.setToolTip("Restart all services in this stack")
         self.restart_stack_btn.setObjectName("IconBtn")
         self.restart_stack_btn.clicked.connect(lambda: self.restart_stack_clicked.emit(self.stack))
         bot_row.addWidget(self.restart_stack_btn)
 
         # Open URLs Button
-        self.open_urls_btn = QPushButton(f"{ICO_BROWSER} Open URLs")
+        self.open_urls_btn = QPushButton("Open URLs")
         self.open_urls_btn.setEnabled(False)
         self.open_urls_btn.setObjectName("BrowserBtn")
         self.open_urls_btn.clicked.connect(self._on_open_urls)
@@ -382,12 +382,12 @@ class StackCard(QFrame):
 
         # Quick IDE / Terminal / Folder Shortcuts for Stack
         for btn, tip, handler, icon_name in [
-            (QPushButton(ICO_CODE), "Open Stack in VS Code", self._on_open_code, "code_btn"),
-            (QPushButton(ICO_TERMINAL), "Open Stack in Terminal", self._on_open_terminal, "term_btn"),
-            (QPushButton(ICO_FOLDER), "Open Stack in File Manager", self._on_open_folder, "folder_btn"),
+            (QPushButton("Code"), "Open Stack in VS Code", self._on_open_code, "code_btn"),
+            (QPushButton("Terminal"), "Open Stack in Terminal", self._on_open_terminal, "term_btn"),
+            (QPushButton("Folder"), "Open Stack in File Manager", self._on_open_folder, "folder_btn"),
         ]:
             setattr(self, icon_name, btn)
-            btn.setFixedSize(24, 24)
+            btn.setMinimumHeight(28)
             btn.setToolTip(tip)
             btn.setObjectName("IconBtn")
             btn.clicked.connect(handler)
@@ -461,10 +461,10 @@ class StackCard(QFrame):
             self.overall_status_badge.setText("Stopped")
 
         if running > 0 or starting > 0:
-            self.main_btn.setText(f"{ICO_STOP} Stop Stack")
+            self.main_btn.setText("Stop stack")
             self.main_btn.setObjectName("StopBtn")
         else:
-            self.main_btn.setText(f"{ICO_START} Start Stack ({total})")
+            self.main_btn.setText(f"Start stack ({total})")
             self.main_btn.setObjectName("StartBtn")
         self.main_btn.style().unpolish(self.main_btn)
         self.main_btn.style().polish(self.main_btn)
