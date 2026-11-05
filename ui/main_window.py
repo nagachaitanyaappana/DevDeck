@@ -228,6 +228,7 @@ class MainWindow(QMainWindow):
         self.search_input.setClearButtonEnabled(True)
         self.search_input.textChanged.connect(self._on_search_changed)
         side.addWidget(self.search_input)
+        self.search_input.hide()
 
         nav_scroll = QScrollArea()
         nav_scroll.setWidgetResizable(True)
@@ -299,6 +300,7 @@ class MainWindow(QMainWindow):
         overview_layout.addWidget(self.ports_badge)
         side.addWidget(overview)
         self.sidebar_overview = overview
+        overview.hide()
 
         # Actions are grouped and labelled; no tiny mystery buttons.
         add_project = QPushButton("Add project")
@@ -307,6 +309,7 @@ class MainWindow(QMainWindow):
         add_project.clicked.connect(self._open_add_dialog)
         side.addWidget(add_project)
         self.sidebar_add_project = add_project
+        add_project.hide()
 
         new_stack = QPushButton("Create stack")
         new_stack.setObjectName("SecondaryBtn")
@@ -314,6 +317,7 @@ class MainWindow(QMainWindow):
         new_stack.clicked.connect(self._open_new_stack_dialog)
         side.addWidget(new_stack)
         self.sidebar_new_stack = new_stack
+        new_stack.hide()
 
         self.stop_all_btn = QPushButton("Stop all services")
         self.stop_all_btn.setObjectName("StopBtn")
@@ -321,6 +325,7 @@ class MainWindow(QMainWindow):
         self.stop_all_btn.setToolTip("Stop every running server DevDeck manages")
         self.stop_all_btn.clicked.connect(self._stop_all)
         side.addWidget(self.stop_all_btn)
+        self.stop_all_btn.hide()
 
         utility_row = QHBoxLayout()
         utility_row.setSpacing(8)
@@ -349,24 +354,75 @@ class MainWindow(QMainWindow):
         header = QFrame()
         header.setObjectName("WorkspaceHeader")
         header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(4, 2, 4, 8)
+        header_layout.setContentsMargins(2, 0, 2, 0)
         header_layout.setSpacing(12)
-        heading_box = QVBoxLayout()
-        heading_box.setSpacing(3)
-        self.page_title = QLabel("Your workspace")
-        self.page_title.setObjectName("PageTitle")
-        page_subtitle = QLabel("Manage local projects and the services that power them.")
-        page_subtitle.setObjectName("PageSubtitle")
-        heading_box.addWidget(self.page_title)
-        heading_box.addWidget(page_subtitle)
-        header_layout.addLayout(heading_box, 1)
 
-        self.header_add_btn = QPushButton("＋  Add project")
+        self.workspace_search = QLineEdit()
+        self.workspace_search.setObjectName("WorkspaceSearch")
+        self.workspace_search.setPlaceholderText("⌕  Search projects...")
+        self.workspace_search.setClearButtonEnabled(True)
+        self.workspace_search.textChanged.connect(self._on_search_changed)
+        header_layout.addWidget(self.workspace_search, 1)
+
+        self.header_add_btn = QPushButton("＋  Add Project")
         self.header_add_btn.setObjectName("PrimaryBtn")
-        self.header_add_btn.setMinimumHeight(38)
+        self.header_add_btn.setMinimumHeight(42)
         self.header_add_btn.clicked.connect(self._open_add_dialog)
         header_layout.addWidget(self.header_add_btn)
+
+        refresh_btn = QPushButton("↻")
+        refresh_btn.setObjectName("UtilityBtn")
+        refresh_btn.setFixedSize(42, 42)
+        refresh_btn.setToolTip("Refresh project status")
+        refresh_btn.clicked.connect(self._sync_all_statuses)
+        header_layout.addWidget(refresh_btn)
+
         right_layout.addWidget(header)
+
+        # Dashboard overview cards, matching the visual hierarchy of the reference.
+        stats_row = QHBoxLayout()
+        stats_row.setSpacing(12)
+        self.dashboard_stats = []
+        for title, accent in (("Total Projects", "blue"), ("Running", "green"), ("Favorites", "amber"), ("Stacks", "blue")):
+            tile = QFrame()
+            tile.setObjectName("DashboardStat")
+            tile.setProperty("accent", accent)
+            tile_layout = QHBoxLayout(tile)
+            tile_layout.setContentsMargins(16, 12, 16, 12)
+            tile_layout.setSpacing(12)
+            symbol = QLabel({"Total Projects":"▰", "Running":"▶", "Favorites":"★", "Stacks":"▱"}[title])
+            symbol.setObjectName("DashboardStatIcon")
+            symbol.setProperty("accent", accent)
+            symbol.setFixedWidth(34)
+            tile_layout.addWidget(symbol)
+            copy = QVBoxLayout()
+            copy.setSpacing(1)
+            value = QLabel("0")
+            value.setObjectName("DashboardStatValue")
+            label = QLabel(title)
+            label.setObjectName("DashboardStatLabel")
+            copy.addWidget(value)
+            copy.addWidget(label)
+            tile_layout.addLayout(copy, 1)
+            stats_row.addWidget(tile, 1)
+            self.dashboard_stats.append((value, title))
+        right_layout.addLayout(stats_row)
+
+        # Quick filters live above the project grid, rather than in a separate toolbar.
+        filters_row = QHBoxLayout()
+        filters_row.setSpacing(8)
+        filters_row.addWidget(QLabel("Your Projects"))
+        filters_row.addStretch(1)
+        self.filter_chips = {}
+        for filter_id, label in [("All", "All"), ("Java / Spring", "Spring"), ("Java / Spring", "Java"), ("Python", "Python"), ("Node / Web", "Web")]:
+            chip = QPushButton(label)
+            chip.setObjectName("FilterChip")
+            chip.setCheckable(True)
+            chip.setChecked(filter_id == "All" and label == "All")
+            chip.clicked.connect(lambda checked, name=filter_id: self._set_filter(name))
+            filters_row.addWidget(chip)
+            self.filter_chips[label] = chip
+        right_layout.addLayout(filters_row)
 
         self.splitter = QSplitter(Qt.Orientation.Vertical)
         self.splitter.setHandleWidth(5)
@@ -386,7 +442,7 @@ class MainWindow(QMainWindow):
         self.cards_layout.setColumnStretch(0, 1)
         self.cards_layout.setColumnStretch(1, 1)
         self.cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self._grid_cols = 2
+        self._grid_cols = 3
 
         self.stacks_header = SectionHeaderWidget("Stacks")
         self.projects_header = SectionHeaderWidget("Projects")
@@ -439,9 +495,10 @@ class MainWindow(QMainWindow):
         self.splitter.addWidget(self.log_viewer)
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
-        self._prev_splitter_sizes = [720, 0]
-        self.splitter.setSizes([720, 0])
-        self._logs_open = False
+        self._prev_splitter_sizes = [560, 260]
+        self.splitter.setSizes([560, 260])
+        self._logs_open = True
+        self.log_viewer.setMinimumHeight(150)
         right_layout.addWidget(self.splitter, 1)
         root.addWidget(right, 1)
 
@@ -1023,6 +1080,9 @@ class MainWindow(QMainWindow):
 
     def _set_filter(self, filter_name: str):
         self.active_filter = filter_name
+        if hasattr(self, "filter_chips"):
+            for label, chip in self.filter_chips.items():
+                chip.setChecked((label == "All" and filter_name == "All") or (label in ("Spring", "Java") and filter_name == "Java / Spring") or (label == "Python" and filter_name == "Python") or (label == "Web" and filter_name == "Node / Web"))
         for name, item in self.filter_buttons.items():
             is_active = (name == filter_name)
             item.setChecked(is_active)
@@ -1038,6 +1098,14 @@ class MainWindow(QMainWindow):
 
     def _on_search_changed(self, text: str):
         self.search_query = text.strip().lower()
+        if hasattr(self, "workspace_search") and self.workspace_search.text() != text:
+            self.workspace_search.blockSignals(True)
+            self.workspace_search.setText(text)
+            self.workspace_search.blockSignals(False)
+        if hasattr(self, "search_input") and self.search_input.text() != text:
+            self.search_input.blockSignals(True)
+            self.search_input.setText(text)
+            self.search_input.blockSignals(False)
         self._apply_filters()
 
     def _apply_filters(self):
@@ -1117,7 +1185,7 @@ class MainWindow(QMainWindow):
         # Column count adapts to the available width. Two columns have a
         # hard minimum (~700px); below that they force the grid wider than
         # the viewport and clip every card, so drop to one.
-        cols = 2 if self.scroll_area.viewport().width() >= 720 else 1
+        cols = 3 if self.scroll_area.viewport().width() >= 1120 else (2 if self.scroll_area.viewport().width() >= 650 else 1)
         row = 0
         # Park the unused column so it contributes no minimum width.
         self.cards_layout.setColumnStretch(1, 1 if cols == 2 else 0)
@@ -1155,7 +1223,7 @@ class MainWindow(QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         # Re-flow when the width crosses the 1/2 column threshold.
-        cols = 2 if self.scroll_area.viewport().width() >= 720 else 1
+        cols = 3 if self.scroll_area.viewport().width() >= 1120 else (2 if self.scroll_area.viewport().width() >= 650 else 1)
         if cols != getattr(self, "_grid_cols", None):
             self._grid_cols = cols
             self._apply_filters()
@@ -1284,6 +1352,11 @@ class MainWindow(QMainWindow):
         self.total_badge.val_label.setText(str(total))
         self.running_badge.val_label.setText(str(running))
         self.ports_badge.val_label.setText(str(ports))
+
+        if hasattr(self, "dashboard_stats"):
+            values = {"Total Projects": total, "Running": running, "Favorites": len(fav_ids) if "fav_ids" in locals() else sum(1 for p in self.config.get_projects().values() if p.get("favorite")), "Stacks": len(self.stack_cards)}
+            for value_label, title in self.dashboard_stats:
+                value_label.setText(str(values.get(title, 0)))
 
         # Sidebar counts. These are live totals, unaffected by the active
         # filter, so the badge numbers stay stable while browsing.
