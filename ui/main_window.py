@@ -820,6 +820,12 @@ class MainWindow(QMainWindow):
 
     def _view_logs(self, project: dict):
         p_id = project["id"]
+        # Highlight the project whose output is currently shown in the console.
+        for card_id, card in self.cards.items():
+            card.setProperty("selected", card_id == p_id)
+            card.style().unpolish(card)
+            card.style().polish(card)
+            card.update()
         # Ensure log viewer is visible
         sizes = self.splitter.sizes()
         if sizes[1] < 50:
