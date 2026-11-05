@@ -6,6 +6,7 @@ Auto-detects runnable projects, frameworks, ports, and default scripts.
 import os
 import json
 import re
+import sys
 from typing import List, Dict, Any
 from .config_manager import generate_project_id
 
@@ -138,7 +139,12 @@ class ProjectScanner:
         # 2. Check Gradle
         has_gradle = "build.gradle" in entries or "build.gradle.kts" in entries
         if has_gradle:
-            gradle_cmd = "./gradlew" if "./gradlew" in entries or "gradlew" in entries else "gradle"
+            if sys.platform == "win32" and "gradlew.bat" in entries:
+                gradle_cmd = "gradlew.bat"
+            elif "gradlew" in entries:
+                gradle_cmd = "./gradlew"
+            else:
+                gradle_cmd = "gradle"
             cmd = f"{gradle_cmd} bootRun"
             # Read build.gradle to see if spring boot or standard application
             is_spring = False
@@ -173,7 +179,12 @@ class ProjectScanner:
 
         # 3. Check Maven
         if "pom.xml" in entries:
-            mvn_cmd = "./mvnw" if "mvnw" in entries else "mvn"
+            if sys.platform == "win32" and "mvnw.cmd" in entries:
+                mvn_cmd = "mvnw.cmd"
+            elif "mvnw" in entries:
+                mvn_cmd = "./mvnw"
+            else:
+                mvn_cmd = "mvn"
             cmd = f"{mvn_cmd} spring-boot:run"
             projects.append({
                 "id": generate_project_id(path, f"{display_name}-maven"),
