@@ -387,4 +387,15 @@ class ProjectCard(QFrame):
         remove_act.triggered.connect(lambda: self.remove_clicked.emit(self.project["id"]))
         menu.addAction(remove_act)
 
+        menu.addSeparator()
+        code_act = QAction("Open in VS Code", self)
+        code_act.triggered.connect(lambda: self.open_code_clicked.emit(self.project["path"]))
+        menu.addAction(code_act)
+        terminal_act = QAction("Open in Terminal", self)
+        terminal_act.triggered.connect(lambda: self.open_terminal_clicked.emit(self.project["path"]))
+        menu.addAction(terminal_act)
+        folder_act = QAction("Open project folder", self)
+        folder_act.triggered.connect(lambda: self.open_folder_clicked.emit(self.project["path"]))
+        menu.addAction(folder_act)
+
         menu.exec(QCursor.pos())
