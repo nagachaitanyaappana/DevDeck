@@ -401,7 +401,7 @@ class StackCard(QFrame):
             (QPushButton("Folder"), "Open Stack in File Manager", self._on_open_folder, "folder_btn"),
         ]:
             setattr(self, icon_name, btn)
-            btn.setMinimumHeight(28)
+            btn.setVisible(False)
             btn.setToolTip(tip)
             btn.setObjectName("IconBtn")
             btn.clicked.connect(handler)
