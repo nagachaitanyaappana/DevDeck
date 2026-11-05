@@ -85,6 +85,7 @@ class NavItem(QPushButton):
 
         self.icon_lbl = QLabel(icon_str)
         self.icon_lbl.setObjectName("NavIcon")
+        self.icon_lbl.setVisible(bool(icon_str))
         layout.addWidget(self.icon_lbl)
 
         self.title_lbl = QLabel(label)
