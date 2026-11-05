@@ -107,14 +107,19 @@ class NavItem(QPushButton):
     def set_compact(self, compact: bool):
         """Switch between labelled navigation and a narrow, accessible rail."""
         self._compact = compact
-        short_labels = {
-            "All": "⌂", "Stacks": "▦", "Running": "▶",
-            "Favorites": "★", "Node / Web": "N",
-            "Java / Spring": "J", "Python": "Py",
+        compact_labels = {
+            "All": "ALL", "Stacks": "STK", "Running": "RUN",
+            "Favorites": "FAV", "Node / Web": "WEB",
+            "Java / Spring": "JAVA", "Python": "PY",
         }
         self.title_lbl.setVisible(not compact)
-        self.icon_lbl.setText(short_labels.get(self.filter_id, self.icon_str))
+        self.icon_lbl.setText(compact_labels.get(self.filter_id, self.label_text[:4].upper()))
         self.icon_lbl.setVisible(compact)
+        self.icon_lbl.setFixedSize(54, 25) if compact else self.icon_lbl.setFixedSize(0, 0)
+        self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.icon_lbl.setProperty("compact", "true" if compact else "false")
+        self.icon_lbl.style().unpolish(self.icon_lbl)
+        self.icon_lbl.style().polish(self.icon_lbl)
         self.count_badge.setVisible(not compact and self.count > 0)
         self.setToolTip(self.label_text if compact else "")
         self.layout().setContentsMargins(0 if compact else 8, 0, 0 if compact else 8, 0)
@@ -456,8 +461,8 @@ class MainWindow(QMainWindow):
         self.sidebar_add_project.setVisible(not compact)
         self.sidebar_new_stack.setVisible(not compact)
         self.stop_all_btn.setVisible(not compact)
-        self.toggle_logs_btn.setText("☰" if compact else "Console")
-        self.theme_toggle_btn.setText("◐" if compact else ("Light theme" if self.theme == "dark" else "Dark theme"))
+        self.toggle_logs_btn.setText("LOG" if compact else "Console")
+        self.theme_toggle_btn.setText("MODE" if compact else ("Light theme" if self.theme == "dark" else "Dark theme"))
         self.toggle_logs_btn.setToolTip("Toggle console logs (Ctrl+L)" if compact else "")
         self.theme_toggle_btn.setToolTip("Switch theme" if compact else "")
         for item in self.filter_buttons.values():
