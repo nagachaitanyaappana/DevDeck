@@ -167,6 +167,14 @@ def _build(t: dict) -> str:
             color=t["primary"],
             font_weight="700"))
     a(_rule("QLabel#NavIcon", font_size="13px", color=t["text_faint"]))
+    a(_rule('QLabel#NavIcon[compact="true"]',
+            background_color=t["bg_inset"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="7px",
+            color=t["text_dim"],
+            font_size="10px",
+            font_weight="800",
+            padding="0px"))
     a(_rule("QLabel#NavTitle", font_size="12px", color=t["text_dim"]))
     a(_rule('QPushButton#NavItem[checked="true"] QLabel#NavTitle',
             color=t["primary"], font_weight="700"))
