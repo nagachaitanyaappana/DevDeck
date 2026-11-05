@@ -302,7 +302,7 @@ class MainWindow(QMainWindow):
         self.theme_toggle_btn.clicked.connect(self._toggle_theme)
         utility_row.addWidget(self.theme_toggle_btn, 1)
         side.addLayout(utility_row)
-        root.addWidget(side)
+        root.addWidget(sidebar)
 
         # Main workspace
         right = QWidget()
