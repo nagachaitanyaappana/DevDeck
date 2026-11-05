@@ -37,6 +37,11 @@ class ElidedLabel(QLabel):
         h = super().minimumSizeHint().height()
         return QSize(40, max(h, 16))
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.project_selected.emit(self.project)
+        super().mousePressEvent(event)
+
     def paintEvent(self, event):
         painter = QPainter(self)
         fm = self.fontMetrics()
@@ -57,6 +62,7 @@ class ProjectCard(QFrame):
     remove_clicked = pyqtSignal(str)
     port_changed = pyqtSignal(dict, int)
     kill_port_requested = pyqtSignal(int)
+    project_selected = pyqtSignal(dict)
 
     def __init__(self, project: dict, parent=None):
         super().__init__(parent)
@@ -64,6 +70,7 @@ class ProjectCard(QFrame):
         self.status = "stopped"
         self.detected_url = self.project.get("url", "")
         self.setObjectName("ProjectCard")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._init_ui()
 
