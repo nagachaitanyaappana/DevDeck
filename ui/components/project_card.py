@@ -126,26 +126,26 @@ class ProjectCard(QFrame):
 
         # Favorite Star Button
         is_fav = self.project.get("favorite", False)
-        self.fav_btn = QPushButton(ICO_FAV_ON if is_fav else ICO_FAV_OFF)
+        self.fav_btn = QPushButton("Favorited" if is_fav else "Favorite")
         self.fav_btn.setToolTip("Remove from Favorites" if is_fav else "Pin to Favorites")
         self.fav_btn.setProperty("fav", "on" if is_fav else "off")
-        self.fav_btn.setFixedSize(24, 24)
+        self.fav_btn.setMinimumHeight(28)
         self.fav_btn.setObjectName("IconBtn")
         self.fav_btn.clicked.connect(self._toggle_favorite)
         top_row.addWidget(self.fav_btn)
 
         # More Options Menu Button
-        self.more_btn = QPushButton(ICO_MORE)
+        self.more_btn = QPushButton("More")
         self.more_btn.setToolTip("More Options")
-        self.more_btn.setFixedSize(24, 24)
+        self.more_btn.setMinimumHeight(28)
         self.more_btn.setObjectName("IconBtn")
         self.more_btn.clicked.connect(self._show_context_menu)
         top_row.addWidget(self.more_btn)
 
         # Close button
-        self.close_btn = QPushButton(ICO_CLOSE)
+        self.close_btn = QPushButton("Remove")
         self.close_btn.setToolTip("Remove from Deck")
-        self.close_btn.setFixedSize(24, 24)
+        self.close_btn.setVisible(False)
         self.close_btn.setObjectName("IconBtn")
         self.close_btn.clicked.connect(lambda: self.remove_clicked.emit(self.project["id"]))
         top_row.addWidget(self.close_btn)
@@ -222,12 +222,12 @@ class ProjectCard(QFrame):
 
         # 4. Quick IDE / Terminal / Folder Shortcuts
         for btn, tip, handler, icon_name in [
-            (QPushButton(ICO_CODE), "Open in VS Code", lambda: self.open_code_clicked.emit(self.project["path"]), "code_btn"),
-            (QPushButton(ICO_TERMINAL), "Open in Terminal", lambda: self.open_terminal_clicked.emit(self.project["path"]), "term_btn"),
-            (QPushButton(ICO_FOLDER), "Open in File Manager", lambda: self.open_folder_clicked.emit(self.project["path"]), "folder_btn"),
+            (QPushButton("Code"), "Open in VS Code", lambda: self.open_code_clicked.emit(self.project["path"]), "code_btn"),
+            (QPushButton("Terminal"), "Open in Terminal", lambda: self.open_terminal_clicked.emit(self.project["path"]), "term_btn"),
+            (QPushButton("Folder"), "Open in File Manager", lambda: self.open_folder_clicked.emit(self.project["path"]), "folder_btn"),
         ]:
             setattr(self, icon_name, btn)
-            btn.setFixedSize(24, 24)
+            btn.setMinimumHeight(28)
             btn.setToolTip(tip)
             btn.setObjectName("IconBtn")
             btn.clicked.connect(handler)
@@ -252,7 +252,7 @@ class ProjectCard(QFrame):
             self._update_browser_button()
         elif status == "starting":
             self.status_badge.setText("Starting…")
-            self.main_btn.setText(f"{ICO_STOP} Stop")
+            self.main_btn.setText("Stop")
             self.main_btn.setObjectName("StopBtn")
         elif status == "error":
             self.status_badge.setText("Error")
@@ -261,7 +261,7 @@ class ProjectCard(QFrame):
             self.metrics_label.setVisible(False)
         else:
             self.status_badge.setText("Stopped")
-            self.main_btn.setText(f"{ICO_START} Start")
+            self.main_btn.setText("Start")
             self.main_btn.setObjectName("StartBtn")
             self.metrics_label.setVisible(False)
 
@@ -292,11 +292,11 @@ class ProjectCard(QFrame):
                 display = url.replace("http://", "").replace("https://", "").rstrip("/")
                 if len(display) > 10:
                     display = display[:8] + "…"
-            self.browser_btn.setText(f"{ICO_BROWSER} {display}")
+            self.browser_btn.setText("Open " + display)
             self.browser_btn.setEnabled(True)
             self.browser_btn.setToolTip(f"Open {url} in Browser")
         else:
-            self.browser_btn.setText(f"{ICO_BROWSER} URL")
+            self.browser_btn.setText("Open URL")
             self.browser_btn.setEnabled(False)
             self.browser_btn.setToolTip("No active URL detected")
 
@@ -335,7 +335,7 @@ class ProjectCard(QFrame):
     def _sync_favorite_button(self):
         """Refresh the star to match the persisted favorite flag."""
         fav = bool(self.project.get("favorite", False))
-        self.fav_btn.setText(ICO_FAV_ON if fav else ICO_FAV_OFF)
+        self.fav_btn.setText("Favorited" if fav else "Favorite")
         self.fav_btn.setProperty("fav", "on" if fav else "off")
         self.fav_btn.setToolTip("Remove from Favorites" if fav else "Pin to Favorites")
         self.fav_btn.style().unpolish(self.fav_btn)
@@ -352,14 +352,14 @@ class ProjectCard(QFrame):
         menu = QMenu(self)
         # Start / Stop Action
         if self.status in ["running", "starting"]:
-            start_stop_act = QAction(f"{ICO_STOP}  Stop Process", self)
+            start_stop_act = QAction("Stop Process", self)
             start_stop_act.triggered.connect(lambda: self.stop_clicked.emit(self.project["id"]))
         else:
-            start_stop_act = QAction(f"{ICO_START}  Start Process", self)
+            start_stop_act = QAction("Start Process", self)
             start_stop_act.triggered.connect(lambda: self.start_clicked.emit(self.project))
         menu.addAction(start_stop_act)
 
-        restart_act = QAction(f"{ICO_RESTART}  Restart Process", self)
+        restart_act = QAction("Restart Process", self)
         restart_act.triggered.connect(lambda: self.restart_clicked.emit(self.project))
         menu.addAction(restart_act)
 
