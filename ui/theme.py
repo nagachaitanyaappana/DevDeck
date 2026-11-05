@@ -16,63 +16,27 @@ drift apart and every emitted declaration is valid.
 
 # ── Design tokens ────────────────────────────────────────────────────────────
 LIGHT = {
-    "bg_app":        "#f4f6f8",
-    "bg_panel":      "#ffffff",
-    "bg_sidebar":    "#eef1f5",
-    "bg_inset":      "#e9edf2",
-    "bg_hover":      "#e5ebf3",
-    "bg_active":     "#dbe7f5",
-    "bg_running":    "#eaf6ef",
-    "border":        "#dce2e9",
-    "border_strong": "#9bb6d4",
-    "primary":       "#2563a6",
-    "primary_hover": "#1d4f85",
-    "primary_soft":  "#e4edf7",
-    "on_primary":    "#ffffff",
-    "text":          "#17212b",
-    "text_dim":      "#465463",
-    "text_faint":    "#687786",
-    "green":         "#218653",
-    "green_soft":    "#dff3e7",
-    "red":           "#b54747",
-    "red_soft":      "#fbe7e7",
-    "amber":         "#93651c",
-    "amber_soft":    "#f8efd8",
-    "star":          "#a87920",
-    "log_bg":        "#111820",
-    "log_border":    "#2c3742",
-    "log_text":      "#e2e8ee",
-    "log_muted":     "#a6b3c0",
+    "bg_app": "#f5f6f8", "bg_panel": "#ffffff", "bg_sidebar": "#f0f2f5",
+    "bg_inset": "#f3f5f7", "bg_hover": "#e9edf2", "bg_active": "#e4ebf4",
+    "bg_running": "#edf7f0", "border": "#e1e5ea", "border_strong": "#cbd3dc",
+    "primary": "#356da8", "primary_hover": "#285987", "primary_soft": "#eaf1f8",
+    "on_primary": "#ffffff", "text": "#202833", "text_dim": "#536171",
+    "text_faint": "#7b8794", "green": "#268653", "green_soft": "#e7f4eb",
+    "red": "#b84b4b", "red_soft": "#faeaea", "amber": "#94691f",
+    "amber_soft": "#f8f0df", "star": "#a87920", "log_bg": "#171d25",
+    "log_border": "#303a46", "log_text": "#e5eaf0", "log_muted": "#a6b1bd",
 }
 
 DARK = {
-    "bg_app":        "#151a20",
-    "bg_panel":      "#202832",
-    "bg_sidebar":    "#1b222b",
-    "bg_inset":      "#29333e",
-    "bg_hover":      "#303d49",
-    "bg_active":     "#354b60",
-    "bg_running":    "#183326",
-    "border":        "#35414d",
-    "border_strong": "#52677b",
-    "primary":       "#79a9d8",
-    "primary_hover": "#9ac0e6",
-    "primary_soft":  "#263b50",
-    "on_primary":    "#101923",
-    "text":          "#e8edf2",
-    "text_dim":      "#b9c5d0",
-    "text_faint":    "#96a5b3",
-    "green":         "#65c98d",
-    "green_soft":    "#1b3a2a",
-    "red":           "#e58a8a",
-    "red_soft":      "#402626",
-    "amber":         "#e4b85d",
-    "amber_soft":    "#40351f",
-    "star":          "#e4c76b",
-    "log_bg":        "#10151b",
-    "log_border":    "#2a3540",
-    "log_text":      "#dce4eb",
-    "log_muted":     "#9aa9b8",
+    "bg_app": "#171b21", "bg_panel": "#20262e", "bg_sidebar": "#1c222a",
+    "bg_inset": "#252d37", "bg_hover": "#2c3642", "bg_active": "#304154",
+    "bg_running": "#1d3329", "border": "#303944", "border_strong": "#465362",
+    "primary": "#83add6", "primary_hover": "#a4c5e5", "primary_soft": "#293b4d",
+    "on_primary": "#111923", "text": "#edf1f5", "text_dim": "#c0cad4",
+    "text_faint": "#8f9ba8", "green": "#71c995", "green_soft": "#203d2e",
+    "red": "#e28c8c", "red_soft": "#432b2b", "amber": "#e2bd72",
+    "amber_soft": "#403722", "star": "#e2c477", "log_bg": "#11161c",
+    "log_border": "#2b3540", "log_text": "#e5eaf0", "log_muted": "#a3afbb",
 }
 
 
@@ -113,6 +77,22 @@ def _build(t: dict) -> str:
     a(_rule("QScrollArea#NavScroll", background="transparent", border="none"))
     a(_rule("QScrollArea#CardsScroll", background="transparent", border="none"))
     a(_rule("QWidget#CardsContainer", background="transparent"))
+
+    a(_rule("QFrame#WorkspaceHeader", background="transparent", border="none"))
+    a(_rule("QLabel#PageTitle", font_size="25px", font_weight="750", color=t["text"]))
+    a(_rule("QLabel#PageSubtitle", font_size="12px", color=t["text_faint"]))
+    a(_rule("QPushButton#SecondaryBtn",
+            background_color=t["bg_panel"], color=t["text_dim"],
+            border=f"1px solid {t['border']}", border_radius="8px",
+            padding="8px 13px", font_size="12px", font_weight="600"))
+    a(_rule("QPushButton#SecondaryBtn:hover",
+            background_color=t["bg_hover"], border_color=t["border_strong"], color=t["text"]))
+    a(_rule("QPushButton#UtilityBtn",
+            background_color="transparent", color=t["text_dim"],
+            border=f"1px solid {t['border']}", border_radius="8px",
+            padding="6px 8px", font_size="11px", font_weight="600"))
+    a(_rule("QPushButton#UtilityBtn:hover",
+            background_color=t["bg_hover"], color=t["text"], border_color=t["border_strong"]))
 
     # ── Brand ──────────────────────────────────────────────────────────────
     a(_rule("QLabel#HeroTitle", font_size="19px", font_weight="800", color=t["primary"]))
