@@ -313,6 +313,40 @@ def _build(t: dict) -> str:
     a(_rule("QLabel#EmptyTitle", font_size="16px", font_weight="700", color=t["text"]))
     a(_rule("QLabel#EmptySubtitle", font_size="12px", font_weight="500", color=t["text_faint"]))
 
+    # ── Reference dashboard header, overview and filter chips ─────────────
+    a(_rule("QLineEdit#WorkspaceSearch",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="12px",
+            padding="10px 15px",
+            color=t["text"],
+            font_size="13px",
+            min_height="24px"))
+    a(_rule("QFrame#DashboardStat",
+            background_color=t["bg_panel"],
+            border=f"1px solid {t['border']}",
+            border_radius="14px",
+            min_height="68px"))
+    a(_rule("QLabel#DashboardStatIcon", font_size="25px", font_weight="700", background="transparent"))
+    a(_rule('QLabel#DashboardStatIcon[accent="blue"]', color=t["primary"]))
+    a(_rule('QLabel#DashboardStatIcon[accent="green"]', color=t["green"]))
+    a(_rule('QLabel#DashboardStatIcon[accent="amber"]', color=t["amber"]))
+    a(_rule("QLabel#DashboardStatValue", font_size="21px", font_weight="800", color=t["text"], background="transparent"))
+    a(_rule("QLabel#DashboardStatLabel", font_size="11px", font_weight="500", color=t["text_dim"], background="transparent"))
+    a(_rule("QPushButton#FilterChip",
+            background_color=t["bg_panel"],
+            color=t["text_dim"],
+            border=f"1px solid {t['border_strong']}",
+            border_radius="16px",
+            padding="7px 14px",
+            font_size="11px",
+            font_weight="600"))
+    a(_rule("QPushButton#FilterChip:checked",
+            background_color=t["primary"],
+            color=t["on_primary"],
+            border_color=t["primary"]))
+    a(_rule("QPushButton#FilterChip:hover", border_color=t["primary"]))
+
     # ── Cards ──────────────────────────────────────────────────────────────
     for card in ("QFrame#ProjectCard", "QFrame#StackCard"):
         a(_rule(card,
