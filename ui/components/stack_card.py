@@ -222,6 +222,20 @@ class ServiceMiniRow(QFrame):
         act_logs.triggered.connect(lambda: self.logs_clicked.emit(self.service))
         menu.addAction(act_logs)
 
+        menu.addSeparator()
+        code_act = QAction("Open in VS Code", self)
+        code_act.triggered.connect(lambda: self.open_code_clicked.emit(self.service.get("path", "")))
+        menu.addAction(code_act)
+        terminal_act = QAction("Open in Terminal", self)
+        terminal_act.triggered.connect(lambda: self.open_terminal_clicked.emit(self.service.get("path", "")))
+        menu.addAction(terminal_act)
+        folder_act = QAction("Open service folder", self)
+        folder_act.triggered.connect(lambda: self.open_folder_clicked.emit(self.service.get("path", "")))
+        menu.addAction(folder_act)
+        browser_act = QAction("Open in browser", self)
+        browser_act.triggered.connect(self._on_open_single_url)
+        menu.addAction(browser_act)
+
         menu.exec(event.globalPos())
 
     def set_status(self, status: str):
@@ -359,7 +373,7 @@ class StackCard(QFrame):
         bot_row.setSpacing(6)
 
         # Start / Stop All Button
-        self.main_btn = QPushButton(f"{ICO_START} Start Stack ({len(self.stack.get('services', []))})")
+        self.main_btn = QPushButton("Start stack")
         self.main_btn.setObjectName("StartBtn")
         self.main_btn.clicked.connect(self._on_toggle_stack)
         bot_row.addWidget(self.main_btn)
