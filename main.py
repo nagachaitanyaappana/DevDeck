@@ -7,6 +7,7 @@ Entry point for launching and managing local developer projects.
 import sys
 import os
 import signal
+import hashlib
 
 # Add project root to sys.path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -14,6 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt
+from PyQt6.QtNetwork import QLocalServer, QLocalSocket
 
 from core.config_manager import ConfigManager
 from core.process_manager import ProcessManager
@@ -37,6 +39,26 @@ def main():
 
     app = QApplication(sys.argv)
     app.setApplicationName("DevDeck")
+
+    # Keep one GUI instance per Windows user. A second launch asks the
+    # existing instance (including one minimized to the tray) to foreground.
+    user_key = hashlib.sha256(os.path.expanduser("~").casefold().encode("utf-8")).hexdigest()[:12]
+    server_name = f"DevDeck-{user_key}"
+    probe = QLocalSocket()
+    probe.connectToServer(server_name)
+    if probe.waitForConnected(500):
+        probe.write(b"activate")
+        probe.flush()
+        probe.waitForBytesWritten(500)
+        probe.disconnectFromServer()
+        return 0
+
+    # Remove a stale local-server endpoint only after no instance accepted
+    # the connection.
+    QLocalServer.removeServer(server_name)
+    instance_server = QLocalServer()
+    if not instance_server.listen(server_name):
+        print(f"[DevDeck] Single-instance listener unavailable: {instance_server.errorString()}")
     app.setApplicationDisplayName("DevDeck")
     app.setDesktopFileName("devdeck.desktop")
     app.setQuitOnLastWindowClosed(False)
@@ -61,6 +83,18 @@ def main():
     # Create and Show Main Window
     window = MainWindow(config_mgr, process_mgr, app_icon)
     window.show()
+
+    def activate_existing_instance():
+        while instance_server.hasPendingConnections():
+            connection = instance_server.nextPendingConnection()
+            if connection:
+                connection.waitForReadyRead(250)
+                if b"activate" in bytes(connection.readAll()):
+                    window._show_window()
+                connection.disconnectFromServer()
+                connection.deleteLater()
+
+    instance_server.newConnection.connect(activate_existing_instance)
 
     sys.exit(app.exec())
 
