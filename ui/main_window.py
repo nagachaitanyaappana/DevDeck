@@ -102,8 +102,23 @@ class NavItem(QPushButton):
     def set_count(self, count: int):
         self.count = count
         self.count_badge.setText(str(count))
-        # A zero count is noise — hide the badge so the row stays aligned.
-        self.count_badge.setVisible(count > 0)
+        self.count_badge.setVisible(count > 0 and not getattr(self, "_compact", False))
+
+    def set_compact(self, compact: bool):
+        """Switch between labelled navigation and a narrow, accessible rail."""
+        self._compact = compact
+        short_labels = {
+            "All": "⌂", "Stacks": "▦", "Running": "▶",
+            "Favorites": "★", "Node / Web": "N",
+            "Java / Spring": "J", "Python": "Py",
+        }
+        self.title_lbl.setVisible(not compact)
+        self.icon_lbl.setText(short_labels.get(self.filter_id, self.icon_str))
+        self.icon_lbl.setVisible(compact)
+        self.count_badge.setVisible(not compact and self.count > 0)
+        self.setToolTip(self.label_text if compact else "")
+        self.layout().setContentsMargins(0 if compact else 8, 0, 0 if compact else 8, 0)
+        self.layout().setAlignment(Qt.AlignmentFlag.AlignCenter if compact else Qt.AlignmentFlag.AlignLeft)
 
 
 class MainWindow(QMainWindow):
@@ -170,6 +185,7 @@ class MainWindow(QMainWindow):
         sidebar.setObjectName("HeroPanel")
         sidebar.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         sidebar.setFixedWidth(250)
+        self.sidebar = sidebar
         side = QVBoxLayout(sidebar)
         side.setContentsMargins(16, 18, 16, 16)
         side.setSpacing(14)
@@ -190,6 +206,14 @@ class MainWindow(QMainWindow):
         brand_copy.addWidget(app_title)
         brand_copy.addWidget(app_sub)
         brand.addLayout(brand_copy, 1)
+        self.brand_title = app_title
+        self.brand_subtitle = app_sub
+        self.sidebar_toggle = QPushButton("‹")
+        self.sidebar_toggle.setObjectName("UtilityBtn")
+        self.sidebar_toggle.setFixedSize(30, 30)
+        self.sidebar_toggle.setToolTip("Collapse navigation")
+        self.sidebar_toggle.clicked.connect(self._toggle_sidebar)
+        brand.addWidget(self.sidebar_toggle)
         side.addLayout(brand)
 
         # Search stays close to navigation and is keyboard accessible.
@@ -214,6 +238,7 @@ class MainWindow(QMainWindow):
 
         workspace_label = QLabel("WORKSPACE")
         workspace_label.setObjectName("SectionHeader")
+        self.workspace_nav_label = workspace_label
         nav_layout.addWidget(workspace_label)
 
         self.filter_buttons: Dict[str, NavItem] = {}
@@ -236,6 +261,7 @@ class MainWindow(QMainWindow):
         nav_layout.addSpacing(18)
         eco_label = QLabel("BY TECHNOLOGY")
         eco_label.setObjectName("SectionHeader")
+        self.eco_nav_label = eco_label
         nav_layout.addWidget(eco_label)
         for filter_id, label in [
             ("Node / Web", "Node & Web"),
@@ -267,6 +293,7 @@ class MainWindow(QMainWindow):
         overview_layout.addWidget(self._create_vdivider())
         overview_layout.addWidget(self.ports_badge)
         side.addWidget(overview)
+        self.sidebar_overview = overview
 
         # Actions are grouped and labelled; no tiny mystery buttons.
         add_project = QPushButton("Add project")
@@ -274,12 +301,14 @@ class MainWindow(QMainWindow):
         add_project.setMinimumHeight(40)
         add_project.clicked.connect(self._open_add_dialog)
         side.addWidget(add_project)
+        self.sidebar_add_project = add_project
 
         new_stack = QPushButton("Create stack")
         new_stack.setObjectName("SecondaryBtn")
         new_stack.setMinimumHeight(38)
         new_stack.clicked.connect(self._open_new_stack_dialog)
         side.addWidget(new_stack)
+        self.sidebar_new_stack = new_stack
 
         self.stop_all_btn = QPushButton("Stop all services")
         self.stop_all_btn.setObjectName("StopBtn")
@@ -302,6 +331,7 @@ class MainWindow(QMainWindow):
         self.theme_toggle_btn.clicked.connect(self._toggle_theme)
         utility_row.addWidget(self.theme_toggle_btn, 1)
         side.addLayout(utility_row)
+        self.sidebar_utility_row = utility_row
         root.addWidget(sidebar)
 
         # Main workspace
@@ -409,6 +439,29 @@ class MainWindow(QMainWindow):
         self._logs_open = False
         right_layout.addWidget(self.splitter, 1)
         root.addWidget(right, 1)
+
+    def _toggle_sidebar(self):
+        """Toggle the sidebar between its full workspace and compact rail layouts."""
+        self._sidebar_compact = not getattr(self, "_sidebar_compact", False)
+        compact = self._sidebar_compact
+        self.sidebar.setFixedWidth(76 if compact else 250)
+        self.sidebar_toggle.setText("›" if compact else "‹")
+        self.sidebar_toggle.setToolTip("Expand navigation" if compact else "Collapse navigation")
+        self.brand_title.setVisible(not compact)
+        self.brand_subtitle.setVisible(not compact)
+        self.search_input.setVisible(not compact)
+        self.workspace_nav_label.setVisible(not compact)
+        self.eco_nav_label.setVisible(not compact)
+        self.sidebar_overview.setVisible(not compact)
+        self.sidebar_add_project.setVisible(not compact)
+        self.sidebar_new_stack.setVisible(not compact)
+        self.stop_all_btn.setVisible(not compact)
+        self.toggle_logs_btn.setText("☰" if compact else "Console")
+        self.theme_toggle_btn.setText("◐" if compact else ("Light theme" if self.theme == "dark" else "Dark theme"))
+        self.toggle_logs_btn.setToolTip("Toggle console logs (Ctrl+L)" if compact else "")
+        self.theme_toggle_btn.setToolTip("Switch theme" if compact else "")
+        for item in self.filter_buttons.values():
+            item.set_compact(compact)
 
     def _create_mini_stat(self, initial_val: str, label_text: str, stat_kind: str) -> QFrame:
         badge = QFrame()
