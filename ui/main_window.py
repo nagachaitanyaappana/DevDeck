@@ -625,6 +625,7 @@ class MainWindow(QMainWindow):
             card.restart_clicked.connect(self._restart_project)
             card.open_url_clicked.connect(open_url)
             card.view_logs_clicked.connect(self._view_logs)
+            card.project_selected.connect(self._view_logs)
             card.open_code_clicked.connect(open_in_vscode)
             card.open_terminal_clicked.connect(open_in_terminal)
             card.open_folder_clicked.connect(open_in_file_manager)
@@ -721,8 +722,14 @@ class MainWindow(QMainWindow):
 
         # Backfill history
         logs = self.process_manager.get_logs(p_id)
-        for text, is_stderr in logs:
-            self.log_viewer.append_log(text, is_stderr)
+        if logs:
+            for text, is_stderr in logs:
+                self.log_viewer.append_log(text, is_stderr)
+        else:
+            self.log_viewer.append_log(
+                "No output yet. Start this project to stream its terminal logs here.\n",
+                False,
+            )
 
     def _on_process_status(self, project_id: str, status: str):
         if project_id in self.cards:
