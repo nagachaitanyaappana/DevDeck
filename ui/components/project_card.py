@@ -196,13 +196,13 @@ class ProjectCard(QFrame):
         bot_row.setSpacing(7)
 
         # 1. Start / Stop Main Button
-        self.main_btn = QPushButton(f"{ICO_START} Start")
+        self.main_btn = QPushButton("Start")
         self.main_btn.setObjectName("StartBtn")
         self.main_btn.clicked.connect(self._on_main_action)
         bot_row.addWidget(self.main_btn)
 
         # 2. Open in Browser Button
-        self.browser_btn = QPushButton(f"{ICO_BROWSER} Open URL")
+        self.browser_btn = QPushButton("Open URL")
         self.browser_btn.setObjectName("BrowserBtn")
         self.browser_btn.setEnabled(False)
         self.browser_btn.clicked.connect(self._on_open_browser)
@@ -212,7 +212,7 @@ class ProjectCard(QFrame):
         self._update_browser_button()
 
         # 3. View Logs Button
-        self.logs_btn = QPushButton(f"{ICO_LOGS} Logs")
+        self.logs_btn = QPushButton("Logs")
         self.logs_btn.setObjectName("IconBtn")
         self.logs_btn.setToolTip("Open the console for this project")
         self.logs_btn.clicked.connect(lambda: self.view_logs_clicked.emit(self.project))
@@ -247,7 +247,7 @@ class ProjectCard(QFrame):
 
         if status == "running":
             self.status_badge.setText("Running")
-            self.main_btn.setText(f"{ICO_STOP} Stop")
+            self.main_btn.setText("Stop")
             self.main_btn.setObjectName("StopBtn")
             self._update_browser_button()
         elif status == "starting":
@@ -256,7 +256,7 @@ class ProjectCard(QFrame):
             self.main_btn.setObjectName("StopBtn")
         elif status == "error":
             self.status_badge.setText("Error")
-            self.main_btn.setText(f"{ICO_START} Start")
+            self.main_btn.setText("Start")
             self.main_btn.setObjectName("StartBtn")
             self.metrics_label.setVisible(False)
         else:
