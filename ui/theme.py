@@ -24,8 +24,8 @@ LIGHT = {
     "on_primary": "#FFFFFF", "text": "#1D2935", "text_dim": "#536273",
     "text_faint": "#7D8996", "green": "#278456", "green_soft": "#E6F3EB",
     "red": "#B94F52", "red_soft": "#F9E9E9", "amber": "#966B27",
-    "amber_soft": "#F7F0E2", "star": "#A87928", "log_bg": "#111820",
-    "log_border": "#2C3945", "log_text": "#E7EDF3", "log_muted": "#A6B2BE",
+    "amber_soft": "#F7F0E2", "star": "#A87928", "log_bg": "#FFFFFF",
+    "log_border": "#DFE5EC", "log_text": "#1D2935", "log_muted": "#536273",
 }
 
 DARK = {
