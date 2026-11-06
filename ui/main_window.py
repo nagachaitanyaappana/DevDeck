@@ -370,6 +370,12 @@ class MainWindow(QMainWindow):
         self.header_add_btn.clicked.connect(self._open_add_dialog)
         header_layout.addWidget(self.header_add_btn)
 
+        self.header_stack_btn = QPushButton("＋  Create Stack")
+        self.header_stack_btn.setObjectName("SecondaryBtn")
+        self.header_stack_btn.setMinimumHeight(42)
+        self.header_stack_btn.clicked.connect(self._open_new_stack_dialog)
+        header_layout.addWidget(self.header_stack_btn)
+
         refresh_btn = QPushButton("↻")
         refresh_btn.setObjectName("UtilityBtn")
         refresh_btn.setFixedSize(42, 42)
